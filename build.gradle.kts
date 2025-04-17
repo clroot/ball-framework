@@ -7,7 +7,7 @@ plugins {
 
 
 allprojects {
-    group = "io.clroot"
+    group = "io.clroot.ball"
     version = "2.0.0-SNAPSHOT"
 
     repositories {
@@ -61,7 +61,8 @@ subprojects {
         }
         compileKotlin {
             compilerOptions {
-                freeCompilerArgs = listOf("-Xjsr305=strict", "-Xcontext-receivers", "-opt-in=kotlin.ExperimentalValueClassApi")
+                freeCompilerArgs =
+                    listOf("-Xjsr305=strict", "-Xcontext-receivers", "-opt-in=kotlin.ExperimentalValueClassApi")
                 jvmTarget.set(JvmTarget.JVM_21)
             }
         }
