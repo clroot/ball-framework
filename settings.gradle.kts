@@ -9,5 +9,15 @@ include("shared:core")
 include("shared:arrow")
 include("shared:attribute")
 include("shared:lock")
+
+// Domain modules
 include("domain")
+
+// Application modules
 include("application")
+
+// Adapter modules
+include("adapter")
+include("adapter:inbound")
+include("adapter:outbound")
+include("adapter:outbound:persistence-jpa")

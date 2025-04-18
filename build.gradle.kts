@@ -5,6 +5,9 @@ plugins {
     id("org.jlleitschuh.gradle.ktlint") version "12.1.2"
     id("org.springframework.boot") version "3.4.4"
     id("io.spring.dependency-management") version "1.1.7"
+    id("org.jetbrains.kotlin.plugin.allopen") version "2.1.20"
+    id("org.jetbrains.kotlin.plugin.jpa") version "2.1.20"
+    id("org.jetbrains.kotlin.plugin.spring") version "2.1.20"
 }
 
 
@@ -42,7 +45,7 @@ subprojects {
         implementation("io.arrow-kt:arrow-core:2.0.1")
 
         // Logging
-        implementation("org.slf4j:slf4j-api:2.0.9")
+        implementation("org.slf4j:slf4j-api")
 
         // Testing
         testImplementation("io.kotest:kotest-runner-junit5:5.9.1")
