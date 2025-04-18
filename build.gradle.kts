@@ -38,22 +38,22 @@ subprojects {
 
     dependencies {
         // Kotlin
-        implementation("org.jetbrains.kotlin:kotlin-reflect")
-        implementation("org.jetbrains.kotlin:kotlin-stdlib")
+        api("org.jetbrains.kotlin:kotlin-reflect")
+        api("org.jetbrains.kotlin:kotlin-stdlib")
 
         // Arrow-kt
-        implementation("io.arrow-kt:arrow-core:2.0.1")
+        api("io.arrow-kt:arrow-core:2.0.1")
 
         // Logging
-        implementation("org.slf4j:slf4j-api")
+        api("org.slf4j:slf4j-api")
 
         // Testing
-        testImplementation("io.kotest:kotest-runner-junit5:5.9.1")
-        testImplementation("io.kotest:kotest-assertions-core:5.9.1")
-        testImplementation("io.kotest:kotest-assertions-core:5.9.1")
-        testImplementation("io.kotest.extensions:kotest-assertions-arrow:2.0.0")
-        testImplementation("io.mockk:mockk:1.13.10")
-        testImplementation(kotlin("test"))
+        testApi("io.kotest:kotest-runner-junit5:5.9.1")
+        testApi("io.kotest:kotest-assertions-core:5.9.1")
+        testApi("io.kotest:kotest-assertions-core:5.9.1")
+        testApi("io.kotest.extensions:kotest-assertions-arrow:2.0.0")
+        testApi("io.mockk:mockk:1.13.10")
+        testApi(kotlin("test"))
     }
 
     task<Jar>("sourcesJar") {
