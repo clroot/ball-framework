@@ -1,5 +1,5 @@
 plugins {
-    kotlin("plugin.spring")
+    id("org.jetbrains.kotlin.plugin.spring")
 }
 
 dependencies {
@@ -20,5 +20,5 @@ dependencies {
     // Testcontainers
     testImplementation("org.testcontainers:testcontainers:1.20.6")
     testImplementation("org.testcontainers:junit-jupiter:1.20.6")
-    testImplementation("org.testcontainers:redis:1.20.6")
+    testImplementation("com.redis:testcontainers-redis:2.2.2")
 }
