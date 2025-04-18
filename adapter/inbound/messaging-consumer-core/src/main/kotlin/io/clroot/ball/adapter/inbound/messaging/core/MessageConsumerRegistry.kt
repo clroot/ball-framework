@@ -11,7 +11,7 @@ import java.util.concurrent.ConcurrentHashMap
 @Component
 class MessageConsumerRegistry {
     private val log = LoggerFactory.getLogger(javaClass)
-    
+
     // 토픽별 메시지 소비자 맵
     private val consumersByTopic = ConcurrentHashMap<String, MessageConsumer<*>>()
 
@@ -24,18 +24,18 @@ class MessageConsumerRegistry {
     @Suppress("UNCHECKED_CAST")
     fun <P> registerConsumer(consumer: MessageConsumer<P>) {
         val topic = consumer.getTopicName()
-        
+
         if (topic.isBlank()) {
             throw IllegalArgumentException("Topic name cannot be blank")
         }
-        
+
         val existing = consumersByTopic.putIfAbsent(topic, consumer)
         if (existing != null) {
             throw IllegalArgumentException(
                 "Consumer for topic '$topic' is already registered: ${existing.javaClass.name}"
             )
         }
-        
+
         log.info("Registered message consumer for topic '{}': {}", topic, consumer.javaClass.name)
     }
 
