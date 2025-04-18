@@ -3,7 +3,7 @@ plugins {
 }
 
 dependencies {
-    api(project(":adapter:outbound:messaging-producer:core"))
+    api(project(":adapter:outbound:messaging-producer-core"))
 
     // Spring Kafka
     implementation("org.springframework.kafka:spring-kafka")

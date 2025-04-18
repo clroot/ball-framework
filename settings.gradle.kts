@@ -19,9 +19,9 @@ include("application")
 // Adapter modules
 include("adapter")
 include("adapter:inbound")
+// Adapter Outbound modules
 include("adapter:outbound")
 include("adapter:outbound:persistence-jpa")
 include("adapter:outbound:persistence-redis")
-include("adapter:outbound:messaging-producer")
-include("adapter:outbound:messaging-producer:core")
-include("adapter:outbound:messaging-producer:kafka")
+include("adapter:outbound:messaging-producer-core")
+include("adapter:outbound:messaging-producer-kafka")
