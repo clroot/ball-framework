@@ -38,7 +38,7 @@ class ApiVersionRequestMappingHandlerMapping : RequestMappingHandlerMapping() {
         val version = annotation.value
 
         // URL 패턴에서 {version} 플레이스홀더를 실제 버전으로 대체
-        val patterns = info.patternsCondition.patterns
+        val patterns = info.patternsCondition!!.patterns
             .map { pattern -> pattern.replace("{version}", version) }
             .toSet()
 

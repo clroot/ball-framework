@@ -16,4 +16,9 @@ dependencies {
 
     // AOP
     implementation("org.springframework.boot:spring-boot-starter-aop")
+
+    // Test dependencies
+    testImplementation("org.springframework.boot:spring-boot-starter-test")
+    testImplementation("org.mockito.kotlin:mockito-kotlin:5.4.0")
+    testImplementation("com.ninja-squad:springmockk:4.0.2")
 }
