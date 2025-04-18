@@ -11,4 +11,5 @@ dependencies {
     // Test dependencies
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("org.springframework.kafka:spring-kafka-test")
+    testImplementation("io.kotest.extensions:kotest-extensions-spring:1.3.0")
 }
