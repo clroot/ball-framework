@@ -20,6 +20,8 @@ class DistributedLockAdvisorTest : FunSpec({
         val method = TestService::class.java.getMethod("testMethod", String::class.java, Int::class.java)
         val annotation = method.getAnnotation(DistributedLock::class.java)
 
+        requireNotNull(annotation) { "Failed to resolve DistributedLock annotation" }
+
         // Mock method signature
         val signature = mockk<MethodSignature>()
         every { signature.method } returns method
