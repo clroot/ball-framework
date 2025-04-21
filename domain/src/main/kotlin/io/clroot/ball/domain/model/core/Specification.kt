@@ -1,0 +1,91 @@
+package io.clroot.ball.domain.model.core
+
+import arrow.core.Either
+import arrow.core.left
+import arrow.core.right
+
+/**
+ * 명세 (Specification)
+ *
+ * 객체가 특정 조건을 만족하는지 검증하는 명세 패턴
+ * 도메인 규칙을 명시적으로 표현하고 재사용 가능하게 함
+ *
+ * @param T 검증 대상 객체 타입
+ */
+interface Specification<T> {
+    /**
+     * 객체가 명세를 만족하는지 검증
+     *
+     * @param t 검증 대상 객체
+     * @return 만족하면 true, 아니면 false
+     */
+    fun isSatisfiedBy(t: T): Boolean
+    
+    /**
+     * 두 명세를 AND 연산으로 결합
+     *
+     * @param other 결합할 다른 명세
+     * @return 두 명세를 모두 만족해야 true를 반환하는 새로운 명세
+     */
+    fun and(other: Specification<T>): Specification<T> = AndSpecification(this, other)
+    
+    /**
+     * 두 명세를 OR 연산으로 결합
+     *
+     * @param other 결합할 다른 명세
+     * @return 두 명세 중 하나라도 만족하면 true를 반환하는 새로운 명세
+     */
+    fun or(other: Specification<T>): Specification<T> = OrSpecification(this, other)
+    
+    /**
+     * 명세를 NOT 연산으로 부정
+     *
+     * @return 원래 명세의 결과를 부정하는 새로운 명세
+     */
+    fun not(): Specification<T> = NotSpecification(this)
+    
+    /**
+     * 명세를 검증하고 결과를 Either로 반환
+     *
+     * @param t 검증 대상 객체
+     * @param error 명세를 만족하지 않을 때 반환할 오류
+     * @return 만족하면 Right(t), 아니면 Left(error)
+     */
+    fun <E> validate(t: T, error: E): Either<E, T> =
+        if (isSatisfiedBy(t)) t.right() else error.left()
+}
+
+/**
+ * AND 명세
+ * 두 명세를 모두 만족해야 true를 반환
+ */
+class AndSpecification<T>(
+    private val left: Specification<T>,
+    private val right: Specification<T>
+) : Specification<T> {
+    override fun isSatisfiedBy(t: T): Boolean =
+        left.isSatisfiedBy(t) && right.isSatisfiedBy(t)
+}
+
+/**
+ * OR 명세
+ * 두 명세 중 하나라도 만족하면 true를 반환
+ */
+class OrSpecification<T>(
+    private val left: Specification<T>,
+    private val right: Specification<T>
+) : Specification<T> {
+    override fun isSatisfiedBy(t: T): Boolean =
+        left.isSatisfiedBy(t) || right.isSatisfiedBy(t)
+}
+
+/**
+ * NOT 명세
+ * 원래 명세의 결과를 부정
+ */
+class NotSpecification<T>(
+    private val specification: Specification<T>
+) : Specification<T> {
+    override fun isSatisfiedBy(t: T): Boolean =
+        !specification.isSatisfiedBy(t)
+}
