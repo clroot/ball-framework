@@ -27,3 +27,5 @@ include("adapter:outbound:messaging-producer-kafka")
 // Adapter Inbound modules
 include("adapter:inbound")
 include("adapter:inbound:rest")
+include("adapter:inbound:messaging-consumer-core")
+include("adapter:inbound:messaging-consumer-kafka")
