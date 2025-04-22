@@ -1,7 +1,6 @@
 package io.clroot.ball.domain.model.core
 
 import arrow.core.Either
-import arrow.core.left
 import arrow.core.right
 
 /**
@@ -54,7 +53,7 @@ class SagaStep<T, E>(
      * @param context 세이가 컨텍스트
      * @return 성공 시 Right(결과), 실패 시 Left(오류)
      */
-    suspend fun compensate(context: T): Either<E, T> = compensate(context)
+    suspend fun compensate(context: T): Either<E, T> = compensate.invoke(context)
 }
 
 /**
@@ -72,8 +71,7 @@ class ComposedSaga<T, E>(
     private val second: Saga<T, E>
 ) : Saga<T, E> {
     override suspend fun execute(context: T): Either<E, T> {
-        val firstResult = first.execute(context)
-        return when (firstResult) {
+        return when (val firstResult = first.execute(context)) {
             is Either.Right -> second.execute(firstResult.value)
             is Either.Left -> firstResult
         }
@@ -114,16 +112,15 @@ class SagaOrchestrator<T, E> {
 
         // 모든 단계 실행
         for (step in steps) {
-            val result = step.execute(currentContext)
-            when (result) {
+            when (val result = step.execute(currentContext)) {
                 is Either.Right -> {
                     currentContext = result.value
                     executedSteps.add(step)
                 }
+
                 is Either.Left -> {
                     // 실패 시 보상 트랜잭션 실행
-                    val compensationResult = compensate(executedSteps, currentContext)
-                    return when (compensationResult) {
+                    return when (val compensationResult = compensate(executedSteps, currentContext)) {
                         is Either.Right -> result // 원래 오류 반환
                         is Either.Left -> compensationResult // 보상 실패 오류 반환
                     }
@@ -146,8 +143,7 @@ class SagaOrchestrator<T, E> {
 
         // 역순으로 보상 트랜잭션 실행
         for (step in executedSteps.reversed()) {
-            val result = step.compensate(currentContext)
-            when (result) {
+            when (val result = step.compensate(currentContext)) {
                 is Either.Right -> currentContext = result.value
                 is Either.Left -> return result // 보상 실패 시 오류 반환
             }
