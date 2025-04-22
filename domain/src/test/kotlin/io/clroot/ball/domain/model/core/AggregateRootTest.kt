@@ -4,6 +4,7 @@ import io.clroot.ball.domain.event.DomainEventBase
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
+import java.time.Instant
 
 class AggregateRootTest {
     
@@ -37,7 +38,7 @@ class AggregateRootTest {
     }
     
     // 테스트용 집합체 루트 구현
-    private class TestAggregate(id: String) : AggregateRoot<String>(id) {
+    private class TestAggregate(id: String) : AggregateRoot<String>(id, Instant.now(), Instant.now(), null) {
         private val items = mutableListOf<String>()
         
         fun addItem(itemName: String) {

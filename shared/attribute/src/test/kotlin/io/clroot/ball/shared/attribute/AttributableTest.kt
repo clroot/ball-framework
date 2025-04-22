@@ -44,4 +44,8 @@ private class TestEntity(
     override fun <V : Any> setAttribute(key: AttributeKey<V>, value: V): TestEntity {
         return TestEntity(id, attributes.setAttribute(key, value))
     }
+
+    override fun unsafeSetAttributes(attributes: AttributeStore): TestEntity {
+        return TestEntity(id, attributes)
+    }
 }

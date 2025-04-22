@@ -11,6 +11,7 @@ import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
 import io.mockk.every
 import io.mockk.mockk
+import java.time.Instant
 
 class RepositoryTest : FunSpec({
     // Create a concrete implementation of EntityBase for testing

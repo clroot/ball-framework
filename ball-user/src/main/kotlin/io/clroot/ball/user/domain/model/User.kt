@@ -18,16 +18,16 @@ import java.time.Instant
  */
 class User private constructor(
     id: BinaryId,
+    createdAt: Instant,
+    updatedAt: Instant,
+    deletedAt: Instant?,
     val username: String,
     val email: Email,
     val status: UserStatus,
     val roles: Set<UserRole>,
-    val createdAt: Instant,
-    val updatedAt: Instant,
-    val deletedAt: Instant?,
     val metadata: UserMetadata,
     override val attributes: AttributeStore
-) : AggregateRoot<BinaryId>(id), Attributable<User> {
+) : AggregateRoot<BinaryId>(id, createdAt, updatedAt, deletedAt), Attributable<User> {
 
     /**
      * 사용자 속성 설정
@@ -39,13 +39,13 @@ class User private constructor(
     override fun <V : Any> setAttribute(key: AttributeKey<V>, value: V): User {
         return User(
             id = id,
+            createdAt = createdAt,
+            updatedAt = Instant.now(),
+            deletedAt = deletedAt,
             username = username,
             email = email,
             status = status,
             roles = roles,
-            createdAt = createdAt,
-            updatedAt = Instant.now(),
-            deletedAt = deletedAt,
             metadata = metadata,
             attributes = attributes.setAttribute(key, value)
         )
@@ -65,13 +65,13 @@ class User private constructor(
     override fun unsafeSetAttributes(attributes: AttributeStore): User {
         return User(
             id = id,
+            createdAt = createdAt,
+            updatedAt = Instant.now(),
+            deletedAt = deletedAt,
             username = username,
             email = email,
             status = status,
             roles = roles,
-            createdAt = createdAt,
-            updatedAt = Instant.now(),
-            deletedAt = deletedAt,
             metadata = metadata,
             attributes = attributes,
         )
@@ -88,13 +88,13 @@ class User private constructor(
 
         val user = User(
             id = id,
+            createdAt = createdAt,
+            updatedAt = Instant.now(),
+            deletedAt = if (newStatus == UserStatus.DELETED) Instant.now() else deletedAt,
             username = username,
             email = email,
             status = newStatus,
             roles = roles,
-            createdAt = createdAt,
-            updatedAt = Instant.now(),
-            deletedAt = if (newStatus == UserStatus.DELETED) Instant.now() else deletedAt,
             metadata = metadata,
             attributes = attributes
         )
@@ -112,13 +112,13 @@ class User private constructor(
     fun updateMetadata(newMetadata: UserMetadata): User {
         return User(
             id = id,
+            createdAt = createdAt,
+            updatedAt = Instant.now(),
+            deletedAt = deletedAt,
             username = username,
             email = email,
             status = status,
             roles = roles,
-            createdAt = createdAt,
-            updatedAt = Instant.now(),
-            deletedAt = deletedAt,
             metadata = newMetadata,
             attributes = attributes
         )
@@ -135,13 +135,13 @@ class User private constructor(
 
         val user = User(
             id = id,
+            createdAt = createdAt,
+            updatedAt = Instant.now(),
+            deletedAt = deletedAt,
             username = username,
             email = email,
             status = status,
             roles = roles + role,
-            createdAt = createdAt,
-            updatedAt = Instant.now(),
-            deletedAt = deletedAt,
             metadata = metadata,
             attributes = attributes
         )
@@ -161,13 +161,13 @@ class User private constructor(
 
         val user = User(
             id = id,
+            createdAt = createdAt,
+            updatedAt = Instant.now(),
+            deletedAt = deletedAt,
             username = username,
             email = email,
             status = status,
             roles = roles - role,
-            createdAt = createdAt,
-            updatedAt = Instant.now(),
-            deletedAt = deletedAt,
             metadata = metadata,
             attributes = attributes
         )
@@ -199,13 +199,13 @@ class User private constructor(
 
             val user = User(
                 id = id,
+                createdAt = now,
+                updatedAt = now,
+                deletedAt = null,
                 username = username,
                 email = email,
                 status = UserStatus.PENDING,
                 roles = roles,
-                createdAt = now,
-                updatedAt = now,
-                deletedAt = null,
                 metadata = metadata,
                 attributes = attributes
             )
@@ -227,13 +227,13 @@ class User private constructor(
             attributes: AttributeStore
         ): User = User(
             id = id,
+            createdAt = createdAt,
+            updatedAt = updatedAt,
+            deletedAt = deletedAt,
             username = username,
             email = email,
             status = status,
             roles = roles,
-            createdAt = createdAt,
-            updatedAt = updatedAt,
-            deletedAt = deletedAt,
             metadata = metadata,
             attributes = attributes
         )

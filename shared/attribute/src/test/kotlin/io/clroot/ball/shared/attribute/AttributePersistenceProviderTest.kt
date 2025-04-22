@@ -92,4 +92,8 @@ private class PersistenceTestEntity(
     override fun <V : Any> setAttribute(key: AttributeKey<V>, value: V): PersistenceTestEntity {
         return PersistenceTestEntity(id, attributes.setAttribute(key, value))
     }
+
+    override fun unsafeSetAttributes(attributes: AttributeStore): PersistenceTestEntity {
+        return PersistenceTestEntity(id, attributes)
+    }
 }
