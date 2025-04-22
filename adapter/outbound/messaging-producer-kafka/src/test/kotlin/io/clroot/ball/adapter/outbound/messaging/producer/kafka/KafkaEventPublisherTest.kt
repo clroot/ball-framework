@@ -1,6 +1,6 @@
 package io.clroot.ball.adapter.outbound.messaging.producer.kafka
 
-import io.clroot.ball.domain.event.DomainEvent
+import io.clroot.ball.domain.event.DomainEventBase
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.extensions.spring.SpringExtension
 import io.kotest.matchers.nulls.shouldNotBeNull
@@ -73,52 +73,12 @@ class KafkaEventPublisherTest : FunSpec() {
                 consumer.close()
             }
         }
-
-        @Suppress("LeakingThis")
-        test("should use event class name as key when no id field exists") {
-            // Set up consumer
-            val consumerProps = HashMap<String, Any>().apply {
-                put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, embeddedKafkaBrokerAddress)
-                put(ConsumerConfig.GROUP_ID_CONFIG, "test-group")
-                put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest")
-                put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer::class.java.name)
-                put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, StringDeserializer::class.java.name)
-            }
-            consumer = KafkaConsumer<String, String>(consumerProps)
-
-            try {
-                // Given
-                val testEvent = NoIdTestEvent(message = "Test without ID", occurredAt = Instant.now())
-                val expectedTopic = "no-id-test-events" // Based on the determineDestination logic
-
-                // Subscribe to the topic
-                consumer.subscribe(listOf(expectedTopic))
-
-                // When
-                kafkaEventPublisher.publish(testEvent)
-
-                // Then
-                val records = KafkaTestUtils.getRecords(consumer, Duration.ofSeconds(10))
-                records.shouldNotBeNull()
-
-                val record = records.records(expectedTopic).first()
-                record.shouldNotBeNull()
-                record.key() shouldBe "NoIdTestEvent" // Should use class name as key
-            } finally {
-                consumer.close()
-            }
-        }
     }
 
     // Test event classes
     data class TestEvent(
-        val id: String,
         val message: String,
+        override val id: String,
         override val occurredAt: Instant
-    ) : DomainEvent
-
-    data class NoIdTestEvent(
-        val message: String,
-        override val occurredAt: Instant
-    ) : DomainEvent
+    ) : DomainEventBase()
 }
