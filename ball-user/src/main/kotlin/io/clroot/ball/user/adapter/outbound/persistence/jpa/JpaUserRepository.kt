@@ -7,9 +7,9 @@ import arrow.core.right
 import io.clroot.ball.domain.model.core.BinaryId
 import io.clroot.ball.domain.model.core.Specification
 import io.clroot.ball.domain.port.PersistenceError
+import io.clroot.ball.shared.attribute.AttributePersistenceProvider
 import io.clroot.ball.user.domain.model.Email
 import io.clroot.ball.user.domain.model.User
-import io.clroot.ball.user.domain.port.AttributePersistenceProvider
 import io.clroot.ball.user.domain.port.UserRepository
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.stereotype.Repository
@@ -21,9 +21,9 @@ import org.springframework.transaction.annotation.Transactional
  * JPA를 사용하여 사용자 엔티티의 영속성을 관리하는 구현체
  */
 @Repository
-open class JpaUserRepository(
+class JpaUserRepository(
     private val userJpaRepository: UserJpaRepository,
-    private val attributePersistenceProvider: AttributePersistenceProvider
+    private val attributePersistenceProvider: AttributePersistenceProvider<User, UserDataModel>
 ) : UserRepository {
 
     /**

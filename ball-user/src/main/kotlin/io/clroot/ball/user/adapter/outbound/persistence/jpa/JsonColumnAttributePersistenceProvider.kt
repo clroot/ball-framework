@@ -2,11 +2,10 @@ package io.clroot.ball.user.adapter.outbound.persistence.jpa
 
 import com.fasterxml.jackson.core.type.TypeReference
 import com.fasterxml.jackson.databind.ObjectMapper
-import io.clroot.ball.shared.attribute.Attributable
 import io.clroot.ball.shared.attribute.AttributeKey
+import io.clroot.ball.shared.attribute.AttributePersistenceProvider
 import io.clroot.ball.shared.attribute.AttributeStore
-import io.clroot.ball.shared.core.model.Entity
-import io.clroot.ball.user.domain.port.AttributePersistenceProvider
+import io.clroot.ball.user.domain.model.User
 import org.springframework.stereotype.Component
 import kotlin.reflect.KClass
 import kotlin.reflect.full.isSubclassOf
@@ -19,7 +18,7 @@ import kotlin.reflect.full.isSubclassOf
 @Component
 class JsonColumnAttributePersistenceProvider(
     private val objectMapper: ObjectMapper
-) : AttributePersistenceProvider {
+) : AttributePersistenceProvider<User, UserDataModel> {
 
     /**
      * 엔티티의 속성 로드
@@ -29,15 +28,7 @@ class JsonColumnAttributePersistenceProvider(
      * @return 속성이 로드된 엔티티
      */
     @Suppress("UNCHECKED_CAST")
-    override fun <E : Entity<*>> loadAttributes(entity: E, dataModel: Any): E {
-        if (entity !is Attributable<*>) {
-            return entity
-        }
-
-        if (dataModel !is UserDataModel) {
-            return entity
-        }
-
+    override fun loadAttributes(entity: User, dataModel: UserDataModel): User {
         val attributesJson = dataModel.attributes ?: return entity
         val attributeMap = try {
             objectMapper.readValue(attributesJson, object : TypeReference<Map<String, AttributeValue>>() {})
@@ -63,7 +54,7 @@ class JsonColumnAttributePersistenceProvider(
             store.setAttribute(key, value)
         }
 
-        return entity.unsafeSetAttributes(loadedAttributeStore) as E
+        return entity.unsafeSetAttributes(loadedAttributeStore)
     }
 
     /**
@@ -72,15 +63,7 @@ class JsonColumnAttributePersistenceProvider(
      * @param entity 속성을 저장할 엔티티
      * @param dataModel 데이터 모델 객체
      */
-    override fun <E : Entity<*>> saveAttributes(entity: E, dataModel: Any) {
-        if (entity !is Attributable<*>) {
-            return
-        }
-
-        if (dataModel !is UserDataModel) {
-            return
-        }
-
+    override fun saveAttributes(entity: User, dataModel: UserDataModel) {
         val attributeMap = entity.attributes.getAttributes().map { (key, value) ->
             key.name to AttributeValue(
                 type = key.type.qualifiedName ?: key.type.toString(),

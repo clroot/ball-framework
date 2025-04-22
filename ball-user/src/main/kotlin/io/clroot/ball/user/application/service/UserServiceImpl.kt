@@ -124,7 +124,7 @@ class UserServiceImpl(
                     val updatedUser = foundUser.updateMetadata(
                         foundUser.metadata.updateLastLogin(Instant.now())
                     )
-                    userRepository.save(updatedUser).mapLeft { 
+                    userRepository.save(updatedUser).mapLeft {
                         UserError.SystemError("Failed to update user", it as Exception)
                     }.map { it }
                 }
@@ -171,7 +171,7 @@ class UserServiceImpl(
                 .setAttribute(UserAttributeKeys.PASSWORD_SALT, passwordResult.salt)
                 .updateMetadata(user.metadata.updatePasswordChanged(Instant.now()))
 
-            userRepository.save(updatedUser).mapLeft { 
+            userRepository.save(updatedUser).mapLeft {
                 UserError.SystemError("Failed to update user", it as Exception)
             }.map { }
         }
@@ -188,7 +188,7 @@ class UserServiceImpl(
         return getUser(userId).flatMap { user ->
             val updatedUser = user.changeStatus(newStatus)
 
-            userRepository.save(updatedUser).mapLeft { 
+            userRepository.save(updatedUser).mapLeft {
                 UserError.SystemError("Failed to update user status", it as Exception)
             }.map { savedUser ->
                 // 도메인 이벤트 발행

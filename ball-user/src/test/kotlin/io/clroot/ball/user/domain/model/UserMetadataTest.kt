@@ -9,7 +9,7 @@ class UserMetadataTest : FunSpec({
         test("should create UserMetadata with default values") {
             // When
             val metadata = UserMetadata.default()
-            
+
             // Then
             metadata.displayName shouldBe null
             metadata.lastLoginAt shouldBe null
@@ -19,7 +19,7 @@ class UserMetadataTest : FunSpec({
             metadata.emailVerified shouldBe false
         }
     }
-    
+
     context("UserMetadata.updateLastLogin") {
         test("should update lastLoginAt and reset loginFailCount") {
             // Given
@@ -32,14 +32,14 @@ class UserMetadataTest : FunSpec({
                 emailVerified = false
             )
             val loginTime = Instant.now()
-            
+
             // When
             val updatedMetadata = metadata.updateLastLogin(loginTime)
-            
+
             // Then
             updatedMetadata.lastLoginAt shouldBe loginTime
             updatedMetadata.loginFailCount shouldBe 0
-            
+
             // Other properties should remain unchanged
             updatedMetadata.displayName shouldBe metadata.displayName
             updatedMetadata.passwordChangedAt shouldBe metadata.passwordChangedAt
@@ -47,7 +47,7 @@ class UserMetadataTest : FunSpec({
             updatedMetadata.emailVerified shouldBe metadata.emailVerified
         }
     }
-    
+
     context("UserMetadata.incrementLoginFailCount") {
         test("should increment loginFailCount") {
             // Given
@@ -60,13 +60,13 @@ class UserMetadataTest : FunSpec({
                 profileImageUrl = null,
                 emailVerified = false
             )
-            
+
             // When
             val updatedMetadata = metadata.incrementLoginFailCount()
-            
+
             // Then
             updatedMetadata.loginFailCount shouldBe initialCount + 1
-            
+
             // Other properties should remain unchanged
             updatedMetadata.displayName shouldBe metadata.displayName
             updatedMetadata.lastLoginAt shouldBe metadata.lastLoginAt
@@ -75,19 +75,19 @@ class UserMetadataTest : FunSpec({
             updatedMetadata.emailVerified shouldBe metadata.emailVerified
         }
     }
-    
+
     context("UserMetadata.updatePasswordChanged") {
         test("should update passwordChangedAt") {
             // Given
             val metadata = UserMetadata.default()
             val changeTime = Instant.now()
-            
+
             // When
             val updatedMetadata = metadata.updatePasswordChanged(changeTime)
-            
+
             // Then
             updatedMetadata.passwordChangedAt shouldBe changeTime
-            
+
             // Other properties should remain unchanged
             updatedMetadata.displayName shouldBe metadata.displayName
             updatedMetadata.lastLoginAt shouldBe metadata.lastLoginAt
@@ -96,18 +96,18 @@ class UserMetadataTest : FunSpec({
             updatedMetadata.emailVerified shouldBe metadata.emailVerified
         }
     }
-    
+
     context("UserMetadata.updateEmailVerified") {
         test("should update emailVerified") {
             // Given
             val metadata = UserMetadata.default()
-            
+
             // When
             val updatedMetadata = metadata.updateEmailVerified(true)
-            
+
             // Then
             updatedMetadata.emailVerified shouldBe true
-            
+
             // Other properties should remain unchanged
             updatedMetadata.displayName shouldBe metadata.displayName
             updatedMetadata.lastLoginAt shouldBe metadata.lastLoginAt

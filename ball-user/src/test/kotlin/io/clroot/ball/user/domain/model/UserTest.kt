@@ -2,16 +2,16 @@ package io.clroot.ball.user.domain.model
 
 import io.clroot.ball.shared.attribute.AttributeKey
 import io.clroot.ball.shared.attribute.AttributeStore
+import io.clroot.ball.user.domain.event.UserCreatedEvent
+import io.clroot.ball.user.domain.event.UserRoleAddedEvent
+import io.clroot.ball.user.domain.event.UserRoleRemovedEvent
+import io.clroot.ball.user.domain.event.UserStatusChangedEvent
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.collections.shouldContain
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 import io.kotest.matchers.types.shouldBeInstanceOf
-import io.clroot.ball.user.domain.event.UserCreatedEvent
-import io.clroot.ball.user.domain.event.UserRoleAddedEvent
-import io.clroot.ball.user.domain.event.UserRoleRemovedEvent
-import io.clroot.ball.user.domain.event.UserStatusChangedEvent
 import java.time.Instant
 
 class UserTest : FunSpec({
@@ -46,7 +46,7 @@ class UserTest : FunSpec({
             user.domainEvents shouldHaveSize 1
             val event = user.domainEvents[0]
             event.shouldBeInstanceOf<UserCreatedEvent>()
-            val createdEvent = event as UserCreatedEvent
+            val createdEvent = event
             createdEvent.username shouldBe username
             createdEvent.email shouldBe email.toString()
         }
@@ -127,7 +127,7 @@ class UserTest : FunSpec({
             updatedUser.domainEvents shouldHaveSize 1
             val event = updatedUser.domainEvents[0]
             event.shouldBeInstanceOf<UserStatusChangedEvent>()
-            val statusEvent = event as UserStatusChangedEvent
+            val statusEvent = event
             statusEvent.userId shouldBe updatedUser.id.toString()
             statusEvent.oldStatus shouldBe UserStatus.PENDING
             statusEvent.newStatus shouldBe newStatus
@@ -233,7 +233,7 @@ class UserTest : FunSpec({
             updatedUser.domainEvents shouldHaveSize 1
             val event = updatedUser.domainEvents[0]
             event.shouldBeInstanceOf<UserRoleAddedEvent>()
-            val roleEvent = event as UserRoleAddedEvent
+            val roleEvent = event
             roleEvent.userId shouldBe updatedUser.id.toString()
             roleEvent.role shouldBe newRole.name
 
@@ -288,7 +288,7 @@ class UserTest : FunSpec({
             updatedUser.domainEvents shouldHaveSize 1
             val event = updatedUser.domainEvents[0]
             event.shouldBeInstanceOf<UserRoleRemovedEvent>()
-            val roleEvent = event as UserRoleRemovedEvent
+            val roleEvent = event
             roleEvent.userId shouldBe updatedUser.id.toString()
             roleEvent.role shouldBe roleToRemove.name
 

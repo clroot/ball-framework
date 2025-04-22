@@ -1,3 +1,7 @@
+plugins {
+    kotlin("plugin.spring")
+}
+
 dependencies {
     api(project(":domain"))
     api(project(":application"))
