@@ -63,9 +63,7 @@ class JsonColumnAttributePersistenceProvider(
             store.setAttribute(key, value)
         }
 
-        // 리플렉션을 사용하여 속성 저장소 설정
-        // 실제 구현에서는 엔티티에 적절한 메서드를 추가하는 것이 좋음
-        return entity
+        return entity.unsafeSetAttributes(loadedAttributeStore) as E
     }
 
     /**

@@ -3,6 +3,7 @@ package io.clroot.ball.user.domain.model
 import io.clroot.ball.domain.model.core.AggregateRoot
 import io.clroot.ball.domain.model.core.BinaryId
 import io.clroot.ball.shared.attribute.Attributable
+import io.clroot.ball.shared.attribute.AttributeKey
 import io.clroot.ball.shared.attribute.AttributeStore
 import io.clroot.ball.user.domain.event.UserCreatedEvent
 import io.clroot.ball.user.domain.event.UserRoleAddedEvent
@@ -35,7 +36,7 @@ class User private constructor(
      * @param value 속성 값
      * @return 업데이트된 User 객체
      */
-    override fun <V : Any> setAttribute(key: io.clroot.ball.shared.attribute.AttributeKey<V>, value: V): User {
+    override fun <V : Any> setAttribute(key: AttributeKey<V>, value: V): User {
         return User(
             id = id,
             username = username,
@@ -47,6 +48,32 @@ class User private constructor(
             deletedAt = deletedAt,
             metadata = metadata,
             attributes = attributes.setAttribute(key, value)
+        )
+    }
+
+    /**
+     * 사용자 속성 일괄 설정 (주의: 안전하지 않음)
+     *
+     * 주어진 AttributeStore로 사용자의 모든 속성을 직접 교체합니다.
+     * 이 메서드는 `attributes` 필드를 업데이트하고 `updatedAt` 필드를 현재 시간으로 설정합니다.
+     * 기존 속성을 완전히 덮어쓰므로 주의해서 사용해야 합니다.
+     *
+     * @param attributes 사용자에게 설정할 속성을 담은 AttributeStore
+     * @return 업데이트된 User 객체
+     */
+
+    override fun unsafeSetAttributes(attributes: AttributeStore): User {
+        return User(
+            id = id,
+            username = username,
+            email = email,
+            status = status,
+            roles = roles,
+            createdAt = createdAt,
+            updatedAt = Instant.now(),
+            deletedAt = deletedAt,
+            metadata = metadata,
+            attributes = attributes,
         )
     }
 
@@ -186,5 +213,29 @@ class User private constructor(
             user.registerEvent(UserCreatedEvent(user.id.toString(), username, email.value))
             return user
         }
+
+        fun from(
+            id: BinaryId,
+            username: String,
+            email: Email,
+            status: UserStatus,
+            roles: Set<UserRole>,
+            createdAt: Instant,
+            updatedAt: Instant,
+            deletedAt: Instant?,
+            metadata: UserMetadata,
+            attributes: AttributeStore
+        ): User = User(
+            id = id,
+            username = username,
+            email = email,
+            status = status,
+            roles = roles,
+            createdAt = createdAt,
+            updatedAt = updatedAt,
+            deletedAt = deletedAt,
+            metadata = metadata,
+            attributes = attributes
+        )
     }
 }

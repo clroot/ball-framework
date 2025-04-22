@@ -121,19 +121,19 @@ class UserDataModel {
             emailVerified = emailVerified
         )
 
-        // 속성은 AttributePersistenceProvider에서 처리
-        return User.create(
+        // 속성은 AttributePersistenceProvider 에서 처리
+        return User.from(
+            id = id!!,
             username = username,
             email = Email.of(email).getOrNull()!!,
+            status = status,
             roles = userRoles,
+            createdAt = createdAt,
+            updatedAt = updatedAt,
+            deletedAt = deletedAt,
             metadata = metadata,
             attributes = AttributeStore.empty()
-        ).let { user ->
-            // ID와 시간 정보는 생성 후 리플렉션을 통해 설정해야 함
-            // 실제 구현에서는 User 클래스에 적절한 팩토리 메서드를 추가하는 것이 좋음
-            // 여기서는 간단히 표현
-            user
-        }
+        )
     }
 
     companion object {
