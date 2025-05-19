@@ -20,6 +20,7 @@ include("application")
 include("adapter")
 // Adapter Outbound modules
 include("adapter:outbound")
+include("adapter:outbound:persistence-core")
 include("adapter:outbound:persistence-jpa")
 include("adapter:outbound:persistence-redis")
 include("adapter:outbound:messaging-producer-core")
