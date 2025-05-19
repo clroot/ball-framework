@@ -1,6 +1,6 @@
 package io.clroot.ball.user.adapter.outbound.persistence.jpa
 
-import io.clroot.ball.adapter.outbound.persistence.jpa.record.VersionedRecord
+import io.clroot.ball.adapter.outbound.persistence.jpa.record.VersionedBinaryIdRecord
 import io.clroot.ball.domain.model.core.BinaryId
 import io.clroot.ball.shared.attribute.AttributeStore
 import io.clroot.ball.user.domain.model.*
@@ -32,7 +32,7 @@ class UserRecord(
     profileImageUrl: String?,
     emailVerified: Boolean,
     attributes: String? = null
-) : VersionedRecord<BinaryId, User>(id, createdAt, updatedAt, deletedAt, version) {
+) : VersionedBinaryIdRecord<User>(id, createdAt, updatedAt, deletedAt, version) {
     var username: String = username
         protected set
 
