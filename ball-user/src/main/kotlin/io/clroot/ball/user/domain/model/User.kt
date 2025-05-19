@@ -21,13 +21,81 @@ class User private constructor(
     createdAt: Instant,
     updatedAt: Instant,
     deletedAt: Instant?,
+    version: Long,
     val username: String,
     val email: Email,
     val status: UserStatus,
     val roles: Set<UserRole>,
     val metadata: UserMetadata,
     override val attributes: AttributeStore
-) : AggregateRoot<BinaryId>(id, createdAt, updatedAt, deletedAt), Attributable<User> {
+) : AggregateRoot<BinaryId>(id, createdAt, updatedAt, deletedAt, version), Attributable<User> {
+    companion object {
+        /**
+         * 새로운 사용자 생성
+         *
+         * @param username 사용자 이름
+         * @param email 이메일
+         * @param roles 역할 집합
+         * @param metadata 메타데이터
+         * @param attributes 속성 저장소
+         * @return 생성된 User 객체
+         */
+        @JvmStatic
+        fun create(
+            username: String,
+            email: Email,
+            roles: Set<UserRole> = setOf(UserRole.USER),
+            metadata: UserMetadata = UserMetadata.default(),
+            attributes: AttributeStore = AttributeStore.empty()
+        ): User {
+            val now = Instant.now()
+            val id = BinaryId.new()
+
+            val user = User(
+                id = id,
+                createdAt = now,
+                updatedAt = now,
+                deletedAt = null,
+                version = 0L,
+                username = username,
+                email = email,
+                status = UserStatus.PENDING,
+                roles = roles,
+                metadata = metadata,
+                attributes = attributes
+            )
+
+            user.registerEvent(UserCreatedEvent(user.id.toString(), username, email.value))
+            return user
+        }
+
+        @JvmStatic
+        fun from(
+            id: BinaryId,
+            createdAt: Instant,
+            updatedAt: Instant,
+            deletedAt: Instant?,
+            version: Long,
+            username: String,
+            email: Email,
+            status: UserStatus,
+            roles: Set<UserRole>,
+            metadata: UserMetadata,
+            attributes: AttributeStore
+        ): User = User(
+            id = id,
+            createdAt = createdAt,
+            updatedAt = updatedAt,
+            deletedAt = deletedAt,
+            version = version,
+            username = username,
+            email = email,
+            status = status,
+            roles = roles,
+            metadata = metadata,
+            attributes = attributes
+        )
+    }
 
     /**
      * 사용자 속성 설정
@@ -37,16 +105,8 @@ class User private constructor(
      * @return 업데이트된 User 객체
      */
     override fun <V : Any> setAttribute(key: AttributeKey<V>, value: V): User {
-        return User(
-            id = id,
-            createdAt = createdAt,
+        return copy(
             updatedAt = Instant.now(),
-            deletedAt = deletedAt,
-            username = username,
-            email = email,
-            status = status,
-            roles = roles,
-            metadata = metadata,
             attributes = attributes.setAttribute(key, value)
         )
     }
@@ -63,16 +123,8 @@ class User private constructor(
      */
 
     override fun unsafeSetAttributes(attributes: AttributeStore): User {
-        return User(
-            id = id,
-            createdAt = createdAt,
+        return copy(
             updatedAt = Instant.now(),
-            deletedAt = deletedAt,
-            username = username,
-            email = email,
-            status = status,
-            roles = roles,
-            metadata = metadata,
             attributes = attributes,
         )
     }
@@ -86,17 +138,10 @@ class User private constructor(
     fun changeStatus(newStatus: UserStatus): User {
         if (status == newStatus) return this
 
-        val user = User(
-            id = id,
-            createdAt = createdAt,
+        val user = copy(
             updatedAt = Instant.now(),
             deletedAt = if (newStatus == UserStatus.DELETED) Instant.now() else deletedAt,
-            username = username,
-            email = email,
             status = newStatus,
-            roles = roles,
-            metadata = metadata,
-            attributes = attributes
         )
 
         user.registerEvent(UserStatusChangedEvent(user.id.toString(), status, newStatus))
@@ -110,17 +155,9 @@ class User private constructor(
      * @return 업데이트된 User 객체
      */
     fun updateMetadata(newMetadata: UserMetadata): User {
-        return User(
-            id = id,
-            createdAt = createdAt,
+        return copy(
             updatedAt = Instant.now(),
-            deletedAt = deletedAt,
-            username = username,
-            email = email,
-            status = status,
-            roles = roles,
             metadata = newMetadata,
-            attributes = attributes
         )
     }
 
@@ -133,17 +170,8 @@ class User private constructor(
     fun addRole(role: UserRole): User {
         if (roles.contains(role)) return this
 
-        val user = User(
-            id = id,
-            createdAt = createdAt,
-            updatedAt = Instant.now(),
-            deletedAt = deletedAt,
-            username = username,
-            email = email,
-            status = status,
+        val user = copy(
             roles = roles + role,
-            metadata = metadata,
-            attributes = attributes
         )
 
         user.registerEvent(UserRoleAddedEvent(user.id.toString(), role.name))
@@ -159,83 +187,36 @@ class User private constructor(
     fun removeRole(role: UserRole): User {
         if (!roles.contains(role)) return this
 
-        val user = User(
-            id = id,
-            createdAt = createdAt,
-            updatedAt = Instant.now(),
-            deletedAt = deletedAt,
-            username = username,
-            email = email,
-            status = status,
+        val user = copy(
             roles = roles - role,
-            metadata = metadata,
-            attributes = attributes
         )
 
         user.registerEvent(UserRoleRemovedEvent(user.id.toString(), role.name))
         return user
     }
 
-    companion object {
-        /**
-         * 새로운 사용자 생성
-         *
-         * @param username 사용자 이름
-         * @param email 이메일
-         * @param roles 역할 집합
-         * @param metadata 메타데이터
-         * @param attributes 속성 저장소
-         * @return 생성된 User 객체
-         */
-        fun create(
-            username: String,
-            email: Email,
-            roles: Set<UserRole> = setOf(UserRole.USER),
-            metadata: UserMetadata = UserMetadata.default(),
-            attributes: AttributeStore = AttributeStore.empty()
-        ): User {
-            val now = Instant.now()
-            val id = BinaryId.new()
-
-            val user = User(
-                id = id,
-                createdAt = now,
-                updatedAt = now,
-                deletedAt = null,
-                username = username,
-                email = email,
-                status = UserStatus.PENDING,
-                roles = roles,
-                metadata = metadata,
-                attributes = attributes
-            )
-
-            user.registerEvent(UserCreatedEvent(user.id.toString(), username, email.value))
-            return user
-        }
-
-        fun from(
-            id: BinaryId,
-            username: String,
-            email: Email,
-            status: UserStatus,
-            roles: Set<UserRole>,
-            createdAt: Instant,
-            updatedAt: Instant,
-            deletedAt: Instant?,
-            metadata: UserMetadata,
-            attributes: AttributeStore
-        ): User = User(
-            id = id,
-            createdAt = createdAt,
-            updatedAt = updatedAt,
-            deletedAt = deletedAt,
-            username = username,
-            email = email,
-            status = status,
-            roles = roles,
-            metadata = metadata,
-            attributes = attributes
-        )
-    }
+    private fun copy(
+        createdAt: Instant = this.createdAt,
+        updatedAt: Instant = this.updatedAt,
+        deletedAt: Instant? = this.deletedAt,
+        version: Long = this.version,
+        username: String = this.username,
+        email: Email = this.email,
+        status: UserStatus = this.status,
+        roles: Set<UserRole> = this.roles,
+        metadata: UserMetadata = this.metadata,
+        attributes: AttributeStore = this.attributes
+    ): User = User(
+        id = id,
+        createdAt = createdAt,
+        updatedAt = updatedAt,
+        deletedAt = deletedAt,
+        version = version,
+        username = username,
+        email = email,
+        status = status,
+        roles = roles,
+        metadata = metadata,
+        attributes = attributes
+    )
 }

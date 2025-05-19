@@ -23,7 +23,7 @@ import org.springframework.transaction.annotation.Transactional
 @Repository
 class JpaUserRepository(
     private val userJpaRepository: UserJpaRepository,
-    private val attributePersistenceProvider: AttributePersistenceProvider<User, UserDataModel>
+    private val attributePersistenceProvider: AttributePersistenceProvider<User, UserRecord>
 ) : UserRepository {
 
     /**
@@ -35,7 +35,7 @@ class JpaUserRepository(
     @Transactional
     override fun save(entity: User): Either<PersistenceError, User> {
         return try {
-            val dataModel = UserDataModel.fromDomain(entity)
+            val dataModel = UserRecord(entity)
             val savedModel = userJpaRepository.save(dataModel)
             attributePersistenceProvider.saveAttributes(entity, savedModel)
             toDomain(savedModel).right()
@@ -218,7 +218,7 @@ class JpaUserRepository(
      * @param dataModel 데이터 모델
      * @return 도메인 모델
      */
-    private fun toDomain(dataModel: UserDataModel): User {
+    private fun toDomain(dataModel: UserRecord): User {
         val user = dataModel.toDomain()
         return attributePersistenceProvider.loadAttributes(user, dataModel)
     }
@@ -229,9 +229,10 @@ class JpaUserRepository(
  *
  * Spring Data JPA를 사용하여 사용자 데이터 모델에 접근하는 인터페이스
  */
-interface UserJpaRepository : JpaRepository<UserDataModel, BinaryId> {
-    fun findByUsername(username: String): java.util.Optional<UserDataModel>
-    fun findByEmail(email: String): java.util.Optional<UserDataModel>
+@Repository
+interface UserJpaRepository : JpaRepository<UserRecord, BinaryId> {
+    fun findByUsername(username: String): java.util.Optional<UserRecord>
+    fun findByEmail(email: String): java.util.Optional<UserRecord>
     fun existsByUsername(username: String): Boolean
     fun existsByEmail(email: String): Boolean
 }

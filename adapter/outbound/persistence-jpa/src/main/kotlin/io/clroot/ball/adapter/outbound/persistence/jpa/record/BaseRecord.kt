@@ -3,6 +3,7 @@ package io.clroot.ball.adapter.outbound.persistence.jpa.record
 import io.clroot.ball.adapter.outbound.persistence.core.mapping.DataModel
 import io.clroot.ball.domain.model.core.EntityBase
 import io.clroot.ball.shared.core.model.Entity
+import jakarta.persistence.Id
 import jakarta.persistence.MappedSuperclass
 import java.time.Instant
 
@@ -13,7 +14,8 @@ abstract class BaseRecord<ID : Any, E : Entity<ID>>(
     updatedAt: Instant,
     deletedAt: Instant?,
 ) : DataModel<E> {
-    open var id: ID = id
+    @Id
+    var id: ID = id
         protected set
 
     var createdAt: Instant = createdAt

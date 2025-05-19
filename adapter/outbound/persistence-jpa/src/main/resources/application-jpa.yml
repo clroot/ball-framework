@@ -1,0 +1,19 @@
+spring:
+  datasource:
+    url: ${DATASOURCE_URL}
+    username: ${DATASOURCE_USERNAME}
+    password: ${DATASOURCE_PASSWORD}
+    driver-class-name: org.mariadb.jdbc.Driver
+    hikari:
+      jdbc-url: ${DATASOURCE_URL}
+      username: ${DATASOURCE_USERNAME}
+      password: ${DATASOURCE_PASSWORD}
+      driver-class-name: org.mariadb.jdbc.Driver
+  flyway:
+    enabled: true
+    baseline-on-migrate: true
+  jpa:
+    open-in-view: false
+    properties:
+      hibernate:
+        default_batch_fetch_size: 1000

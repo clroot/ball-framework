@@ -1,5 +1,13 @@
 plugins {
-    kotlin("plugin.spring")
+    id("org.jetbrains.kotlin.plugin.spring")
+    id("org.jetbrains.kotlin.plugin.jpa")
+    id("org.jetbrains.kotlin.plugin.allopen")
+}
+
+allOpen {
+    annotation("jakarta.persistence.Entity")
+    annotation("jakarta.persistence.MappedSuperclass")
+    annotation("jakarta.persistence.Embeddable")
 }
 
 dependencies {

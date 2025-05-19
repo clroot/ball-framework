@@ -23,6 +23,7 @@ class EmailTest : FunSpec({
             // Given
             val invalidEmails = listOf(
                 "",                  // Empty string
+                "@.",                // Only '@' and '.' symbol
                 "test",              // No @ symbol
                 "test@",             // No domain
                 "@example.com",      // No local part
@@ -30,7 +31,7 @@ class EmailTest : FunSpec({
                 "test@.com",         // No domain name
                 "test@example.",     // TLD is empty
                 "test@exam ple.com", // Space in domain
-                "te st@example.com"  // Space in local part
+                "te st@example.com",  // Space in local part
             )
 
             // When & Then

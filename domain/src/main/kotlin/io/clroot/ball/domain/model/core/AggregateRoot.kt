@@ -15,8 +15,9 @@ abstract class AggregateRoot<ID : Any>(
     id: ID,
     createdAt: Instant,
     updatedAt: Instant,
-    deletedAt: Instant?
-) : EntityBase<ID>(id, createdAt, updatedAt, deletedAt) {
+    deletedAt: Instant?,
+    version: Long = 0,
+) : EntityBase<ID>(id, createdAt, updatedAt, deletedAt, version) {
     private val _domainEvents = mutableListOf<DomainEvent>()
 
     /**

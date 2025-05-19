@@ -16,8 +16,10 @@ interface DataModel<E : Entity<*>> {
      *
      * @return The domain entity
      */
-    fun toEntity(): E
-    
+    fun toDomain(): E
+
+    fun update(entity: E)
+
     companion object {
         /**
          * Creates a data model from a domain entity
