@@ -1,4 +1,4 @@
-package io.clroot.ball.application.service
+package io.clroot.ball.application.port.outbound
 
 import arrow.core.Either
 import io.clroot.ball.shared.core.exception.ApplicationException

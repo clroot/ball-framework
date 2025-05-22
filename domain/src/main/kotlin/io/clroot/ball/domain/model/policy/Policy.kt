@@ -1,8 +1,9 @@
-package io.clroot.ball.domain.model.core
+package io.clroot.ball.domain.model.policy
 
 import arrow.core.Either
 import arrow.core.left
 import arrow.core.right
+import io.clroot.ball.domain.model.core.Specification
 
 /**
  * 정책 (Policy)
@@ -70,8 +71,7 @@ class AndPolicy<T, E>(
     private val right: Policy<T, E>
 ) : Policy<T, E> {
     override fun validate(target: T): Either<E, Unit> {
-        val leftResult = left.validate(target)
-        return when (leftResult) {
+        return when (val leftResult = left.validate(target)) {
             is Either.Right -> right.validate(target)
             is Either.Left -> leftResult
         }
@@ -87,8 +87,7 @@ class OrPolicy<T, E>(
     private val right: Policy<T, E>
 ) : Policy<T, E> {
     override fun validate(target: T): Either<E, Unit> {
-        val leftResult = left.validate(target)
-        return when (leftResult) {
+        return when (val leftResult = left.validate(target)) {
             is Either.Right -> leftResult
             is Either.Left -> right.validate(target)
         }

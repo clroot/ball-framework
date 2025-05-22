@@ -1,10 +1,12 @@
-package io.clroot.ball.domain.model.core
+package io.clroot.ball.application.orchestration
 
 import arrow.core.Either
 import arrow.core.left
 import arrow.core.right
+import io.clroot.ball.application.port.outbound.DomainEventPublisher
 import io.clroot.ball.domain.event.DomainEvent
-import io.clroot.ball.domain.event.DomainEventPublisher
+import io.clroot.ball.domain.model.core.StateMachine
+import io.clroot.ball.domain.model.core.StateTransitionError
 
 /**
  * 프로세스 매니저 (Process Manager)

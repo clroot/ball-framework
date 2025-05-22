@@ -1,7 +1,6 @@
 package io.clroot.ball.domain.port
 
 import arrow.core.Either
-import arrow.core.Option
 import arrow.core.Some
 import arrow.core.none
 import io.clroot.ball.domain.model.core.EntityBase
@@ -11,7 +10,6 @@ import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
 import io.mockk.every
 import io.mockk.mockk
-import java.time.Instant
 
 class RepositoryTest : FunSpec({
     // Create a concrete implementation of EntityBase for testing

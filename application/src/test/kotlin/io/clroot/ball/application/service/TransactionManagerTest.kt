@@ -1,6 +1,7 @@
 package io.clroot.ball.application.service
 
 import arrow.core.Either
+import io.clroot.ball.application.port.outbound.TransactionManager
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.shouldBe
 

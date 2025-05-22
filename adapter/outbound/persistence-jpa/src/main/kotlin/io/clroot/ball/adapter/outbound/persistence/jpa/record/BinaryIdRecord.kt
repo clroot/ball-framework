@@ -2,7 +2,7 @@ package io.clroot.ball.adapter.outbound.persistence.jpa.record
 
 import io.clroot.ball.adapter.outbound.persistence.core.mapping.DataModel
 import io.clroot.ball.adapter.outbound.persistence.jpa.converter.BinaryIdConverter
-import io.clroot.ball.domain.model.core.BinaryId
+import io.clroot.ball.domain.model.vo.BinaryId
 import io.clroot.ball.domain.model.core.EntityBase
 import io.clroot.ball.shared.core.model.Entity
 import jakarta.persistence.Column
@@ -19,7 +19,7 @@ abstract class BinaryIdRecord<E : Entity<BinaryId>>(
     createdAt: Instant,
     updatedAt: Instant,
     deletedAt: Instant?,
-): DataModel<E> {
+) : DataModel<E> {
     @Id
     @Convert(converter = BinaryIdConverter::class)
     @Column(columnDefinition = "BINARY(16)")

@@ -1,5 +1,7 @@
-package io.clroot.ball.domain.model.core
+package io.clroot.ball.domain.model
 
+import io.clroot.ball.domain.model.vo.BinaryId
+import io.clroot.ball.domain.model.vo.InvalidIdError
 import io.kotest.assertions.arrow.core.shouldBeLeft
 import io.kotest.assertions.arrow.core.shouldBeRight
 import io.kotest.core.spec.style.FunSpec

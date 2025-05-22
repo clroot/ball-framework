@@ -1,11 +1,12 @@
-package io.clroot.ball.domain.model.core
+package io.clroot.ball.domain.model.vo
 
 import arrow.core.Either
 import arrow.core.left
 import arrow.core.right
+import io.clroot.ball.domain.model.core.ValueObject
 import java.math.BigDecimal
 import java.math.RoundingMode
-import java.util.Currency
+import java.util.*
 
 /**
  * 금액 값 객체 (Money Value Object)

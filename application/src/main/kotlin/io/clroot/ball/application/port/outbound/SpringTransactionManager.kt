@@ -1,4 +1,4 @@
-package io.clroot.ball.application.service
+package io.clroot.ball.application.port.outbound
 
 import org.springframework.stereotype.Component
 import org.springframework.transaction.PlatformTransactionManager

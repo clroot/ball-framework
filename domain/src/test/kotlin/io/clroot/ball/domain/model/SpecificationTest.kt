@@ -1,9 +1,10 @@
-package io.clroot.ball.domain.model.core
+package io.clroot.ball.domain.model
 
+import io.clroot.ball.domain.model.core.EntityBase
+import io.clroot.ball.domain.model.core.Specification
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
-import java.time.Instant
 
 class SpecificationTest {
 

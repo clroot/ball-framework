@@ -1,6 +1,6 @@
 package io.clroot.ball.adapter.outbound.persistence.jpa.record
 
-import io.clroot.ball.domain.model.core.BinaryId
+import io.clroot.ball.domain.model.vo.BinaryId
 import io.clroot.ball.domain.model.core.EntityBase
 import io.clroot.ball.shared.core.model.Entity
 import jakarta.persistence.Column

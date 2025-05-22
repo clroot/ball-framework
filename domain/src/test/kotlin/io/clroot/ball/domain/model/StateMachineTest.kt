@@ -1,8 +1,10 @@
-package io.clroot.ball.domain.model.core
+package io.clroot.ball.domain.model
 
-import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertFalse
-import org.junit.jupiter.api.Assertions.assertTrue
+import io.clroot.ball.domain.model.core.DefaultStateMachine
+import io.clroot.ball.domain.model.core.StateMachine
+import io.clroot.ball.domain.model.core.StateTransition
+import io.clroot.ball.domain.model.core.StateTransitionError
+import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 
 class StateMachineTest {

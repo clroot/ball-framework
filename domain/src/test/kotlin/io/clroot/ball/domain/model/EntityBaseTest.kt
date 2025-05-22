@@ -1,9 +1,9 @@
-package io.clroot.ball.domain.model.core
+package io.clroot.ball.domain.model
 
+import io.clroot.ball.domain.model.core.EntityBase
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
-import java.time.Instant
 
 class EntityBaseTest : FunSpec({
     // Create a concrete implementation of EntityBase for testing

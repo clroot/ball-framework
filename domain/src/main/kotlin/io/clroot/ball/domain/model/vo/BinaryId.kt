@@ -1,6 +1,7 @@
-package io.clroot.ball.domain.model.core
+package io.clroot.ball.domain.model.vo
 
 import arrow.core.Either
+import io.clroot.ball.domain.model.core.ValueObject
 import ulid.ULID
 
 @JvmInline

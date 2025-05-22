@@ -1,8 +1,9 @@
-package io.clroot.ball.domain.model.core
+package io.clroot.ball.domain.model.vo
 
 import arrow.core.Either
 import arrow.core.left
 import arrow.core.right
+import io.clroot.ball.domain.model.core.ValueObject
 
 /**
  * 이메일 값 객체

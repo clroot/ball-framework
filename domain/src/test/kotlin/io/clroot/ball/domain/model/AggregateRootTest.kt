@@ -1,6 +1,7 @@
-package io.clroot.ball.domain.model.core
+package io.clroot.ball.domain.model
 
 import io.clroot.ball.domain.event.DomainEventBase
+import io.clroot.ball.domain.model.core.AggregateRoot
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test

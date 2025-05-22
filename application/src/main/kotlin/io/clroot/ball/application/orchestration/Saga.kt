@@ -1,4 +1,4 @@
-package io.clroot.ball.domain.model.core
+package io.clroot.ball.application.orchestration
 
 import arrow.core.Either
 import arrow.core.right

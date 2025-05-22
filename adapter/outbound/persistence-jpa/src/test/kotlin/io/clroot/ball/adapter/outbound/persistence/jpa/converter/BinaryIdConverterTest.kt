@@ -1,6 +1,6 @@
 package io.clroot.ball.adapter.outbound.persistence.jpa.converter
 
-import io.clroot.ball.domain.model.core.BinaryId
+import io.clroot.ball.domain.model.vo.BinaryId
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
