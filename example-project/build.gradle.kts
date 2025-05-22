@@ -10,5 +10,7 @@ plugins {
 
 dependencies {
     implementation(project(":ball-user"))
+    implementation(project(":adapter:inbound:messaging-consumer-inmemory"))
+    implementation(project(":adapter:outbound:messaging-producer-inmemory"))
     runtimeOnly("org.mariadb.jdbc:mariadb-java-client")
 }
