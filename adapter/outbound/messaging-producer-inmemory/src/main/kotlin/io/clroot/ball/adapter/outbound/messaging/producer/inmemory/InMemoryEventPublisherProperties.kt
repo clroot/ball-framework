@@ -3,40 +3,80 @@ package io.clroot.ball.adapter.outbound.messaging.producer.inmemory
 import org.springframework.boot.context.properties.ConfigurationProperties
 
 /**
- * 인메모리 이벤트 발행자 설정 프로퍼티
+ * InMemory Event Publisher configuration properties.
+ * 
+ * Configuration prefix: ball.event.publisher.inmemory
+ * 
+ * Example configuration:
+ * ```yaml
+ * ball:
+ *   event:
+ *     publisher:
+ *       inmemory:
+ *         async: true
+ *         enable-retry: false
+ *         max-retry-attempts: 3
+ *         retry-delay-ms: 1000
+ *         timeout-ms: 0
+ *         enable-debug-logging: false
+ * ```
  */
 @ConfigurationProperties(prefix = "ball.event.publisher.inmemory")
 data class InMemoryEventPublisherProperties(
     /**
-     * 비동기 처리 여부
-     * true: 이벤트를 비동기로 처리 (기본값)
-     * false: 이벤트를 동기로 처리
+     * Whether to publish events asynchronously.
+     * 
+     * When true, events are published asynchronously for better performance.
+     * When false, events are published synchronously for easier debugging.
+     * 
+     * Default: true
      */
     val async: Boolean = true,
 
     /**
-     * 재시도 기능 활성화 여부
+     * Whether to enable retry mechanism for failed event publishing.
+     * 
+     * When enabled, failed events will be retried according to the retry configuration.
+     * 
+     * Default: false
      */
     val enableRetry: Boolean = false,
 
     /**
-     * 최대 재시도 횟수
+     * Maximum number of retry attempts for failed events.
+     * 
+     * Only effective when enableRetry is true.
+     * 
+     * Default: 3
      */
     val maxRetryAttempts: Int = 3,
 
     /**
-     * 재시도 간격 (밀리초)
+     * Delay between retry attempts in milliseconds.
+     * 
+     * The time to wait before retrying a failed event publication.
+     * 
+     * Default: 1000 (1 second)
      */
     val retryDelayMs: Long = 1000,
 
     /**
-     * 이벤트 처리 타임아웃 (밀리초)
-     * 0이면 타임아웃 없음
+     * Event publishing timeout in milliseconds.
+     * 
+     * Maximum time to wait for event publishing to complete.
+     * Set to 0 for no timeout.
+     * 
+     * Default: 0 (no timeout)
      */
     val timeoutMs: Long = 0,
 
     /**
-     * 디버그 로깅 활성화 여부
+     * Whether to enable debug logging for event publishing.
+     * 
+     * When enabled, detailed logs will be produced for event publishing operations.
+     * Useful for debugging but may impact performance in production.
+     * 
+     * Default: false
      */
     val enableDebugLogging: Boolean = false
 )

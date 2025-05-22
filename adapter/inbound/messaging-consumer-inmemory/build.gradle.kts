@@ -53,3 +53,13 @@ tasks.test {
 kotlin {
     jvmToolchain(21)
 }
+
+// 중복 파일 처리 전략 설정
+tasks.withType<Jar> {
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+}
+
+// Configuration processor가 생성하는 메타데이터만 사용
+tasks.named("processResources") {
+    dependsOn("kaptKotlin")
+}

@@ -9,18 +9,20 @@ import kotlinx.coroutines.sync.withPermit
 import org.slf4j.LoggerFactory
 import org.springframework.context.event.EventListener
 import org.springframework.scheduling.annotation.Async
-import org.springframework.stereotype.Component
 
 /**
  * 인메모리 도메인 이벤트 리스너
- * 
+ *
  * Spring ApplicationEvent로 발행된 도메인 이벤트를 수신하고,
- * 등록된 DomainEventHandler들에게 전달합니다.
- * 
+ * 등록된 DomainEventHandler 들에게 직접 전달합니다.
+ *
+ * 순환 호출 방지:
+ * - DomainEventDispatcher를 사용하지 않고 핸들러에 직접 전달
+ * - Publisher와 완전히 분리된 책임
+ *
  * 이 클래스는 Auto Configuration에 의해 자동으로 등록됩니다.
  */
-@Component
-class InMemoryEventListener(
+open class InMemoryEventListener(
     private val handlerRegistry: DomainEventHandlerRegistry,
     private val properties: InMemoryEventConsumerProperties
 ) {
@@ -32,7 +34,7 @@ class InMemoryEventListener(
      */
     @EventListener
     @Async("eventTaskExecutor")
-    fun handleDomainEvent(wrapper: DomainEventWrapper) {
+    open fun handleDomainEvent(wrapper: DomainEventWrapper) {
         val event = wrapper.domainEvent
         log.debug("Received domain event: {} (ID: {})", event.type, event.id)
 
@@ -53,7 +55,7 @@ class InMemoryEventListener(
      */
     private fun handleEventSync(event: DomainEvent) {
         runBlocking {
-            processEvent(event)
+            processEventDirectly(event)
         }
     }
 
@@ -61,23 +63,15 @@ class InMemoryEventListener(
      * 비동기적 이벤트 처리
      */
     private fun handleEventAsync(event: DomainEvent) {
-        if (properties.parallel) {
-            // 병렬 처리
-            eventScope.launch {
-                processEvent(event)
-            }
-        } else {
-            // 순차 처리
-            eventScope.launch {
-                processEvent(event)
-            }
+        eventScope.launch {
+            processEventDirectly(event)
         }
     }
 
     /**
-     * 실제 이벤트 처리 로직
+     * 이벤트를 핸들러에 직접 전달 (Dispatcher 거치지 않음)
      */
-    private suspend fun processEvent(event: DomainEvent) {
+    private suspend fun processEventDirectly(event: DomainEvent) {
         val handlers = handlerRegistry.getHandlers(event.javaClass)
 
         if (handlers.isEmpty()) {
@@ -104,11 +98,12 @@ class InMemoryEventListener(
         handlers: List<DomainEventHandler<*>>
     ) {
         val semaphore = Semaphore(properties.maxConcurrency)
+
         coroutineScope {
             handlers.map { handler ->
                 async {
                     semaphore.withPermit {
-                        executeHandler(handler, event)
+                        executeHandlerDirectly(handler, event)
                     }
                 }
             }.awaitAll()
@@ -123,15 +118,15 @@ class InMemoryEventListener(
         handlers: List<DomainEventHandler<*>>
     ) {
         handlers.forEach { handler ->
-            executeHandler(handler, event)
+            executeHandlerDirectly(handler, event)
         }
     }
 
     /**
-     * 개별 핸들러 실행
+     * 개별 핸들러를 직접 실행 (Dispatcher 거치지 않음)
      */
     @Suppress("UNCHECKED_CAST")
-    private suspend fun executeHandler(
+    private suspend fun executeHandlerDirectly(
         handler: DomainEventHandler<*>,
         event: DomainEvent
     ) {
