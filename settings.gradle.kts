@@ -18,17 +18,24 @@ include("application")
 
 // Adapter modules
 include("adapter")
+// Adapter Shared modules
+include("adapter:shared")
+include("adapter:shared:messaging-common")
 // Adapter Outbound modules
 include("adapter:outbound")
 include("adapter:outbound:persistence-core")
 include("adapter:outbound:persistence-jpa")
 include("adapter:outbound:persistence-redis")
 include("adapter:outbound:messaging-producer-core")
+include("adapter:outbound:messaging-producer-inmemory")
 include("adapter:outbound:messaging-producer-kafka")
 // Adapter Inbound modules
 include("adapter:inbound")
 include("adapter:inbound:rest")
 include("adapter:inbound:messaging-consumer-core")
+include("adapter:inbound:messaging-consumer-inmemory")
 include("adapter:inbound:messaging-consumer-kafka")
+
+// Starter
 include("ball-user")
 include("example-project")
