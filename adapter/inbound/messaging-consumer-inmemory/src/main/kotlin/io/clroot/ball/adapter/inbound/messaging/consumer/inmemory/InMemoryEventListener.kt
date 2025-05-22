@@ -7,23 +7,19 @@ import kotlinx.coroutines.*
 import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.sync.withPermit
 import org.slf4j.LoggerFactory
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.context.event.EventListener
 import org.springframework.scheduling.annotation.Async
 import org.springframework.stereotype.Component
 
 /**
  * 인메모리 도메인 이벤트 리스너
- *
- * Spring ApplicationEvent 로 발행된 도메인 이벤트를 수신하고,
- * 등록된 DomainEventHandler 들에게 전달합니다.
+ * 
+ * Spring ApplicationEvent로 발행된 도메인 이벤트를 수신하고,
+ * 등록된 DomainEventHandler들에게 전달합니다.
+ * 
+ * 이 클래스는 Auto Configuration에 의해 자동으로 등록됩니다.
  */
 @Component
-@ConditionalOnProperty(
-    name = ["ball.event.consumer.inmemory.enabled"],
-    havingValue = "true",
-    matchIfMissing = true  // 기본값으로 활성화
-)
 class InMemoryEventListener(
     private val handlerRegistry: DomainEventHandlerRegistry,
     private val properties: InMemoryEventConsumerProperties

@@ -1,17 +1,51 @@
-# InMemory MessageConsumer
+# InMemory MessageConsumer (Auto Configuration)
 
 단일 프로세스 내에서 도메인 이벤트를 수신하고 처리하는 Consumer 구현체입니다.
+**Auto Configuration**이 적용되어 의존성만 추가하면 자동으로 활성화됩니다.
 
-## 🎯 특징
+## 🚀 **빠른 시작**
 
-- **자동 Handler 발견**: `DomainEventHandler` 구현체들을 자동으로 스캔하고 등록
-- **타입 안전한 라우팅**: 이벤트 타입에 따라 적절한 핸들러로 자동 라우팅
-- **동기/비동기 처리**: 설정으로 처리 방식 선택 가능
-- **병렬 처리**: 여러 핸들러를 병렬로 실행 가능
-- **재시도 메커니즘**: 실패한 이벤트 자동 재시도
-- **Spring 통합**: ApplicationEvent와 완벽 통합
+### 1. 의존성 추가
 
-## 🔧 설정
+```kotlin
+// build.gradle.kts
+dependencies {
+    implementation("io.clroot.ball:messaging-consumer-inmemory:2.0.0")
+}
+```
+
+### 2. 이벤트 핸들러 구현
+
+```kotlin
+@Component
+class UserEventHandler : DomainEventHandler<UserCreatedEvent> {
+    override suspend fun handle(event: UserCreatedEvent) {
+        // 이벤트 처리 로직
+        println("User created: ${event.userId}")
+    }
+}
+```
+
+### 3. 완료! 🎉
+
+더 이상 설정할 것이 없습니다. Auto Configuration이 모든 것을 자동으로 처리합니다.
+
+## ⚙️ **Auto Configuration 특징**
+
+### **자동 활성화 조건**
+✅ `DomainEventHandler` 클래스가 클래스패스에 존재  
+✅ `ball.event.consumer.inmemory.enabled=true` (기본값)  
+✅ 필요한 Bean들이 없을 때 자동 생성
+
+### **자동 생성되는 Bean들**
+- `DomainEventHandlerRegistry`: Spring context의 모든 DomainEventHandler 자동 등록
+- `InMemoryEventListener`: ApplicationEvent 수신 및 처리
+- `eventTaskExecutor`: 비동기 이벤트 처리용 스레드 풀
+
+### **자동 스캔**
+모든 `@Component` DomainEventHandler들이 자동으로 발견되고 등록됩니다.
+
+## 🔧 **설정 옵션**
 
 ### application.yml
 ```yaml
@@ -19,7 +53,7 @@ ball:
   event:
     consumer:
       inmemory:
-        enabled: true           # Consumer 활성화 (기본값: true)
+        enabled: true           # Auto Configuration 활성화 (기본값: true)
         async: true            # 비동기 처리 (기본값: true)
         parallel: true         # 병렬 처리 (기본값: true)
         max-concurrency: 10    # 최대 동시 실행 수
@@ -27,201 +61,202 @@ ball:
         enable-retry: false    # 재시도 활성화
         max-retry-attempts: 3  # 최대 재시도 횟수
         retry-delay-ms: 1000   # 재시도 간격
+        enable-debug-logging: false  # 디버그 로깅
 ```
 
-## 📋 사용 예시
+### **IDE 자동완성 지원**
+Configuration properties metadata가 포함되어 있어 IDE에서 자동완성과 문서를 제공합니다.
 
-### 1. Event Handler 구현
+## 📋 **사용 예시**
+
+### **기본 사용법**
 ```kotlin
+// 1. Handler 구현 (자동 등록됨)
 @Component
-class UserEventHandler : DomainEventHandler<UserCreatedEvent> {
-    
-    private val log = LoggerFactory.getLogger(javaClass)
-    
-    override suspend fun handle(event: UserCreatedEvent) {
-        log.info("Processing user created: ${event.userId}")
+class OrderEventHandler : DomainEventHandler<OrderCompletedEvent> {
+    override suspend fun handle(event: OrderCompletedEvent) {
+        // 주문 완료 처리
+        emailService.sendConfirmation(event.customerId)
+        inventoryService.updateStock(event.items)
+    }
+}
+
+// 2. Application Service에서 이벤트 발행
+@Service
+class OrderService {
+    fun completeOrder(orderId: String) {
+        // 비즈니스 로직...
         
-        // 비즈니스 로직 처리
-        sendWelcomeEmail(event.email)
-        updateUserStatistics()
-        createUserProfile(event.userId)
+        // DomainEventWrapper를 통해 이벤트 발행
+        applicationEventPublisher.publishEvent(
+            DomainEventWrapper(OrderCompletedEvent(orderId))
+        )
+        // → OrderEventHandler.handle() 자동 호출됨!
     }
 }
 ```
 
-### 2. 다중 이벤트 타입 처리
+### **다중 Handler 지원**
 ```kotlin
 @Component
-class AuditEventHandler : 
+class UserEventHandler : 
     DomainEventHandler<UserCreatedEvent>,
-    DomainEventHandler<UserUpdatedEvent>,
-    DomainEventHandler<UserDeletedEvent> {
+    DomainEventHandler<UserUpdatedEvent> {
     
     override suspend fun handle(event: UserCreatedEvent) {
-        auditService.logUserCreation(event)
+        // 사용자 생성 처리
     }
     
     override suspend fun handle(event: UserUpdatedEvent) {
-        auditService.logUserUpdate(event)
-    }
-    
-    override suspend fun handle(event: UserDeletedEvent) {
-        auditService.logUserDeletion(event)
+        // 사용자 수정 처리  
     }
 }
-```
 
-### 3. 에러 처리가 있는 Handler
-```kotlin
 @Component
-class EmailEventHandler : DomainEventHandler<UserCreatedEvent> {
-    
-    @Retryable(maxAttempts = 3, backoff = Backoff(delay = 1000))
+class AuditEventHandler : DomainEventHandler<UserCreatedEvent> {
     override suspend fun handle(event: UserCreatedEvent) {
-        try {
-            emailService.sendWelcomeEmail(event.email)
-        } catch (e: EmailServiceException) {
-            log.error("Failed to send welcome email to ${event.email}", e)
-            throw e  // 재시도를 위해 예외 재발생
-        }
+        // 감사 로그 기록 (같은 이벤트를 여러 핸들러가 처리 가능)
     }
 }
 ```
 
-## 🔄 완전한 Event Bus 사용
+## 🎛️ **고급 설정**
 
-### Publisher + Consumer 조합
+### **조건부 Handler 활성화**
 ```kotlin
-// 1. 이벤트 발행 (Application Service)
-@Service
-class UserService(
-    private val userRepository: UserRepository,
-    private val eventPublisher: DomainEventPublisher
-) {
-    fun createUser(command: CreateUserCommand): User {
-        val user = User.create(command.email, command.name)
-        userRepository.save(user)
-        
-        // InMemory로 이벤트 발행
-        eventPublisher.publish(user.domainEvents)
-        user.clearEvents()
-        
-        return user
-    }
-}
-
-// 2. 이벤트 소비 (자동 호출됨)
 @Component
+@ConditionalOnProperty("feature.welcome-email.enabled", havingValue = "true")
 class WelcomeEmailHandler : DomainEventHandler<UserCreatedEvent> {
     override suspend fun handle(event: UserCreatedEvent) {
-        emailService.sendWelcomeEmail(event.email)
-    }
-}
-
-@Component  
-class UserStatisticsHandler : DomainEventHandler<UserCreatedEvent> {
-    override suspend fun handle(event: UserCreatedEvent) {
-        statisticsService.incrementUserCount()
+        // 조건부로만 활성화되는 핸들러
     }
 }
 ```
 
-## 🎛️ 환경별 설정
-
-### 개발 환경
-```yaml
-ball:
-  event:
-    publisher:
-      type: inmemory
-    consumer:
-      inmemory:
-        enabled: true
-        async: false  # 개발 시 동기 처리로 디버깅 용이
-        parallel: false
-```
-
-### 테스트 환경
-```yaml
-ball:
-  event:
-    publisher:
-      type: inmemory
-    consumer:
-      inmemory:
-        enabled: true
-        async: false  # 테스트에서는 동기 처리
-        timeout-ms: 1000
-```
-
-### 운영 환경
-```yaml
-ball:
-  event:
-    publisher:
-      type: kafka
-    consumer:
-      kafka:
-        enabled: true
-      inmemory:
-        enabled: false  # Kafka 사용 시 InMemory 비활성화
-```
-
-## 🔧 고급 기능
-
-### 1. 커스텀 ExecutorService
+### **Custom ExecutorService**
 ```kotlin
 @Configuration
 class CustomEventConfiguration {
     
     @Bean("eventTaskExecutor")
+    @Primary
     fun customEventTaskExecutor(): Executor {
-        val executor = ThreadPoolTaskExecutor()
-        executor.corePoolSize = 2
-        executor.maxPoolSize = 20
-        executor.queueCapacity = 200
-        executor.setThreadNamePrefix("custom-event-")
-        executor.initialize()
-        return executor
+        // Auto Configuration의 기본 ExecutorService 대체
+        return createCustomExecutor()
     }
 }
 ```
 
-### 2. 조건부 Handler 활성화
+### **Auto Configuration 비활성화**
+```yaml
+ball:
+  event:
+    consumer:
+      inmemory:
+        enabled: false  # 전체 비활성화
+```
+
+또는 특정 Bean만 교체:
 ```kotlin
 @Component
-@ConditionalOnProperty("feature.user-welcome-email.enabled", havingValue = "true")
-class ConditionalWelcomeEmailHandler : DomainEventHandler<UserCreatedEvent> {
-    override suspend fun handle(event: UserCreatedEvent) {
-        // 조건부로만 실행되는 핸들러
+@Primary
+class CustomInMemoryEventListener : InMemoryEventListener {
+    // Auto Configuration Bean 대체
+}
+```
+
+## 🧪 **테스트**
+
+### **통합 테스트**
+```kotlin
+@SpringBootTest
+class EventProcessingTest {
+    
+    @Autowired
+    private lateinit var applicationEventPublisher: ApplicationEventPublisher
+    
+    @Autowired
+    private lateinit var myEventHandler: MyEventHandler
+    
+    @Test
+    fun `should process events automatically`() {
+        // Given
+        val event = MyDomainEvent("test-data")
+        
+        // When
+        applicationEventPublisher.publishEvent(DomainEventWrapper(event))
+        
+        // Then
+        await().until { myEventHandler.processedEvents.size == 1 }
     }
 }
 ```
 
-## 🚀 장점
+### **테스트 전용 설정**
+```yaml
+# application-test.yml
+ball:
+  event:
+    consumer:
+      inmemory:
+        async: false  # 테스트에서는 동기 처리
+        enable-debug-logging: true
+```
 
-1. **제로 설정**: Handler만 구현하면 자동으로 동작
-2. **타입 안전성**: 컴파일 타임에 타입 체크
-3. **유연한 설정**: 동기/비동기, 순차/병렬 선택 가능
-4. **Spring 친화적**: Spring 생태계와 완벽 통합
-5. **점진적 확장**: 외부 메시징 시스템으로 쉽게 전환
+## 🚀 **장점**
 
-## ⚠️ 제한사항
+### **Zero Configuration**
+- ✅ 의존성 추가만으로 즉시 동작
+- ✅ Handler 구현만 하면 자동 등록
+- ✅ 복잡한 설정 불필요
 
-1. **단일 프로세스**: 여러 인스턴스 간 이벤트 공유 불가
-2. **메모리 기반**: 프로세스 재시작 시 이벤트 손실
-3. **백프레셔 없음**: 대용량 이벤트 처리 시 메모리 부족 가능
+### **Spring Boot Native**
+- ✅ Spring Boot Auto Configuration 표준 준수
+- ✅ IDE 자동완성 지원
+- ✅ Configuration Properties 메타데이터 제공
 
-## 🔧 트러블슈팅
+### **유연한 설정**
+- ✅ 필요한 Bean만 선택적 대체 가능
+- ✅ 조건부 활성화 지원
+- ✅ 환경별 설정 가능
 
-### Handler가 호출되지 않는 경우
+## 🔧 **트러블슈팅**
+
+### **Handler가 자동 등록되지 않는 경우**
 1. `@Component` 어노테이션 확인
-2. 패키지 스캔 범위 확인
-3. 이벤트 타입 매칭 확인
-4. Consumer 활성화 여부 확인
+2. Component Scan 범위 확인
+3. Auto Configuration 활성화 여부 확인:
+   ```bash
+   # 활성화된 Auto Configuration 확인
+   --debug 옵션으로 애플리케이션 실행
+   ```
 
-### 성능 이슈
-1. `parallel: true` 설정
-2. `max-concurrency` 증가
-3. `async: true` 설정
-4. Handler 내부 로직 최적화
+### **이벤트가 처리되지 않는 경우**
+1. `DomainEventWrapper`로 이벤트 발행했는지 확인
+2. Handler의 제네릭 타입과 이벤트 타입 일치 확인
+3. 로그 레벨을 DEBUG로 설정하여 처리 과정 확인
+
+### **성능 최적화**
+```yaml
+ball:
+  event:
+    consumer:
+      inmemory:
+        parallel: true          # 병렬 처리 활성화
+        max-concurrency: 20     # 동시 실행 수 증가
+        async: true             # 비동기 처리 활성화
+```
+
+## 📊 **모니터링**
+
+Auto Configuration은 다음 정보를 로그로 제공합니다:
+- 등록된 Handler 목록
+- 이벤트 처리 시간
+- 실패한 이벤트 정보
+- 재시도 현황
+
+```yaml
+logging:
+  level:
+    io.clroot.ball.adapter.inbound.messaging.consumer.inmemory: DEBUG
+```

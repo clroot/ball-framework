@@ -9,22 +9,16 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import org.slf4j.LoggerFactory
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.context.ApplicationEventPublisher
-import org.springframework.stereotype.Component
 
 /**
  * 인메모리 도메인 이벤트 발행자
  * 
  * 단일 프로세스 내에서 도메인 이벤트를 발행하고 처리하는 기본 구현체입니다.
  * 외부 메시징 시스템 없이도 이벤트 기반 아키텍처를 구현할 수 있습니다.
+ * 
+ * 이 클래스는 Auto Configuration에 의해 자동으로 등록됩니다.
  */
-@Component
-@ConditionalOnProperty(
-    name = ["ball.event.publisher.type"],
-    havingValue = "inmemory",
-    matchIfMissing = true  // 기본값으로 사용
-)
 class InMemoryEventPublisher(
     private val applicationEventPublisher: ApplicationEventPublisher,
     private val domainEventDispatcher: DomainEventDispatcher,
@@ -55,11 +49,12 @@ class InMemoryEventPublisher(
      * 동기적으로 이벤트 처리
      */
     private fun publishSync(event: DomainEvent) {
+        // DomainEventDispatcher로 처리 (Consumer가 있는 경우)
         runBlocking {
             domainEventDispatcher.dispatch(event)
         }
         
-        // Spring ApplicationEvent로도 발행 (다른 리스너들을 위해)
+        // Spring ApplicationEvent로도 발행 (항상 발행)
         applicationEventPublisher.publishEvent(DomainEventWrapper(event))
     }
 
@@ -67,6 +62,7 @@ class InMemoryEventPublisher(
      * 비동기적으로 이벤트 처리
      */
     private fun publishAsync(event: DomainEvent) {
+        // DomainEventDispatcher로 비동기 처리 (Consumer가 있는 경우)
         eventScope.launch {
             try {
                 domainEventDispatcher.dispatch(event)
@@ -76,7 +72,7 @@ class InMemoryEventPublisher(
             }
         }
         
-        // Spring ApplicationEvent로도 발행
+        // Spring ApplicationEvent로 즉시 발행 (항상 발행)
         applicationEventPublisher.publishEvent(DomainEventWrapper(event))
     }
 
