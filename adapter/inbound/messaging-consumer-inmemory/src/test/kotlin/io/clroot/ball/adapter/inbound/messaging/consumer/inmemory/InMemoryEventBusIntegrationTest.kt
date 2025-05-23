@@ -124,9 +124,7 @@ class TestDomainEventPublisher(
  */
 @Configuration
 @Import(
-    DomainEventHandlerRegistry::class,
-    InMemoryEventConsumerProperties::class,
-    InMemoryEventListener::class,
+    InMemoryEventConsumerAutoConfiguration::class,
 )
 class IntegrationTestConfiguration {
 

@@ -1,8 +1,10 @@
 package io.clroot.ball.adapter.inbound.messaging.consumer.inmemory
 
+import io.clroot.ball.adapter.inbound.messaging.consumer.inmemory.registry.BlockingDomainEventHandlerRegistry
+import io.clroot.ball.adapter.inbound.messaging.consumer.inmemory.registry.DomainEventHandlerRegistry
 import io.clroot.ball.adapter.shared.messaging.DomainEventWrapper
-import io.clroot.ball.application.event.DomainEventHandler
 import io.clroot.ball.application.event.BlockingDomainEventHandler
+import io.clroot.ball.application.event.DomainEventHandler
 import io.clroot.ball.domain.event.DomainEvent
 import kotlinx.coroutines.*
 import kotlinx.coroutines.sync.Semaphore
@@ -10,7 +12,6 @@ import kotlinx.coroutines.sync.withPermit
 import org.slf4j.LoggerFactory
 import org.springframework.context.event.EventListener
 import org.springframework.scheduling.annotation.Async
-import java.util.concurrent.CompletableFuture
 import java.util.concurrent.Executor
 
 /**

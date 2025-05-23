@@ -1,4 +1,4 @@
-package io.clroot.ball.adapter.inbound.messaging.consumer.inmemory
+package io.clroot.ball.adapter.inbound.messaging.consumer.inmemory.registry
 
 import io.clroot.ball.application.event.DomainEventHandler
 import io.clroot.ball.domain.event.DomainEvent

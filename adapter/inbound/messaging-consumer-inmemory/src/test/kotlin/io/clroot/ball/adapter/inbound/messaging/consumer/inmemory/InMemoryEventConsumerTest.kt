@@ -1,5 +1,6 @@
 package io.clroot.ball.adapter.inbound.messaging.consumer.inmemory
 
+import io.clroot.ball.adapter.inbound.messaging.consumer.inmemory.registry.DomainEventHandlerRegistry
 import io.clroot.ball.application.event.DomainEventHandler
 import io.clroot.ball.domain.event.DomainEvent
 import io.kotest.core.spec.style.BehaviorSpec
