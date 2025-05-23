@@ -6,10 +6,8 @@ import io.clroot.ball.adapter.inbound.messaging.consumer.kafka.KafkaEventConsume
 import io.clroot.ball.adapter.inbound.messaging.consumer.kafka.converter.DomainEventKafkaMessageConverter
 import io.clroot.ball.domain.event.DomainEvent
 import kotlinx.coroutines.runBlocking
-import org.apache.kafka.clients.consumer.ConsumerRecord
 import org.slf4j.LoggerFactory
 import org.springframework.kafka.annotation.KafkaListener
-import org.springframework.kafka.listener.AcknowledgingMessageListener
 import org.springframework.kafka.support.Acknowledgment
 import org.springframework.kafka.support.KafkaHeaders
 import org.springframework.messaging.handler.annotation.Header
@@ -54,7 +52,7 @@ class KafkaEventListener(
     fun handleKafkaMessage(
         @Payload message: String,
         @Header(KafkaHeaders.RECEIVED_TOPIC) topic: String,
-        @Header(KafkaHeaders.RECEIVED_PARTITION_ID) partition: Int,
+        @Header(KafkaHeaders.PARTITION) partition: Int,
         @Header(KafkaHeaders.OFFSET) offset: Long,
         acknowledgment: Acknowledgment?
     ) {

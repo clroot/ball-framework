@@ -130,14 +130,16 @@ class KafkaConsumerConfiguration(
         // 에러 핸들링 설정
         containerProperties.isLogContainerConfig = true
         
-        // 리밸런싱 설정
-        containerProperties.consumerRebalanceListener = createRebalanceListener()
-        
-        // 종료 시 처리 중인 메시지 완료 대기 시간
-        containerProperties.shutdownTimeout = kafkaProperties.kafkaErrorHandling.rebalanceTimeoutMs
+        // 리밸런싱 설정 (setter 메서드 사용)
+        @Suppress("UsePropertyAccessSyntax")
+        containerProperties.setConsumerRebalanceListener(createRebalanceListener())
+
+        // 종료 시 처리 중인 메시지 완료 대기 시간 (Duration 사용)
+        @Suppress("UsePropertyAccessSyntax")
+        containerProperties.setShutdownTimeout(kafkaProperties.kafkaErrorHandling.rebalanceTimeoutMs)
         
         log.debug("Configured container properties - AckMode: {}, ShutdownTimeout: {}ms", 
-            containerProperties.ackMode, containerProperties.shutdownTimeout)
+            containerProperties.ackMode, kafkaProperties.kafkaErrorHandling.rebalanceTimeoutMs)
     }
 
     /**

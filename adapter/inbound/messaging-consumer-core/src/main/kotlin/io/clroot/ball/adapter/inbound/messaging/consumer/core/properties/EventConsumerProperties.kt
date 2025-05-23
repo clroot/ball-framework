@@ -23,12 +23,12 @@ import org.springframework.boot.context.properties.ConfigurationProperties
  * ```
  */
 @ConfigurationProperties(prefix = "ball.event.consumer")
-data class EventConsumerProperties(
+open class EventConsumerProperties(
     /**
      * 이벤트 컨슈머 활성화 여부
      * 기본값: true
      */
-    val enabled: Boolean = true,
+    open val enabled: Boolean = true,
 
     /**
      * 비동기 이벤트 처리 여부
@@ -36,7 +36,7 @@ data class EventConsumerProperties(
      * - false: 동기 처리 (runBlocking 사용)
      * 기본값: true
      */
-    val async: Boolean = true,
+    open val async: Boolean = true,
 
     /**
      * 핸들러 병렬 실행 여부
@@ -44,52 +44,52 @@ data class EventConsumerProperties(
      * - false: 핸들러들을 순차적으로 실행
      * 기본값: true
      */
-    val parallel: Boolean = true,
+    open val parallel: Boolean = true,
 
     /**
      * 최대 동시 실행 수
      * 병렬 처리 시 동시에 실행할 수 있는 최대 핸들러 수를 제한합니다.
      * 기본값: 10
      */
-    val maxConcurrency: Int = 10,
+    open val maxConcurrency: Int = 10,
 
     /**
      * 핸들러 실행 타임아웃 (밀리초)
      * 0이면 타임아웃 없음
      * 기본값: 30000 (30초)
      */
-    val timeoutMs: Long = 30000,
+    open val timeoutMs: Long = 30000,
 
     /**
      * 재시도 활성화 여부
      * 핸들러 실행 실패 시 재시도를 수행할지 여부
      * 기본값: true
      */
-    val enableRetry: Boolean = true,
+    open val enableRetry: Boolean = true,
 
     /**
      * 최대 재시도 횟수
      * 기본값: 3
      */
-    val maxRetryAttempts: Int = 3,
+    open val maxRetryAttempts: Int = 3,
 
     /**
      * 재시도 지연 시간 (밀리초)
      * 재시도 시 대기할 시간
      * 기본값: 1000 (1초)
      */
-    val retryDelayMs: Long = 1000,
+    open val retryDelayMs: Long = 1000,
 
     /**
      * 에러 핸들링 설정
      */
-    val errorHandling: ErrorHandlingProperties = ErrorHandlingProperties()
+    open val errorHandling: ErrorHandlingProperties = ErrorHandlingProperties()
 )
 
 /**
  * 에러 핸들링 관련 설정
  */
-data class ErrorHandlingProperties(
+class ErrorHandlingProperties(
     /**
      * Dead Letter Queue 활성화 여부
      * 재시도가 모두 실패한 이벤트를 별도로 저장할지 여부
