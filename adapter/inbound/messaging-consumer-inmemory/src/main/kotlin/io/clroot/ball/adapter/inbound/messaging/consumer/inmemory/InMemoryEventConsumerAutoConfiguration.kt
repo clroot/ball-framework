@@ -1,6 +1,7 @@
 package io.clroot.ball.adapter.inbound.messaging.consumer.inmemory
 
 import io.clroot.ball.application.event.DomainEventHandler
+import io.clroot.ball.application.event.BlockingDomainEventHandler
 import org.springframework.boot.autoconfigure.AutoConfiguration
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
@@ -48,6 +49,19 @@ class InMemoryEventConsumerAutoConfiguration {
     }
 
     /**
+     * Blocking 도메인 이벤트 핸들러 레지스트리 자동 설정
+     *
+     * Spring context에서 모든 BlockingDomainEventHandler 구현체를 찾아서 자동으로 등록합니다.
+     */
+    @Bean
+    @ConditionalOnMissingBean
+    fun blockingDomainEventHandlerRegistry(
+        handlers: List<BlockingDomainEventHandler<*>>
+    ): BlockingDomainEventHandlerRegistry {
+        return BlockingDomainEventHandlerRegistry(handlers)
+    }
+
+    /**
      * InMemory Event Listener 자동 설정
      *
      * ApplicationEventPublisher로 발행된 DomainEventWrapper를 수신하여 처리합니다.
@@ -56,9 +70,11 @@ class InMemoryEventConsumerAutoConfiguration {
     @ConditionalOnMissingBean
     fun inMemoryEventListener(
         handlerRegistry: DomainEventHandlerRegistry,
-        properties: InMemoryEventConsumerProperties
+        blockingHandlerRegistry: BlockingDomainEventHandlerRegistry,
+        properties: InMemoryEventConsumerProperties,
+        blockingTaskExecutor: Executor
     ): InMemoryEventListener {
-        return InMemoryEventListener(handlerRegistry, properties)
+        return InMemoryEventListener(handlerRegistry, blockingHandlerRegistry, properties, blockingTaskExecutor)
     }
 
     /**
@@ -87,6 +103,31 @@ class InMemoryEventConsumerAutoConfiguration {
         executor.setThreadNamePrefix("inmemory-event-")
         executor.setWaitForTasksToCompleteOnShutdown(true)
         executor.setAwaitTerminationSeconds(30)
+
+        executor.initialize()
+        return executor
+    }
+
+    /**
+     * Blocking 작업용 스레드 풀 자동 설정
+     *
+     * JPA, JDBC 등 blocking I/O 작업을 위한 전용 스레드 풀을 생성합니다.
+     */
+    @Bean("blockingTaskExecutor")
+    @ConditionalOnMissingBean(name = ["blockingTaskExecutor"])
+    fun blockingTaskExecutor(properties: InMemoryEventConsumerProperties): Executor {
+        val executor = ThreadPoolTaskExecutor()
+
+        // blocking 작업을 위한 더 많은 스레드 할당
+        executor.corePoolSize = minOf(properties.maxConcurrency * 2, 20)
+        executor.maxPoolSize = properties.maxConcurrency * 3
+        executor.queueCapacity = 200
+        executor.keepAliveSeconds = 120
+
+        // 스레드 이름 설정
+        executor.setThreadNamePrefix("inmemory-blocking-")
+        executor.setWaitForTasksToCompleteOnShutdown(true)
+        executor.setAwaitTerminationSeconds(60)
 
         executor.initialize()
         return executor
