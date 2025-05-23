@@ -44,9 +44,6 @@ dependencies {
     testImplementation("io.mockk:mockk")
     testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test")
     testImplementation("org.awaitility:awaitility-kotlin")
-    
-    // InMemory Producer를 테스트 의존성으로 추가 (통합 테스트용)
-    testImplementation(project(":adapter:outbound:messaging-producer-inmemory"))
 }
 
 tasks.test {

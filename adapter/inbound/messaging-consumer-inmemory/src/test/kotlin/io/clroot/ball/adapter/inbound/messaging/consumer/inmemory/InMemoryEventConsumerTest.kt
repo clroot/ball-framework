@@ -1,6 +1,6 @@
 package io.clroot.ball.adapter.inbound.messaging.consumer.inmemory
 
-import io.clroot.ball.adapter.inbound.messaging.consumer.inmemory.registry.DomainEventHandlerRegistry
+import io.clroot.ball.adapter.inbound.messaging.consumer.core.registry.DomainEventHandlerRegistry
 import io.clroot.ball.application.event.DomainEventHandler
 import io.clroot.ball.domain.event.DomainEvent
 import io.kotest.core.spec.style.BehaviorSpec
@@ -76,7 +76,7 @@ class InMemoryEventConsumerTest : BehaviorSpec({
                 properties.parallel shouldBe true
                 properties.maxConcurrency shouldBe 10
                 properties.timeoutMs shouldBe 5000
-                properties.enableRetry shouldBe false
+                properties.enableRetry shouldBe true
                 properties.maxRetryAttempts shouldBe 3
                 properties.retryDelayMs shouldBe 1000
                 properties.enableDebugLogging shouldBe false

@@ -22,7 +22,7 @@ import org.springframework.boot.context.properties.NestedConfigurationProperty
  *         async: true
  *         parallel: true
  *         maxConcurrency: 10
- *         timeoutMs: 30000
+ *         timeoutMs: 5000
  *         enableRetry: true
  *         maxRetryAttempts: 3
  *         retryDelayMs: 1000
@@ -61,7 +61,7 @@ data class InMemoryEventConsumerProperties(
      * 핸들러 실행 타임아웃 (밀리초)
      * 기본값: 30000 (30초)
      */
-    override val timeoutMs: Long = 30000,
+    override val timeoutMs: Long = 5000,
 
     /**
      * 재시도 활성화 여부

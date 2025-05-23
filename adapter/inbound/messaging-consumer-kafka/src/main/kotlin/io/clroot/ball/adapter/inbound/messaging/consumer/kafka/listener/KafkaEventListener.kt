@@ -33,7 +33,7 @@ import org.springframework.stereotype.Component
 class KafkaEventListener(
     handlerExecutor: DomainEventHandlerExecutor,
     private val kafkaProperties: KafkaEventConsumerProperties,
-    private val messageConverter: DomainEventKafkaMessageConverter
+    private val messageConverter: DomainEventKafkaMessageConverter,
 ) : AbstractEventListener(handlerExecutor, kafkaProperties) {
     
     private val kafkaLog = LoggerFactory.getLogger(javaClass)
@@ -45,8 +45,8 @@ class KafkaEventListener(
      * 부모 클래스의 공통 로직을 사용하여 처리합니다.
      */
     @KafkaListener(
-        topics = ["#{kafkaEventConsumerProperties.topics}"],
-        groupId = "#{kafkaEventConsumerProperties.groupId}",
+        topics = ["\${ball.event.consumer.kafka.topics}"],
+        groupId = "\${ball.event.consumer.kafka.groupId}",
         containerFactory = "kafkaListenerContainerFactory"
     )
     fun handleKafkaMessage(
