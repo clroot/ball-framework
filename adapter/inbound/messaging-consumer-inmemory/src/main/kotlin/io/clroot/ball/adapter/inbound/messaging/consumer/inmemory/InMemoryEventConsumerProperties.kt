@@ -1,9 +1,13 @@
 package io.clroot.ball.adapter.inbound.messaging.consumer.inmemory
 
+import io.clroot.ball.adapter.inbound.messaging.consumer.core.properties.EventConsumerProperties
 import org.springframework.boot.context.properties.ConfigurationProperties
+import org.springframework.boot.context.properties.NestedConfigurationProperty
 
 /**
  * InMemory Event Consumer configuration properties.
+ * 
+ * Core 모듈의 공통 설정을 확장하여 InMemory 전용 설정을 추가합니다.
  * 
  * Configuration prefix: ball.event.consumer.inmemory
  * 
@@ -14,101 +18,103 @@ import org.springframework.boot.context.properties.ConfigurationProperties
  *     consumer:
  *       inmemory:
  *         enabled: true
+ *         # 공통 설정들 (core에서 상속)
  *         async: true
  *         parallel: true
- *         max-concurrency: 10
- *         timeout-ms: 5000
- *         enable-retry: false
- *         max-retry-attempts: 3
- *         retry-delay-ms: 1000
- *         enable-debug-logging: false
+ *         maxConcurrency: 10
+ *         timeoutMs: 30000
+ *         enableRetry: true
+ *         maxRetryAttempts: 3
+ *         retryDelayMs: 1000
+ *         # InMemory 전용 설정들
+ *         enableDebugLogging: false
+ *         useApplicationEventPublisher: true
  * ```
  */
 @ConfigurationProperties(prefix = "ball.event.consumer.inmemory")
 data class InMemoryEventConsumerProperties(
     /**
-     * Whether to enable the InMemory event consumer.
-     * 
-     * When false, the consumer will not be activated even if it's on the classpath.
-     * 
-     * Default: true
+     * InMemory 컨슈머 활성화 여부
+     * 기본값: true
      */
-    val enabled: Boolean = true,
+    override val enabled: Boolean = true,
 
     /**
-     * Whether to process events asynchronously.
-     * 
-     * When true, events are processed asynchronously for better performance.
-     * When false, events are processed synchronously for easier debugging.
-     * 
-     * Default: true
+     * 비동기 이벤트 처리 여부  
+     * 기본값: true
      */
-    val async: Boolean = true,
+    override val async: Boolean = true,
 
     /**
-     * Whether to process multiple handlers in parallel for the same event.
-     * 
-     * When true and multiple handlers exist for the same event type,
-     * they will be executed in parallel for better performance.
-     * 
-     * Default: true
+     * 핸들러 병렬 실행 여부
+     * 기본값: true
      */
-    val parallel: Boolean = true,
+    override val parallel: Boolean = true,
 
     /**
-     * Maximum number of concurrent handler executions.
-     * 
-     * Controls the maximum number of handlers that can be executed
-     * simultaneously when parallel processing is enabled.
-     * 
-     * Default: 10
+     * 최대 동시 실행 수
+     * 기본값: 10
      */
-    val maxConcurrency: Int = 10,
+    override val maxConcurrency: Int = 10,
 
     /**
-     * Event processing timeout in milliseconds.
-     * 
-     * Maximum time to wait for event processing to complete.
-     * Set to 0 for no timeout.
-     * 
-     * Default: 5000 (5 seconds)
+     * 핸들러 실행 타임아웃 (밀리초)
+     * 기본값: 30000 (30초)
      */
-    val timeoutMs: Long = 5000,
+    override val timeoutMs: Long = 30000,
 
     /**
-     * Whether to enable retry mechanism for failed event processing.
-     * 
-     * When enabled, failed events will be retried according to the retry configuration.
-     * 
-     * Default: false
+     * 재시도 활성화 여부
+     * 기본값: true
      */
-    val enableRetry: Boolean = false,
+    override val enableRetry: Boolean = true,
 
     /**
-     * Maximum number of retry attempts for failed events.
-     * 
-     * Only effective when enableRetry is true.
-     * 
-     * Default: 3
+     * 최대 재시도 횟수
+     * 기본값: 3
      */
-    val maxRetryAttempts: Int = 3,
+    override val maxRetryAttempts: Int = 3,
 
     /**
-     * Delay between retry attempts in milliseconds.
-     * 
-     * The time to wait before retrying a failed event processing.
-     * 
-     * Default: 1000 (1 second)
+     * 재시도 지연 시간 (밀리초)
+     * 기본값: 1000 (1초)
      */
-    val retryDelayMs: Long = 1000,
+    override val retryDelayMs: Long = 1000,
 
     /**
-     * Whether to enable debug logging for event processing.
-     * 
-     * When enabled, detailed logs will be produced for event processing operations.
-     * Useful for debugging but may impact performance in production.
-     * 
-     * Default: false
+     * 에러 핸들링 설정 (상속)
      */
-    val enableDebugLogging: Boolean = false
+    @NestedConfigurationProperty
+    override val errorHandling: io.clroot.ball.adapter.inbound.messaging.consumer.core.properties.ErrorHandlingProperties = 
+        io.clroot.ball.adapter.inbound.messaging.consumer.core.properties.ErrorHandlingProperties(),
+
+    // ========== InMemory 전용 설정 ==========
+
+    /**
+     * 디버그 로깅 활성화 여부
+     * 
+     * 활성화하면 이벤트 처리에 대한 상세한 로그가 출력됩니다.
+     * 디버깅에 유용하지만 프로덕션에서는 성능에 영향을 줄 수 있습니다.
+     * 기본값: false
+     */
+    val enableDebugLogging: Boolean = false,
+
+    /**
+     * Spring ApplicationEventPublisher 사용 여부
+     * 
+     * true: Spring의 ApplicationEventPublisher를 통해 이벤트 발행/수신
+     * false: 직접적인 이벤트 처리 (테스트 등에서 사용)
+     * 기본값: true
+     */
+    val useApplicationEventPublisher: Boolean = true
+) : EventConsumerProperties(
+    enabled = enabled,
+    async = async,
+    parallel = parallel,
+    maxConcurrency = maxConcurrency,
+    timeoutMs = timeoutMs,
+    enableRetry = enableRetry,
+    maxRetryAttempts = maxRetryAttempts,
+    retryDelayMs = retryDelayMs,
+    errorHandling = errorHandling
 )

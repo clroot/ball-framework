@@ -12,9 +12,11 @@ repositories {
 
 dependencies {
     // Project dependencies
+    implementation(project(":application"))
     implementation(project(":domain"))
     implementation(project(":shared:core"))
     implementation(project(":shared:arrow"))
+    implementation(project(":adapter:shared:messaging-common"))
 
     // Spring dependencies
     implementation("org.springframework:spring-context")
@@ -43,6 +45,7 @@ dependencies {
 tasks.test {
     useJUnitPlatform()
 }
+
 kotlin {
     jvmToolchain(21)
 }

@@ -10,6 +10,9 @@ dependencies {
     implementation(project(":domain"))
     implementation(project(":shared:core"))
     
+    // Core messaging-consumer 모듈 의존성
+    implementation(project(":adapter:inbound:messaging-consumer-core"))
+    
     // 공통 메시징 모듈 의존성 (DomainEventWrapper 사용)
     implementation(project(":adapter:shared:messaging-common"))
     

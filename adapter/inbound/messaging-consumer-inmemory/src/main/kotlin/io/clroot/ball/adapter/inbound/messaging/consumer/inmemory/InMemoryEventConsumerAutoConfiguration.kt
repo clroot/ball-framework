@@ -1,8 +1,6 @@
 package io.clroot.ball.adapter.inbound.messaging.consumer.inmemory
 
-import io.clroot.ball.adapter.inbound.messaging.consumer.inmemory.registry.BlockingDomainEventHandlerRegistry
-import io.clroot.ball.adapter.inbound.messaging.consumer.inmemory.registry.DomainEventHandlerRegistry
-import io.clroot.ball.application.event.BlockingDomainEventHandler
+import io.clroot.ball.adapter.inbound.messaging.consumer.core.executor.DomainEventHandlerExecutor
 import io.clroot.ball.application.event.DomainEventHandler
 import org.springframework.boot.autoconfigure.AutoConfiguration
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass
@@ -24,6 +22,8 @@ import java.util.concurrent.Executor
  * 1. DomainEventHandler 클래스가 클래스패스에 존재
  * 2. ball.event.consumer.inmemory.enabled=true (기본값)
  * 3. 필요한 Bean 들이 없을 때 자동 생성
+ * 
+ * Core 모듈의 공통 컴포넌트들을 재사용하여 InMemory 전용 구현을 제공합니다.
  */
 @AutoConfiguration
 @ConditionalOnClass(DomainEventHandler::class)
@@ -33,56 +33,31 @@ import java.util.concurrent.Executor
     matchIfMissing = true
 )
 @EnableConfigurationProperties(InMemoryEventConsumerProperties::class)
-@ComponentScan(basePackages = ["io.clroot.ball.adapter.inbound.messaging.consumer.inmemory"])
+@ComponentScan(basePackages = [
+    "io.clroot.ball.adapter.inbound.messaging.consumer.core",  // Core 컴포넌트들
+    "io.clroot.ball.adapter.inbound.messaging.consumer.inmemory"  // InMemory 전용 컴포넌트들
+])
 @EnableAsync
 class InMemoryEventConsumerAutoConfiguration {
 
     /**
-     * 도메인 이벤트 핸들러 레지스트리 자동 설정
-     *
-     * Spring context에서 모든 DomainEventHandler 구현체를 찾아서 자동으로 등록합니다.
-     */
-    @Bean
-    @ConditionalOnMissingBean
-    fun domainEventHandlerRegistry(
-        handlers: List<DomainEventHandler<*>>
-    ): DomainEventHandlerRegistry {
-        return DomainEventHandlerRegistry(handlers)
-    }
-
-    /**
-     * Blocking 도메인 이벤트 핸들러 레지스트리 자동 설정
-     *
-     * Spring context에서 모든 BlockingDomainEventHandler 구현체를 찾아서 자동으로 등록합니다.
-     */
-    @Bean
-    @ConditionalOnMissingBean
-    fun blockingDomainEventHandlerRegistry(
-        handlers: List<BlockingDomainEventHandler<*>>
-    ): BlockingDomainEventHandlerRegistry {
-        return BlockingDomainEventHandlerRegistry(handlers)
-    }
-
-    /**
      * InMemory Event Listener 자동 설정
      *
-     * ApplicationEventPublisher로 발행된 DomainEventWrapper를 수신하여 처리합니다.
+     * Core 모듈의 DomainEventHandlerExecutor를 사용하여 이벤트를 처리합니다.
      */
     @Bean
     @ConditionalOnMissingBean
     fun inMemoryEventListener(
-        handlerRegistry: DomainEventHandlerRegistry,
-        blockingHandlerRegistry: BlockingDomainEventHandlerRegistry,
-        properties: InMemoryEventConsumerProperties,
-        eventTaskExecutor: Executor
+        handlerExecutor: DomainEventHandlerExecutor,
+        properties: InMemoryEventConsumerProperties
     ): InMemoryEventListener {
-        return InMemoryEventListener(handlerRegistry, blockingHandlerRegistry, properties, eventTaskExecutor)
+        return InMemoryEventListener(handlerExecutor, properties)
     }
 
     /**
      * 이벤트 처리용 스레드 풀 자동 설정
      *
-     * 비동기 이벤트 처리를 위한 전용 스레드 풀을 생성합니다.
+     * Spring ApplicationEvent를 비동기로 처리하기 위한 전용 스레드 풀을 생성합니다.
      */
     @Bean("eventTaskExecutor")
     @ConditionalOnMissingBean(name = ["eventTaskExecutor"])
@@ -110,5 +85,29 @@ class InMemoryEventConsumerAutoConfiguration {
         return executor
     }
 
+    /**
+     * Blocking 작업용 스레드 풀 자동 설정
+     *
+     * JPA, JDBC 등 blocking I/O 작업을 위한 전용 스레드 풀을 생성합니다.
+     * Core 모듈의 DomainEventHandlerExecutor에서 사용됩니다.
+     */
+    @Bean("blockingTaskExecutor")
+    @ConditionalOnMissingBean(name = ["blockingTaskExecutor"])
+    fun blockingTaskExecutor(properties: InMemoryEventConsumerProperties): Executor {
+        val executor = ThreadPoolTaskExecutor()
 
+        // blocking 작업을 위한 더 많은 스레드 할당
+        executor.corePoolSize = minOf(properties.maxConcurrency * 2, 20)
+        executor.maxPoolSize = properties.maxConcurrency * 3
+        executor.queueCapacity = 200
+        executor.keepAliveSeconds = 120
+
+        // 스레드 이름 설정
+        executor.setThreadNamePrefix("inmemory-blocking-")
+        executor.setWaitForTasksToCompleteOnShutdown(true)
+        executor.setAwaitTerminationSeconds(60)
+
+        executor.initialize()
+        return executor
+    }
 }
