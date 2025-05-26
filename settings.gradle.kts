@@ -3,39 +3,42 @@ plugins {
 }
 rootProject.name = "ball-framework"
 
-// Shared modules
+// # Shared modules
 include("shared")
 include("shared:core")
 include("shared:arrow")
 include("shared:attribute")
 include("shared:lock")
 
-// Domain modules
+// # Domain modules
 include("domain")
 
-// Application modules
+// # Application modules
 include("application")
 
-// Adapter modules
+// # Adapter modules
 include("adapter")
-// Adapter Shared modules
+
+// ## Adapter Shared modules
 include("adapter:shared")
 include("adapter:shared:messaging-common")
-// Adapter Outbound modules
+
+// ## Adapter Outbound modules
 include("adapter:outbound")
 include("adapter:outbound:persistence-core")
 include("adapter:outbound:persistence-jpa")
 include("adapter:outbound:persistence-redis")
-include("adapter:outbound:messaging-producer-core")
-include("adapter:outbound:messaging-producer-inmemory")
-include("adapter:outbound:messaging-producer-kafka")
-// Adapter Inbound modules
+include("adapter:outbound:event-publisher-core")
+include("adapter:outbound:event-publisher-domain")
+include("adapter:outbound:event-publisher-integration")
+
+// ## Adapter Inbound modules
 include("adapter:inbound")
 include("adapter:inbound:rest")
-include("adapter:inbound:messaging-consumer-core")
-include("adapter:inbound:messaging-consumer-inmemory")
-include("adapter:inbound:messaging-consumer-kafka")
+include("adapter:inbound:event-consumer-core")
+include("adapter:inbound:event-consumer-domain")
+include("adapter:inbound:event-consumer-integration")
 
-// Starter
-include("ball-user")
-include("example-project")
+// # Starter
+// include("ball-user")
+// include("example-project")
