@@ -52,7 +52,7 @@ class KafkaEventListener(
     fun handleKafkaMessage(
         @Payload message: String,
         @Header(KafkaHeaders.RECEIVED_TOPIC) topic: String,
-        @Header(KafkaHeaders.PARTITION) partition: Int,
+        @Header(KafkaHeaders.PARTITION, required = false) partition: Int?,
         @Header(KafkaHeaders.OFFSET) offset: Long,
         acknowledgment: Acknowledgment?
     ) {
@@ -110,7 +110,7 @@ class KafkaEventListener(
     private fun handleKafkaProcessingError(
         message: String,
         topic: String,
-        partition: Int,
+        partition: Int?,
         offset: Long,
         acknowledgment: Acknowledgment?,
         error: Exception
@@ -135,7 +135,7 @@ class KafkaEventListener(
     private fun handleUnprocessableMessage(
         message: String,
         topic: String,
-        partition: Int,
+        partition: Int?,
         offset: Long,
         acknowledgment: Acknowledgment?
     ) {
@@ -161,7 +161,7 @@ class KafkaEventListener(
     private fun sendToDeadLetterQueue(
         originalMessage: String,
         originalTopic: String,
-        partition: Int,
+        partition: Int?,
         offset: Long,
         error: Exception
     ) {
@@ -190,7 +190,7 @@ class KafkaEventListener(
     private fun createDlqMessage(
         originalMessage: String,
         originalTopic: String,
-        partition: Int,
+        partition: Int?,
         offset: Long,
         error: Exception
     ): String {

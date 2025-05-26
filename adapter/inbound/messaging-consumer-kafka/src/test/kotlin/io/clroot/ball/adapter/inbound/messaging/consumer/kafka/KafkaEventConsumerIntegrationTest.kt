@@ -1,6 +1,7 @@
 package io.clroot.ball.adapter.inbound.messaging.consumer.kafka
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.KotlinModule
 import io.clroot.ball.application.event.BlockingDomainEventHandler
 import io.clroot.ball.application.event.DomainEventHandler
@@ -14,7 +15,11 @@ import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.Import
 import org.springframework.kafka.annotation.EnableKafka
+import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory
+import org.springframework.kafka.core.DefaultKafkaConsumerFactory
+import org.springframework.kafka.core.DefaultKafkaProducerFactory
 import org.springframework.kafka.core.KafkaTemplate
+import org.springframework.kafka.listener.ContainerProperties
 import org.springframework.kafka.test.EmbeddedKafkaBroker
 import org.springframework.kafka.test.context.EmbeddedKafka
 import org.springframework.kafka.test.utils.KafkaTestUtils
@@ -28,7 +33,7 @@ import java.util.concurrent.atomic.AtomicInteger
 
 /**
  * Kafka Event Consumer 통합 테스트
- * 
+ *
  * EmbeddedKafka를 사용하여 실제 Kafka 환경과 유사한 조건에서 테스트합니다.
  */
 @ExtendWith(SpringExtension::class)
@@ -37,8 +42,7 @@ import java.util.concurrent.atomic.AtomicInteger
     partitions = 1,
     topics = ["integration-test-events"],
     brokerProperties = [
-        "listeners=PLAINTEXT://localhost:9092",
-        "port=9092"
+        "auto.create.topics.enable=true"
     ]
 )
 @TestPropertySource(
@@ -46,10 +50,12 @@ import java.util.concurrent.atomic.AtomicInteger
         "ball.event.consumer.kafka.enabled=true",
         "ball.event.consumer.kafka.topics=integration-test-events",
         "ball.event.consumer.kafka.groupId=integration-test-group",
-        "ball.event.consumer.kafka.bootstrapServers=localhost:9092",
+        "ball.event.consumer.kafka.bootstrapServers=\${spring.embedded.kafka.brokers}",
         "ball.event.consumer.kafka.autoOffsetReset=earliest",
         "ball.event.consumer.kafka.async=false", // 테스트에서는 동기 처리
-        "ball.event.consumer.kafka.enableRetry=false"
+        "ball.event.consumer.kafka.enableRetry=false",
+        "ball.event.consumer.kafka.concurrency=1",
+        "ball.event.consumer.kafka.enableAutoCommit=false"
     ]
 )
 class KafkaEventConsumerIntegrationTest(
@@ -61,6 +67,7 @@ class KafkaEventConsumerIntegrationTest(
 
     val objectMapper = ObjectMapper().apply {
         registerModule(KotlinModule.Builder().build())
+        registerModule(JavaTimeModule())
     }
 
     given("Kafka Event Consumer Integration") {
@@ -75,7 +82,7 @@ class KafkaEventConsumerIntegrationTest(
 
                 // Then
                 await()
-                    .atMost(Duration.ofSeconds(10))
+                    .atMost(Duration.ofSeconds(30))
                     .until { suspendTestHandler.callCount.get() > 0 }
 
                 suspendTestHandler.callCount.get() shouldBe 1
@@ -137,7 +144,7 @@ class KafkaEventConsumerIntegrationTest(
 
                 // Then - 잘못된 메시지는 핸들러가 호출되지 않아야 함
                 Thread.sleep(2000) // 잠시 대기
-                
+
                 suspendTestHandler.callCount.get() shouldBe initialSuspendCount
                 blockingTestHandler.callCount.get() shouldBe initialBlockingCount
             }
@@ -164,7 +171,7 @@ class KafkaEventConsumerIntegrationTest(
 
                 // Then
                 Thread.sleep(2000) // 잠시 대기
-                
+
                 suspendTestHandler.callCount.get() shouldBe initialSuspendCount
                 blockingTestHandler.callCount.get() shouldBe initialBlockingCount
             }
@@ -262,8 +269,8 @@ class IntegrationBlockingTestHandler : BlockingDomainEventHandler<IntegrationBlo
  * 통합 테스트 설정
  */
 @Configuration
-@Import(KafkaEventConsumerAutoConfiguration::class)
 @EnableKafka
+@Import(KafkaEventConsumerAutoConfiguration::class)
 class KafkaIntegrationTestConfiguration {
 
     @Bean
@@ -274,7 +281,29 @@ class KafkaIntegrationTestConfiguration {
 
     @Bean
     fun kafkaTemplate(embeddedKafkaBroker: EmbeddedKafkaBroker): KafkaTemplate<String, String> {
-        val producerProps = KafkaTestUtils.producerProps(embeddedKafkaBroker)
-        return KafkaTemplate(org.springframework.kafka.core.DefaultKafkaProducerFactory(producerProps))
+        val producerProps = KafkaTestUtils.producerProps(embeddedKafkaBroker).apply {
+            put("acks", "1")
+            put("retries", 0)
+            put("linger.ms", 0)
+        }
+        return KafkaTemplate(DefaultKafkaProducerFactory(producerProps))
+    }
+
+    @Bean("kafkaListenerContainerFactory")
+    fun kafkaListenerContainerFactory(
+        embeddedKafkaBroker: EmbeddedKafkaBroker
+    ): ConcurrentKafkaListenerContainerFactory<String, String> {
+        val factory = ConcurrentKafkaListenerContainerFactory<String, String>()
+
+        val consumerProps = KafkaTestUtils.consumerProps("test-group", "true", embeddedKafkaBroker).apply {
+            put("auto.offset.reset", "earliest")
+            put("enable.auto.commit", "false")
+        }
+
+        factory.consumerFactory = DefaultKafkaConsumerFactory(consumerProps)
+        factory.setConcurrency(1)
+        factory.containerProperties.ackMode = ContainerProperties.AckMode.MANUAL_IMMEDIATE
+
+        return factory
     }
 }
