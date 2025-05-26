@@ -37,26 +37,20 @@ class AttributePersistenceProviderTest : StringSpec({
 })
 
 // Test implementation of AttributePersistenceProvider
-private class TestAttributePersistenceProvider : AttributePersistenceProvider {
-    override fun <E : Entity<*>> loadAttributes(entity: E, dataModel: Any): E {
-        if (entity !is Attributable<*> || dataModel !is TestDataModel) {
-            return entity
-        }
-
+private class TestAttributePersistenceProvider : AttributePersistenceProvider<PersistenceTestEntity, TestDataModel> {
+    override fun loadAttributes(entity: PersistenceTestEntity, dataModel: TestDataModel): PersistenceTestEntity {
         var result = entity
         dataModel.attributes.forEach { (key, value) ->
             when (key) {
                 "key1" -> {
-                    @Suppress("UNCHECKED_CAST")
-                    result = (result as Attributable<E>).setAttribute(
+                    result = (result as Attributable<PersistenceTestEntity>).setAttribute(
                         AttributeKey(key, String::class),
                         value
                     )
                 }
 
                 "key2" -> {
-                    @Suppress("UNCHECKED_CAST")
-                    result = (result as Attributable<E>).setAttribute(
+                    result = (result as Attributable<PersistenceTestEntity>).setAttribute(
                         AttributeKey(key, Int::class),
                         value.toInt()
                     )
@@ -67,11 +61,7 @@ private class TestAttributePersistenceProvider : AttributePersistenceProvider {
         return result
     }
 
-    override fun <E : Entity<*>> saveAttributes(entity: E, dataModel: Any) {
-        if (entity !is Attributable<*> || dataModel !is TestDataModel) {
-            return
-        }
-
+    override fun saveAttributes(entity: PersistenceTestEntity, dataModel: TestDataModel) {
         entity.attributes.getAttributes().forEach { (key, value) ->
             dataModel.attributes[key.name] = value.toString()
         }
@@ -91,5 +81,9 @@ private class PersistenceTestEntity(
 
     override fun <V : Any> setAttribute(key: AttributeKey<V>, value: V): PersistenceTestEntity {
         return PersistenceTestEntity(id, attributes.setAttribute(key, value))
+    }
+
+    override fun unsafeSetAttributes(attributes: AttributeStore): PersistenceTestEntity {
+        return PersistenceTestEntity(id, attributes)
     }
 }

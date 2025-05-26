@@ -36,12 +36,16 @@ class AttributableTest : StringSpec({
 })
 
 // Test implementation of Attributable
-private class TestEntity(
+class TestEntity(
     override val id: UUID = UUID.randomUUID(),
     override val attributes: AttributeStore = AttributeStore.empty()
 ) : Entity<UUID>, Attributable<TestEntity> {
 
     override fun <V : Any> setAttribute(key: AttributeKey<V>, value: V): TestEntity {
         return TestEntity(id, attributes.setAttribute(key, value))
+    }
+
+    override fun unsafeSetAttributes(attributes: AttributeStore): TestEntity {
+        return TestEntity(id, attributes)
     }
 }

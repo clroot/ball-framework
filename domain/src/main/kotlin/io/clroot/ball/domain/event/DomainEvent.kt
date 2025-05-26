@@ -1,6 +1,6 @@
 package io.clroot.ball.domain.event
 
-import io.clroot.ball.domain.model.core.BinaryId
+import io.clroot.ball.domain.model.vo.BinaryId
 import java.time.Instant
 
 /**

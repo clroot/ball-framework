@@ -1,7 +1,6 @@
 package io.clroot.ball.domain.port
 
 import arrow.core.Either
-import arrow.core.Option
 import arrow.core.Some
 import arrow.core.none
 import io.clroot.ball.domain.model.core.EntityBase

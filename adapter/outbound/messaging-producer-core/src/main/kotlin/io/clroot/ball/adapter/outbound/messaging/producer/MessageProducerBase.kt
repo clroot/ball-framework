@@ -1,7 +1,7 @@
 package io.clroot.ball.adapter.outbound.messaging.producer
 
+import io.clroot.ball.application.port.outbound.DomainEventPublisher
 import io.clroot.ball.domain.event.DomainEvent
-import io.clroot.ball.domain.event.DomainEventPublisher
 import org.slf4j.LoggerFactory
 
 abstract class MessageProducerBase : DomainEventPublisher {

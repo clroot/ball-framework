@@ -10,4 +10,6 @@ interface Attributable<T : Entity<*>> {
         attributes.getAttribute(key)
 
     fun <V : Any> setAttribute(key: AttributeKey<V>, value: V): T
+
+    fun unsafeSetAttributes(attributes: AttributeStore): T
 }

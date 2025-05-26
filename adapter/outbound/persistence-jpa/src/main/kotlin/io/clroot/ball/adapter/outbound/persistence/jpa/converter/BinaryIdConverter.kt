@@ -1,6 +1,6 @@
 package io.clroot.ball.adapter.outbound.persistence.jpa.converter
 
-import io.clroot.ball.domain.model.core.BinaryId
+import io.clroot.ball.domain.model.vo.BinaryId
 import jakarta.persistence.AttributeConverter
 import jakarta.persistence.Converter
 import java.nio.ByteBuffer
