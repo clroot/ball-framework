@@ -1,18 +1,19 @@
 package io.clroot.ball.adapter.inbound.messaging.consumer.kafka.converter
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.KotlinModule
 import io.clroot.ball.domain.event.DomainEvent
 import io.kotest.core.spec.style.BehaviorSpec
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
-import io.kotest.matchers.string.shouldContain
 import java.time.Instant
 
 class DomainEventKafkaMessageConverterTest : BehaviorSpec({
 
     val objectMapper = ObjectMapper().apply {
         registerModule(KotlinModule.Builder().build())
+        registerModule(JavaTimeModule())
     }
     val converter = DomainEventKafkaMessageConverter(objectMapper)
 
@@ -40,7 +41,7 @@ class DomainEventKafkaMessageConverterTest : BehaviorSpec({
                 result!!.id shouldBe "test-id-123"
                 result.type shouldBe "TestKafkaEvent"
                 (result as TestKafkaEvent).data shouldBe "test-data"
-                (result as TestKafkaEvent).value shouldBe 42
+                result.value shouldBe 42
             }
         }
 
