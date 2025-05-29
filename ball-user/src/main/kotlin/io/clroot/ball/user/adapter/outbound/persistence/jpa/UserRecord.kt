@@ -1,7 +1,7 @@
 package io.clroot.ball.user.adapter.outbound.persistence.jpa
 
 import io.clroot.ball.adapter.outbound.persistence.jpa.record.VersionedBinaryIdRecord
-import io.clroot.ball.domain.model.core.BinaryId
+import io.clroot.ball.domain.model.vo.BinaryId
 import io.clroot.ball.shared.attribute.AttributeStore
 import io.clroot.ball.user.domain.model.*
 import jakarta.persistence.Entity

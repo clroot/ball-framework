@@ -1,7 +1,7 @@
 package io.clroot.ball.user.domain.port
 
 import arrow.core.Either
-import io.clroot.ball.domain.model.core.BinaryId
+import io.clroot.ball.domain.model.vo.BinaryId
 import io.clroot.ball.user.domain.model.User
 import io.clroot.ball.user.domain.model.UserStatus
 

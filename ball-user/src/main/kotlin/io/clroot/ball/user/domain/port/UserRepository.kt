@@ -1,7 +1,7 @@
 package io.clroot.ball.user.domain.port
 
 import arrow.core.Option
-import io.clroot.ball.domain.model.core.BinaryId
+import io.clroot.ball.domain.model.vo.BinaryId
 import io.clroot.ball.domain.port.RepositoryBase
 import io.clroot.ball.user.domain.model.Email
 import io.clroot.ball.user.domain.model.User

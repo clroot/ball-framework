@@ -1,8 +1,8 @@
 package io.clroot.ball.user.application.service
 
 import arrow.core.Either
+import io.clroot.ball.application.port.outbound.DomainEventPublisher
 import io.clroot.ball.domain.event.DomainEvent
-import io.clroot.ball.domain.event.DomainEventPublisher
 import io.clroot.ball.domain.port.PersistenceError
 import io.clroot.ball.user.domain.model.Email
 import io.clroot.ball.user.domain.model.User

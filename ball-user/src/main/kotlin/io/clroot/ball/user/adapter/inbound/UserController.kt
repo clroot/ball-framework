@@ -1,6 +1,6 @@
 package io.clroot.ball.user.adapter.inbound
 
-import io.clroot.ball.domain.model.core.BinaryId
+import io.clroot.ball.domain.model.vo.BinaryId
 import io.clroot.ball.user.domain.model.User
 import io.clroot.ball.user.domain.model.UserStatus
 import io.clroot.ball.user.domain.port.*

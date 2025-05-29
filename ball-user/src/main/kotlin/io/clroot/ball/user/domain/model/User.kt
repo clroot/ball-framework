@@ -1,7 +1,7 @@
 package io.clroot.ball.user.domain.model
 
 import io.clroot.ball.domain.model.core.AggregateRoot
-import io.clroot.ball.domain.model.core.BinaryId
+import io.clroot.ball.domain.model.vo.BinaryId
 import io.clroot.ball.shared.attribute.Attributable
 import io.clroot.ball.shared.attribute.AttributeKey
 import io.clroot.ball.shared.attribute.AttributeStore

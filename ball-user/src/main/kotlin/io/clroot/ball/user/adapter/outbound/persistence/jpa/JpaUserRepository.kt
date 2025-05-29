@@ -4,8 +4,8 @@ import arrow.core.Either
 import arrow.core.Option
 import arrow.core.left
 import arrow.core.right
-import io.clroot.ball.domain.model.core.BinaryId
 import io.clroot.ball.domain.model.core.Specification
+import io.clroot.ball.domain.model.vo.BinaryId
 import io.clroot.ball.domain.port.PersistenceError
 import io.clroot.ball.shared.attribute.AttributePersistenceProvider
 import io.clroot.ball.user.domain.model.Email

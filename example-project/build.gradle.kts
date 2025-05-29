@@ -10,7 +10,10 @@ plugins {
 
 dependencies {
     implementation(project(":ball-user"))
-    implementation(project(":adapter:inbound:messaging-consumer-inmemory"))
-    implementation(project(":adapter:outbound:messaging-producer-inmemory"))
+    
+    implementation(project(":adapter:outbound:event-publisher-domain"))
+    implementation(project(":adapter:inbound:event-consumer-domain"))
+    
+    // 데이터베이스
     runtimeOnly("org.mariadb.jdbc:mariadb-java-client")
 }
