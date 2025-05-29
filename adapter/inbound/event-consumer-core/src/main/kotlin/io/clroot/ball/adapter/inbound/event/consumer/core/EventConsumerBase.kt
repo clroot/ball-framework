@@ -2,6 +2,7 @@ package io.clroot.ball.adapter.inbound.event.consumer.core
 
 import io.clroot.ball.domain.event.DomainEvent
 import kotlinx.coroutines.*
+import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
 /**
@@ -17,11 +18,11 @@ import org.slf4j.LoggerFactory
  * - 메트릭 수집 (확장 가능)
  */
 abstract class EventConsumerBase(
-    protected val properties: EventConsumerProperties
+    protected open val properties: EventConsumerProperties
 ) {
     
-    protected val log = LoggerFactory.getLogger(javaClass)
-    protected val eventScope = CoroutineScope(Dispatchers.Default + SupervisorJob())
+    protected val log: Logger = LoggerFactory.getLogger(javaClass)
+    protected val eventScope: CoroutineScope = CoroutineScope(Dispatchers.Default + SupervisorJob())
 
     /**
      * 도메인 이벤트 처리 (공통 로직)

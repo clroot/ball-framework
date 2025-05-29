@@ -30,15 +30,13 @@ include("adapter:outbound:persistence-jpa")
 include("adapter:outbound:persistence-redis")
 include("adapter:outbound:event-publisher-core")
 include("adapter:outbound:event-publisher-domain")
-include("adapter:outbound:event-publisher-integration")
 
 // ## Adapter Inbound modules
 include("adapter:inbound")
 include("adapter:inbound:rest")
 include("adapter:inbound:event-consumer-core")
 include("adapter:inbound:event-consumer-domain")
-include("adapter:inbound:event-consumer-integration")
 
 // # Starter
-// include("ball-user")
-// include("example-project")
+include("ball-user")
+include("example-project")
