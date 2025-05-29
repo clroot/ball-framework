@@ -1,6 +1,6 @@
 package io.clroot.ball.adapter.outbound.persistence.core.mapping
 
-import io.clroot.ball.domain.model.core.Entity
+import io.clroot.ball.domain.model.core.EntityBase
 
 
 /**
@@ -11,7 +11,7 @@ import io.clroot.ball.domain.model.core.Entity
  *
  * @param E The domain entity type
  */
-interface DataModel<E : Entity<*>> {
+interface DataModel<E : EntityBase<*>> {
     /**
      * Converts this JPA entity to a domain entity
      *
@@ -29,7 +29,7 @@ interface DataModel<E : Entity<*>> {
          * @param factory A function that creates a data model from a domain entity
          * @return The data model
          */
-        fun <E : Entity<*>, D : DataModel<E>> fromEntity(entity: E, factory: (E) -> D): D {
+        fun <E : EntityBase<*>, D : DataModel<E>> fromEntity(entity: E, factory: (E) -> D): D {
             return factory(entity)
         }
     }

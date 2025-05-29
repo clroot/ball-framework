@@ -1,6 +1,6 @@
 package io.clroot.ball.adapter.outbound.persistence.jpa.record
 
-import io.clroot.ball.domain.model.core.Entity
+import io.clroot.ball.domain.model.core.AggregateRoot
 import io.clroot.ball.domain.model.core.EntityBase
 import io.clroot.ball.domain.model.vo.BinaryId
 import jakarta.persistence.Column
@@ -15,13 +15,13 @@ import java.time.Instant
  * It is meant to be extended by JPA entity classes that need optimistic locking capabilities.
  */
 @MappedSuperclass
-abstract class VersionedBinaryIdRecord<E : Entity<BinaryId>>(
+abstract class BinaryIdAggreateRootRecord<E : EntityBase<BinaryId>>(
     id: BinaryId,
     createdAt: Instant,
     updatedAt: Instant,
     deletedAt: Instant?,
     version: Long,
-) : BinaryIdRecord<E>(id, createdAt, updatedAt, deletedAt) {
+) : BinaryIdEntityRecord<E>(id, createdAt, updatedAt, deletedAt) {
     /**
      * The version of this entity, used for optimistic locking
      */
@@ -30,7 +30,7 @@ abstract class VersionedBinaryIdRecord<E : Entity<BinaryId>>(
     var version: Long = version
         protected set
 
-    constructor(entity: EntityBase<BinaryId>, version: Long) : this(
+    constructor(entity: AggregateRoot<BinaryId>, version: Long) : this(
         id = entity.id,
         createdAt = entity.createdAt,
         updatedAt = entity.updatedAt,

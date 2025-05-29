@@ -2,7 +2,6 @@ package io.clroot.ball.adapter.outbound.persistence.jpa.record
 
 import io.clroot.ball.adapter.outbound.persistence.core.mapping.DataModel
 import io.clroot.ball.adapter.outbound.persistence.jpa.converter.BinaryIdConverter
-import io.clroot.ball.domain.model.core.Entity
 import io.clroot.ball.domain.model.core.EntityBase
 import io.clroot.ball.domain.model.vo.BinaryId
 import jakarta.persistence.Column
@@ -14,7 +13,7 @@ import org.hibernate.annotations.UpdateTimestamp
 import java.time.Instant
 
 @MappedSuperclass
-abstract class BinaryIdRecord<E : Entity<BinaryId>>(
+abstract class BinaryIdEntityRecord<E : EntityBase<BinaryId>>(
     id: BinaryId,
     createdAt: Instant,
     updatedAt: Instant,
