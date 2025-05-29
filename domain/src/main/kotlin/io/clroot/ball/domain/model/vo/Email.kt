@@ -11,7 +11,8 @@ import io.clroot.ball.domain.model.core.ValueObject
  * 이메일 주소를 나타내는 불변 값 객체
  * 유효한 이메일 형식인지 검증하는 기능 제공
  */
-data class Email private constructor(val value: String) : ValueObject {
+@JvmInline
+value class Email private constructor(val value: String) : ValueObject {
     companion object {
         /**
          * 문자열로부터 이메일 객체 생성
@@ -40,12 +41,12 @@ data class Email private constructor(val value: String) : ValueObject {
             val emailRegex = "^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$"
             return value.matches(emailRegex.toRegex()) && !value.contains(" ")
         }
+
+        /**
+         * 유효성 검증 오류
+         */
+        data class ValidationError(val message: String)
     }
 
     override fun toString(): String = value
 }
-
-/**
- * 유효성 검증 오류
- */
-data class ValidationError(val message: String)

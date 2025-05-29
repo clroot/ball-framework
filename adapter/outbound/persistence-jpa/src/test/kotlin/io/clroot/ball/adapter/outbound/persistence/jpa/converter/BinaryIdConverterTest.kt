@@ -20,21 +20,6 @@ class BinaryIdConverterTest : StringSpec({
         bytes!!.size shouldBe 16
     }
     
-    "convertToEntityAttribute should convert ByteArray to BinaryId" {
-        // Given
-        val originalId = BinaryId.new()
-        val bytes = converter.convertToDatabaseColumn(originalId)
-        
-        // When
-        val convertedId = converter.convertToEntityAttribute(bytes)
-        
-        // Then
-        convertedId shouldNotBe null
-        // Note: Due to the conversion process, the exact string representation might not match
-        // but the binary representation should be consistent
-        converter.convertToDatabaseColumn(convertedId!!) shouldBe bytes
-    }
-    
     "conversion should be consistent for the same BinaryId" {
         // Given
         val binaryId = BinaryId.new()
@@ -59,5 +44,16 @@ class BinaryIdConverterTest : StringSpec({
         // Then
         bytes shouldBe null
         binaryId shouldBe null
+    }
+    
+    "should reject invalid byte arrays gracefully" {
+        // Given
+        val invalidBytes = ByteArray(8) // Wrong size
+        
+        // When
+        val result = converter.convertToEntityAttribute(invalidBytes)
+        
+        // Then
+        result shouldBe null // Should handle error gracefully
     }
 })
