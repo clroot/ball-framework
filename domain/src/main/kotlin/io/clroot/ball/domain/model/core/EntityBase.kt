@@ -1,6 +1,5 @@
 package io.clroot.ball.domain.model.core
 
-import io.clroot.ball.shared.core.model.Entity
 import java.time.Instant
 
 abstract class EntityBase<ID : Any>(

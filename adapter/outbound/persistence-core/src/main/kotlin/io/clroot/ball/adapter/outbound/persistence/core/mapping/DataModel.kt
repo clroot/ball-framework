@@ -1,6 +1,7 @@
 package io.clroot.ball.adapter.outbound.persistence.core.mapping
 
-import io.clroot.ball.shared.core.model.Entity
+import io.clroot.ball.domain.model.core.Entity
+
 
 /**
  * Interface for JPA entity classes that can be converted to domain entities

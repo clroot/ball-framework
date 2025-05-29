@@ -5,9 +5,7 @@ rootProject.name = "ball-framework"
 
 // # Shared modules
 include("shared")
-include("shared:core")
 include("shared:arrow")
-include("shared:attribute")
 include("shared:lock")
 
 // # Domain modules
@@ -38,6 +36,4 @@ include("adapter:inbound:event-consumer-core")
 include("adapter:inbound:event-consumer-domain")
 
 // # Starter
-include("example-project")
 include("ball-starter")
-include("ball-starter:ball-user-starter")

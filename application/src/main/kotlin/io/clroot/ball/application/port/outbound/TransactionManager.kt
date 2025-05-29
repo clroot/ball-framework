@@ -1,7 +1,6 @@
 package io.clroot.ball.application.port.outbound
 
 import arrow.core.Either
-import io.clroot.ball.shared.core.exception.ApplicationException
 
 /**
  * 트랜잭션 관리자 인터페이스
@@ -45,5 +44,5 @@ interface TransactionManager {
     /**
      * Either 에러를 래핑하기 위한 내부 예외
      */
-    private class TransactionWrappedException(val wrappedError: Any) : ApplicationException(wrappedError.toString())
+    private class TransactionWrappedException(val wrappedError: Any) : Exception(wrappedError.toString())
 }

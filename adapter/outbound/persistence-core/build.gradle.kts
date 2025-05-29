@@ -3,7 +3,6 @@ plugins {
 }
 
 dependencies {
-    api(project(":shared:attribute"))
     api(project(":domain"))
     api(project(":shared:arrow"))
 

@@ -1,5 +1,4 @@
 dependencies {
-    implementation(project(":shared:core"))
     implementation(project(":shared:arrow"))
 
     // Spring

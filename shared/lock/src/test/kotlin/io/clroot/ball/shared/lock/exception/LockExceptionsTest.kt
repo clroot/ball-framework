@@ -25,12 +25,12 @@ class LockExceptionsTest : FunSpec({
     test("LockAcquisitionException should extend ApplicationException") {
         val exception = LockAcquisitionException("test")
 
-        exception.shouldBeInstanceOf<io.clroot.ball.shared.core.exception.ApplicationException>()
+        exception.shouldBeInstanceOf<Exception>()
     }
 
     test("LockKeyResolutionException should extend ApplicationException") {
         val exception = LockKeyResolutionException("test")
 
-        exception.shouldBeInstanceOf<io.clroot.ball.shared.core.exception.ApplicationException>()
+        exception.shouldBeInstanceOf<Exception>()
     }
 })

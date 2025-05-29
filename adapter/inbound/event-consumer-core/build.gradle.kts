@@ -7,7 +7,6 @@ dependencies {
     // Core dependencies
     api(project(":application"))
     api(project(":domain"))
-    api(project(":shared:core"))
 
     // Spring dependencies
     api("org.springframework.boot:spring-boot-starter")

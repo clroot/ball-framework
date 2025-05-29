@@ -1,4 +1,4 @@
-package io.clroot.ball.shared.core.model
+package io.clroot.ball.domain.model.core
 
 interface Entity<ID : Any> {
     val id: ID
