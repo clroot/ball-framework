@@ -1,4 +1,4 @@
-package io.clroot.ball.domain.model.core
+package io.clroot.ball.domain.model.core.specification
 
 import arrow.core.Either
 import arrow.core.left
@@ -55,37 +55,3 @@ interface Specification<T> {
         if (isSatisfiedBy(t)) t.right() else error.left()
 }
 
-/**
- * AND 명세
- * 두 명세를 모두 만족해야 true를 반환
- */
-class AndSpecification<T>(
-    private val left: Specification<T>,
-    private val right: Specification<T>
-) : Specification<T> {
-    override fun isSatisfiedBy(t: T): Boolean =
-        left.isSatisfiedBy(t) && right.isSatisfiedBy(t)
-}
-
-/**
- * OR 명세
- * 두 명세 중 하나라도 만족하면 true를 반환
- */
-class OrSpecification<T>(
-    private val left: Specification<T>,
-    private val right: Specification<T>
-) : Specification<T> {
-    override fun isSatisfiedBy(t: T): Boolean =
-        left.isSatisfiedBy(t) || right.isSatisfiedBy(t)
-}
-
-/**
- * NOT 명세
- * 원래 명세의 결과를 부정
- */
-class NotSpecification<T>(
-    private val specification: Specification<T>
-) : Specification<T> {
-    override fun isSatisfiedBy(t: T): Boolean =
-        !specification.isSatisfiedBy(t)
-}

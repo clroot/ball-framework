@@ -2,7 +2,7 @@ package io.clroot.ball.user.domain.port
 
 import arrow.core.Option
 import io.clroot.ball.domain.model.vo.BinaryId
-import io.clroot.ball.domain.port.RepositoryBase
+import io.clroot.ball.domain.port.SpecificationRepository
 import io.clroot.ball.user.domain.model.Email
 import io.clroot.ball.user.domain.model.User
 
@@ -11,7 +11,7 @@ import io.clroot.ball.user.domain.model.User
  *
  * 사용자 엔티티의 영속성을 관리하는 인터페이스
  */
-interface UserRepository : RepositoryBase<User, BinaryId> {
+interface UserRepository : SpecificationRepository<User, BinaryId> {
     /**
      * 사용자 이름으로 사용자 조회
      *

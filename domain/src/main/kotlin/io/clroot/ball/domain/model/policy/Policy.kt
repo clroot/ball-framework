@@ -3,7 +3,7 @@ package io.clroot.ball.domain.model.policy
 import arrow.core.Either
 import arrow.core.left
 import arrow.core.right
-import io.clroot.ball.domain.model.core.Specification
+import io.clroot.ball.domain.model.core.specification.Specification
 
 /**
  * 정책 (Policy)

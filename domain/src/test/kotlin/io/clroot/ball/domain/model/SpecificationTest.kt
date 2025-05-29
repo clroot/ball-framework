@@ -1,7 +1,7 @@
 package io.clroot.ball.domain.model
 
 import io.clroot.ball.domain.model.core.EntityBase
-import io.clroot.ball.domain.model.core.Specification
+import io.clroot.ball.domain.model.core.specification.Specification
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
