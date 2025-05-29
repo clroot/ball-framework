@@ -1,3 +1,7 @@
+plugins {
+    id("org.jetbrains.kotlin.plugin.spring")
+}
+
 dependencies {
     api(project(":domain"))
     api(project(":application"))
