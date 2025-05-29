@@ -30,7 +30,7 @@ class DistributedLockAdvisorTest : FunSpec({
         // Mock join point
         val joinPoint = mockk<ProceedingJoinPoint>()
         every { joinPoint.signature } returns signature
-        every { joinPoint.args } returns arrayOf("user123", 456)
+        every { joinPoint.args } returns arrayOf<Any?>("user123", 456)
         every { joinPoint.proceed() } returns "result"
 
         // Mock annotation processor
@@ -38,7 +38,8 @@ class DistributedLockAdvisorTest : FunSpec({
         every {
             annotationProcessor.resolveKey(
                 annotation,
-                arrayOf("user123", 456),
+                method,
+                arrayOf<Any?>("user123", 456),
                 arrayOf("userId", "orderId")
             )
         } returns resolvedKey
@@ -64,7 +65,8 @@ class DistributedLockAdvisorTest : FunSpec({
         verify {
             annotationProcessor.resolveKey(
                 annotation,
-                arrayOf("user123", 456),
+                method,
+                arrayOf<Any?>("user123", 456),
                 arrayOf("userId", "orderId")
             )
         }
@@ -92,7 +94,7 @@ class DistributedLockAdvisorTest : FunSpec({
         // Mock join point
         val joinPoint = mockk<ProceedingJoinPoint>()
         every { joinPoint.signature } returns signature
-        every { joinPoint.args } returns arrayOf("user123")
+        every { joinPoint.args } returns arrayOf<Any?>("user123")
         every { joinPoint.proceed() } returns "result"
 
         // Mock annotation processor
@@ -100,7 +102,8 @@ class DistributedLockAdvisorTest : FunSpec({
         every {
             annotationProcessor.resolveKey(
                 annotation,
-                arrayOf("user123"),
+                method,
+                arrayOf<Any?>("user123"),
                 arrayOf("userId")
             )
         } returns resolvedKey
@@ -111,7 +114,7 @@ class DistributedLockAdvisorTest : FunSpec({
             lockProvider.withLock(
                 resolvedKey,
                 TimeUnit.MINUTES.toMillis(2), // waitTime from annotation (2 minutes)
-                TimeUnit.MINUTES.toMillis(0), // leaseTime from annotation (0 minutes)
+                TimeUnit.MINUTES.toMillis(5), // leaseTime from annotation (5 minutes)
                 capture(blockSlot)
             )
         } answers { blockSlot.captured.invoke() }
@@ -127,7 +130,7 @@ class DistributedLockAdvisorTest : FunSpec({
             lockProvider.withLock(
                 resolvedKey,
                 TimeUnit.MINUTES.toMillis(2),
-                TimeUnit.MINUTES.toMillis(0),
+                TimeUnit.MINUTES.toMillis(5),
                 captureLambda()
             )
         }
@@ -135,19 +138,18 @@ class DistributedLockAdvisorTest : FunSpec({
 }) {
     // Test classes for method annotations
     class TestService {
-        @DistributedLock(key = "'user-' + #userId + '-order-' + #orderId", waitTime = 10, leaseTime = 3)
-        fun testMethod(userId: String, orderId: Int): String {
+        @DistributedLock(key = "user-{userId}-order-{orderId}", waitTime = 10, leaseTime = 3)
+        fun testMethod(@LockKey("userId") userId: String, @LockKey("orderId") orderId: Int): String {
             return "result"
         }
 
         @DistributedLock(
-            key = "'user-' + #userId",
+            key = "user-{userId}",
             timeUnit = TimeUnit.MINUTES,
             waitTime = 2,
-            leaseTime = 0 // This will be converted to milliseconds with a different unit
+            leaseTime = 5
         )
-        fun testMethodWithCustomTimeUnits(userId: String): String {
-            // For the leaseTime, we'll use MILLISECONDS to test mixed time units
+        fun testMethodWithCustomTimeUnits(@LockKey("userId") userId: String): String {
             return "result"
         }
     }

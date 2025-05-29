@@ -8,7 +8,11 @@ import org.slf4j.LoggerFactory
 import org.springframework.core.Ordered.HIGHEST_PRECEDENCE
 import org.springframework.core.annotation.Order
 import org.springframework.stereotype.Component
+import java.lang.reflect.Method
 
+/**
+ * @DistributedLock 어노테이션이 적용된 메서드에 AOP를 적용하여 분산 락을 처리
+ */
 @Aspect
 @Component
 @Order(HIGHEST_PRECEDENCE)
@@ -29,16 +33,24 @@ class DistributedLockAdvisor(
         val parameterNames = signature.parameterNames
         val args = joinPoint.args
 
-        val key = annotationProcessor.resolveKey(annotation, args, parameterNames)
+        val key = annotationProcessor.resolveKey(annotation, method, args, parameterNames)
 
-        log.debug("Acquiring distributed lock: {}", key)
+        log.debug("Acquiring distributed lock with key: '{}' for method: {}", key, method.name)
 
-        return lockProvider.withLock(
-            key = key,
-            waitTime = annotation.timeUnit.toMillis(annotation.waitTime),
-            leaseTime = annotation.timeUnit.toMillis(annotation.leaseTime)
-        ) {
-            joinPoint.proceed()
+        return try {
+            lockProvider.withLock(
+                key = key,
+                waitTime = annotation.timeUnit.toMillis(annotation.waitTime),
+                leaseTime = annotation.timeUnit.toMillis(annotation.leaseTime)
+            ) {
+                log.debug("Successfully acquired lock: '{}'. Executing method: {}", key, method.name)
+                joinPoint.proceed()
+            }
+        } catch (exception: Exception) {
+            log.error("Error while processing distributed lock '{}' for method: {}", key, method.name, exception)
+            throw exception
+        } finally {
+            log.debug("Released distributed lock: '{}'", key)
         }
     }
 }
