@@ -9,7 +9,7 @@ plugins {
 }
 
 dependencies {
-    implementation(project(":ball-user"))
+    implementation(project(":ball-starter:ball-user-starter"))
     
     implementation(project(":adapter:outbound:event-publisher-domain"))
     implementation(project(":adapter:inbound:event-consumer-domain"))

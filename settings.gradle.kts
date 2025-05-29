@@ -38,5 +38,6 @@ include("adapter:inbound:event-consumer-core")
 include("adapter:inbound:event-consumer-domain")
 
 // # Starter
-include("ball-user")
 include("example-project")
+include("ball-starter")
+include("ball-starter:ball-user-starter")
