@@ -144,39 +144,3 @@ class EventHandlerRegistry : ApplicationContextAware {
     }
 }
 
-/**
- * 이벤트 핸들러 메서드 정보를 담는 데이터 클래스
- */
-data class EventHandlerMethod(
-    val bean: Any,
-    val method: Method,
-    val eventType: Class<out DomainEvent>,
-    val methodName: String
-) {
-
-    /**
-     * 핸들러 메서드 실행
-     */
-    suspend fun invoke(event: DomainEvent) {
-        try {
-            method.isAccessible = true
-            method.invoke(bean, event)
-        } catch (e: Exception) {
-            throw EventHandlerExecutionException("Failed to execute event handler: $methodName", e)
-        }
-    }
-}
-
-/**
- * 이벤트 핸들러 어노테이션
- *
- * 메서드가 이벤트 핸들러임을 표시하는 어노테이션입니다.
- */
-@Target(AnnotationTarget.FUNCTION)
-@Retention(AnnotationRetention.RUNTIME)
-annotation class EventHandler
-
-/**
- * 이벤트 핸들러 실행 예외
- */
-class EventHandlerExecutionException(message: String, cause: Throwable) : RuntimeException(message, cause)
