@@ -2,9 +2,7 @@ package io.clroot.ball.adapter.outbound.event.publisher.domain
 
 import io.clroot.ball.adapter.outbound.event.publisher.core.EventPublisherBase
 import io.clroot.ball.adapter.shared.messaging.DomainEventWrapper
-import io.clroot.ball.application.port.outbound.EventProducerPort
 import io.clroot.ball.domain.event.DomainEvent
-import io.clroot.ball.domain.event.Event
 import org.springframework.context.ApplicationEventPublisher
 import org.springframework.stereotype.Component
 
@@ -35,32 +33,7 @@ import org.springframework.stereotype.Component
 class SpringDomainEventProducer(
     private val applicationEventPublisher: ApplicationEventPublisher,
     private val properties: DomainEventPublisherProperties
-) : EventPublisherBase(), EventProducerPort {
-
-    /**
-     * EventProducerPort 구현 - 범용 이벤트 발행
-     */
-    override suspend fun produce(event: Event) {
-        // 현재는 DomainEvent만 지원하지만, 향후 IntegrationEvent도 지원 가능
-        when (event) {
-            is DomainEvent -> produce(event)
-            else -> {
-                log.warn(
-                    "SpringDomainEventProducer currently supports only DomainEvent. " +
-                            "Received: {} ({})", event.type, event.javaClass.simpleName
-                )
-                throw IllegalArgumentException("Unsupported event type: ${event.javaClass.simpleName}")
-            }
-        }
-    }
-
-    /**
-     * EventProducerPort 구현 - 여러 이벤트 일괄 발행
-     */
-    override suspend fun produce(events: List<Event>) {
-        events.forEach { produce(it) }
-    }
-
+) : EventPublisherBase() {
 
     override fun beforePublish(event: DomainEvent) {
         if (properties.enableDebugLogging) {
@@ -72,23 +45,23 @@ class SpringDomainEventProducer(
     }
 
     override fun doPublish(event: DomainEvent) {
-        if (properties.enableDebugLogging) {
-            log.debug(
-                "[SPRING] Publishing domain event via ApplicationEventPublisher: {} (ID: {})",
-                event.type, event.id
-            )
-        }
+        log.debug("[SPRING] Publishing domain event via ApplicationEventPublisher: {} (ID: {})", event.type, event.id)
 
         // Spring ApplicationEvent로 래핑하여 발행
         val wrapper = DomainEventWrapper(event)
+        log.info("[SPRING] Created DomainEventWrapper: {}", wrapper)
 
         if (properties.async) {
             // 비동기 발행 (기본값)
+            log.info("[SPRING] Publishing event ASYNC: {}", wrapper)
             applicationEventPublisher.publishEvent(wrapper)
         } else {
             // 동기 발행 (디버깅용)
+            log.info("[SPRING] Publishing event SYNC: {}", wrapper)
             applicationEventPublisher.publishEvent(wrapper)
         }
+        
+        log.info("[SPRING] Event published to ApplicationEventPublisher: {}", wrapper)
     }
 
     override fun afterPublish(event: DomainEvent) {
@@ -183,15 +156,3 @@ class SpringDomainEventProducer(
         }
     }
 }
-
-/**
- * @deprecated SpringDomainEventProducer를 사용하세요.
- *
- * 이 별칭은 호환성을 위해 제공되지만, 새로운 코드에서는 SpringDomainEventProducer를 직접 사용하는 것을 권장합니다.
- */
-@Deprecated(
-    message = "Use SpringDomainEventProducer instead",
-    replaceWith = ReplaceWith("SpringDomainEventProducer"),
-    level = DeprecationLevel.WARNING
-)
-typealias DomainEventPublisher = SpringDomainEventProducer

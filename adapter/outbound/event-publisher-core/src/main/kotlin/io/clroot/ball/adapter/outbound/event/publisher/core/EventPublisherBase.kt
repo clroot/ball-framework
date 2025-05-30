@@ -46,6 +46,23 @@ abstract class EventPublisherBase :
     }
 
     /**
+     * 도메인 이벤트 발행 (템플릿 메서드)
+     *
+     * beforePublish → doPublish → afterPublish 순서로 실행됩니다.
+     * 예외 발생 시 handlePublishError가 호출됩니다.
+     */
+    fun produce(event: DomainEvent) {
+        try {
+            beforePublish(event)
+            doPublish(event)
+            afterPublish(event)
+        } catch (error: Exception) {
+            handlePublishError(event, error)
+            throw error
+        }
+    }
+
+    /**
      * 실제 이벤트 발행 구현
      *
      * 하위 클래스에서 구체적인 메시징 시스템에 맞게 구현해야 합니다.
