@@ -11,7 +11,7 @@ allOpen {
 }
 
 dependencies {
-    api(project(":adapter:outbound:persistence-core"))
+    api(project(":adapter:outbound:data-access-core"))
 
     // Spring Data JPA
     api("org.springframework.boot:spring-boot-starter-data-jpa")

@@ -23,9 +23,9 @@ include("adapter:shared:messaging-common")
 
 // ## Adapter Outbound modules
 include("adapter:outbound")
-include("adapter:outbound:persistence-core")
-include("adapter:outbound:persistence-jpa")
-include("adapter:outbound:persistence-redis")
+include("adapter:outbound:data-access-core")
+include("adapter:outbound:data-access-jpa")
+include("adapter:outbound:data-access-redis")
 include("adapter:outbound:event-publisher-core")
 include("adapter:outbound:event-publisher-domain")
 
