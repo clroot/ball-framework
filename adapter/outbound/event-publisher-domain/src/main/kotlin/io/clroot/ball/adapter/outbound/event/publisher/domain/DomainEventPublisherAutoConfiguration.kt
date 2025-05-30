@@ -26,7 +26,7 @@ import org.springframework.context.annotation.Primary
  * class UserService(
  *     private val eventProducer: EventProducerPort
  * ) {
- *     suspend fun createUser(request: CreateUserRequest) {
+ *     fun createUser(request: CreateUserRequest) {  // ThreadPool 기반
  *         // ... 비즈니스 로직
  *         eventProducer.produce(UserCreatedEvent(user.id, user.email))
  *     }

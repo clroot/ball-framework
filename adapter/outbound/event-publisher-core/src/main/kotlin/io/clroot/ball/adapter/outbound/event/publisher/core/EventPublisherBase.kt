@@ -4,12 +4,20 @@ import io.clroot.ball.application.port.outbound.EventProducerPort
 import io.clroot.ball.domain.event.DomainEvent
 import io.clroot.ball.domain.event.Event
 import org.slf4j.LoggerFactory
+import java.util.concurrent.CompletableFuture
 
 /**
- * 이벤트 발행자 기본 클래스
+ * 이벤트 발행자 기본 클래스 - ThreadPool 기반
  *
+ * 코루틴 기반에서 ThreadPool 기반으로 완전히 변경되었습니다.
  * 모든 이벤트 발행자 구현체의 공통 기능을 제공합니다.
  * 템플릿 메서드 패턴을 사용하여 구체적인 발행 로직은 하위 클래스에서 구현하도록 합니다.
+ *
+ * ThreadPool 기반 특징:
+ * - 자연스러운 blocking I/O 지원
+ * - JPA와 자연스러운 연동
+ * - CompletableFuture를 통한 비동기 처리
+ * - 예측 가능한 리소스 관리
  *
  * 주요 기능:
  * - 공통 로깅 및 에러 처리
@@ -17,15 +25,14 @@ import org.slf4j.LoggerFactory
  * - 메트릭 수집 (확장 가능)
  * - EventProducerPort와 레거시 DomainEventPublisher 인터페이스 모두 지원
  */
-abstract class EventPublisherBase :
-    EventProducerPort { // 새로운 인터페이스
+abstract class EventPublisherBase : EventProducerPort {
 
     protected val log = LoggerFactory.getLogger(javaClass)
 
     /**
-     * EventProducerPort 구현 - 범용 이벤트 발행
+     * EventProducerPort 구현 - 범용 이벤트 발행 (동기)
      */
-    override suspend fun produce(event: Event) {
+    override fun produce(event: Event) {
         when (event) {
             is DomainEvent -> produce(event)
             else -> {
@@ -39,14 +46,32 @@ abstract class EventPublisherBase :
     }
 
     /**
-     * EventProducerPort 구현 - 여러 이벤트 일괄 발행
+     * EventProducerPort 구현 - 범용 이벤트 발행 (비동기)
      */
-    override suspend fun produce(events: List<Event>) {
+    override fun produceAsync(event: Event): CompletableFuture<Void> {
+        return CompletableFuture.runAsync {
+            produce(event)
+        }
+    }
+
+    /**
+     * EventProducerPort 구현 - 여러 이벤트 일괄 발행 (동기)
+     */
+    override fun produce(events: List<Event>) {
         events.forEach { produce(it) }
     }
 
     /**
-     * 도메인 이벤트 발행 (템플릿 메서드)
+     * EventProducerPort 구현 - 여러 이벤트 일괄 발행 (비동기)
+     */
+    override fun produceAsync(events: List<Event>): CompletableFuture<Void> {
+        return CompletableFuture.runAsync {
+            produce(events)
+        }
+    }
+
+    /**
+     * 도메인 이벤트 발행 (템플릿 메서드) - ThreadPool 기반
      *
      * beforePublish → doPublish → afterPublish 순서로 실행됩니다.
      * 예외 발생 시 handlePublishError가 호출됩니다.
@@ -63,9 +88,10 @@ abstract class EventPublisherBase :
     }
 
     /**
-     * 실제 이벤트 발행 구현
+     * 실제 이벤트 발행 구현 - ThreadPool 기반
      *
      * 하위 클래스에서 구체적인 메시징 시스템에 맞게 구현해야 합니다.
+     * blocking I/O를 자연스럽게 사용할 수 있습니다.
      *
      * @param event 발행할 도메인 이벤트
      */

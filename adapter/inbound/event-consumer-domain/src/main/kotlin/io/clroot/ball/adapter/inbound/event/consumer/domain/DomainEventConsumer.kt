@@ -2,28 +2,31 @@ package io.clroot.ball.adapter.inbound.event.consumer.domain
 
 import io.clroot.ball.adapter.inbound.event.consumer.core.EventConsumerBase
 import io.clroot.ball.adapter.inbound.event.consumer.core.EventHandlerRegistryInterface
+import io.clroot.ball.adapter.inbound.event.consumer.core.ThreadPoolEventHandlerMethod
 import io.clroot.ball.domain.event.DomainEvent
-import kotlinx.coroutines.withTimeout
 import org.springframework.context.event.EventListener
 import org.springframework.core.annotation.Order
 import org.springframework.stereotype.Component
 import org.springframework.transaction.event.TransactionPhase
 import org.springframework.transaction.event.TransactionalEventListener
+import java.util.concurrent.CompletableFuture
+import java.util.concurrent.TimeUnit
 
 /**
- * Spring ApplicationEvent 기반 도메인 이벤트 소비자
+ * Spring ApplicationEvent 기반 도메인 이벤트 소비자 - ThreadPool 기반
  *
+ * 코루틴 기반에서 ThreadPool 기반으로 완전히 변경되었습니다.
  * Spring의 ApplicationEventPublisher 메커니즘을 통해 발행된 도메인 이벤트를 수신하고 처리합니다.
  * 주로 같은 프로세스 내에서 발생하는 도메인 이벤트들을 즉시 처리하는 역할을 담당합니다.
  *
- * 기술적 특징:
- * - Spring ApplicationEvent 기반 (프로세스 내 메모리 처리)
- * - 높은 성능 (네트워크 오버헤드 없음)
- * - 트랜잭션 컨텍스트 공유
- * - JVM 종료 시 이벤트 손실 가능 (메모리 기반)
+ * ThreadPool 기반 특징:
+ * - JPA와 자연스러운 연동
+ * - 단순한 blocking I/O 처리
+ * - 예측 가능한 리소스 관리
+ * - 향상된 디버깅 경험
  * 
  * vs 외부 메시징 시스템:
- * - SpringDomainEventConsumer: 프로세스 내, 즉시 처리, 높은 성능
+ * - SpringDomainEventConsumer: 프로세스 내, ThreadPool 기반, 높은 성능
  * - KafkaEventConsumer: 프로세스 간, 내구성, 확장성 (미래 구현)
  * 
  * 사용 용도:
@@ -86,9 +89,9 @@ class SpringDomainEventConsumer(
     }
 
     /**
-     * 실제 이벤트 핸들러들을 실행하는 템플릿 메서드 구현
+     * 실제 이벤트 핸들러들을 실행하는 ThreadPool 기반 구현
      */
-    override suspend fun executeEventHandlers(event: DomainEvent) {
+    override fun executeEventHandlers(event: DomainEvent) {
         val handlers = handlerRegistry.getHandlers(event.javaClass)
 
         if (handlers.isEmpty()) {
@@ -102,33 +105,71 @@ class SpringDomainEventConsumer(
         log.debug("Executing {} handlers for domain event: {} (order: {})", 
             sortedHandlers.size, event.type, sortedHandlers.map { "${it.methodName}(${it.order})" })
 
-        // 타임아웃 적용하여 핸들러 실행
-        withTimeout(domainProperties.timeoutMs) {
-            for (handler in sortedHandlers) {
-                try {
-                    log.debug("Executing handler: {} (order={}, async={}) for event: {}", 
-                        handler.methodName, handler.order, handler.async, event.type)
-                    
-                    handler.invoke(event)
+        // ThreadPool 기반 핸들러 실행
+        executeHandlersWithThreadPool(event, sortedHandlers)
+    }
 
-                    // 성공 메트릭 기록
-                    recordSuccessMetrics(event)
-
-                } catch (e: Exception) {
-                    log.error("Handler execution failed: {} for event: {}", handler.methodName, event.type, e)
-
-                    // 개별 핸들러 실패가 다른 핸들러에 영향을 주지 않도록 처리
-                    recordHandlerErrorMetrics(event, handler, e)
-
-                    // 전체 처리를 중단할지 결정 (설정에 따라)
-                    if (!domainProperties.continueOnError) {
-                        log.warn("Stopping handler execution due to error and continueOnError=false")
-                        throw e
-                    } else {
-                        log.debug("Continuing with next handler despite error (continueOnError=true)")
+    /**
+     * ThreadPool 기반 핸들러 실행
+     */
+    private fun executeHandlersWithThreadPool(event: DomainEvent, handlers: List<ThreadPoolEventHandlerMethod>) {
+        val futures = mutableListOf<CompletableFuture<Void>>()
+        
+        for (handler in handlers) {
+            try {
+                log.debug("Executing handler: {} (order={}) for event: {}",
+                    handler.methodName, handler.order, event.type)
+                
+                // ThreadPool에서 비동기 실행
+                val future = if (domainProperties.async) {
+                    handler.submit(event)
+                } else {
+                    // 동기 실행
+                    CompletableFuture.runAsync {
+                        handler.invoke(event)
                     }
                 }
+                
+                futures.add(future)
+
+                // 성공 메트릭 기록 (비동기로)
+                future.thenRun { recordSuccessMetrics(event) }
+
+            } catch (e: Exception) {
+                log.error("Handler execution failed: {} for event: {}", handler.methodName, event.type, e)
+
+                // 개별 핸들러 실패가 다른 핸들러에 영향을 주지 않도록 처리
+                recordHandlerErrorMetrics(event, handler, e)
+
+                // 전체 처리를 중단할지 결정 (설정에 따라)
+                if (!domainProperties.continueOnError) {
+                    log.warn("Stopping handler execution due to error and continueOnError=false")
+                    throw e
+                } else {
+                    log.debug("Continuing with next handler despite error (continueOnError=true)")
+                }
             }
+        }
+        
+        // 동기 모드인 경우 모든 작업 완료 대기
+        if (!domainProperties.async) {
+            waitForCompletion(futures, event)
+        }
+    }
+
+    /**
+     * 모든 핸들러 완료 대기 (동기 모드)
+     */
+    private fun waitForCompletion(futures: List<CompletableFuture<Void>>, event: DomainEvent) {
+        try {
+            val allTasks = CompletableFuture.allOf(*futures.toTypedArray())
+            allTasks.get(domainProperties.timeoutMs, TimeUnit.MILLISECONDS)
+            
+            log.debug("All handlers completed for event: {}", event.type)
+            
+        } catch (e: Exception) {
+            log.error("Timeout or error waiting for handlers to complete for event: {}", event.type, e)
+            throw e
         }
     }
 
@@ -140,7 +181,7 @@ class SpringDomainEventConsumer(
 
         if (domainProperties.enableDebugLogging) {
             log.debug(
-                "[SPRING] Starting domain event processing: {} (ID: {})",
+                "[SPRING-THREADPOOL] Starting domain event processing: {} (ID: {})",
                 event.type, event.id
             )
         }
@@ -153,7 +194,7 @@ class SpringDomainEventConsumer(
         super.afterEventProcessing(event)
 
         if (domainProperties.enableDebugLogging) {
-            log.debug("[SPRING] Completed domain event processing: {} (ID: {})", event.type, event.id)
+            log.debug("[SPRING-THREADPOOL] Completed domain event processing: {} (ID: {})", event.type, event.id)
         }
 
         // 도메인 이벤트 특화 후처리 로직 (예: 캐시 갱신)
@@ -171,17 +212,53 @@ class SpringDomainEventConsumer(
     /**
      * 핸들러별 에러 메트릭 기록
      */
-    private fun recordHandlerErrorMetrics(event: DomainEvent, handler: io.clroot.ball.adapter.inbound.event.consumer.core.EventHandlerMethod, error: Exception) {
+    private fun recordHandlerErrorMetrics(event: DomainEvent, handler: ThreadPoolEventHandlerMethod, error: Exception) {
         if (domainProperties.enableMetrics) {
             // TODO: Micrometer 메트릭 수집
             // counter("spring.domain.events.handler.errors")
             //     .tag("event.type", event.type)
             //     .tag("handler", handler.methodName)
             //     .tag("handler.order", handler.order.toString())
-            //     .tag("handler.async", handler.async.toString())
             //     .tag("error.type", error.javaClass.simpleName)
             //     .increment()
         }
+    }
+    
+    /**
+     * 모든 핸들러의 메트릭 수집
+     */
+    fun getAllHandlerMetrics(): Map<String, io.clroot.ball.adapter.inbound.event.consumer.core.EventHandlerMetrics> {
+        val metrics = mutableMapOf<String, io.clroot.ball.adapter.inbound.event.consumer.core.EventHandlerMetrics>()
+        
+        handlerRegistry.getAllHandledEventTypes().forEach { eventType ->
+            val handlers = handlerRegistry.getHandlers(eventType)
+            handlers.forEach { handler ->
+                metrics[handler.methodName] = handler.getMetrics()
+            }
+        }
+        
+        return metrics
+    }
+    
+    /**
+     * 핸들러 메트릭 요약 출력
+     */
+    fun printHandlerMetrics() {
+        println("\n📊 SpringDomainEventConsumer Handler Metrics:")
+        println("=" * 70)
+        
+        val allMetrics = getAllHandlerMetrics()
+        
+        if (allMetrics.isEmpty()) {
+            println("No handlers found.")
+            return
+        }
+        
+        allMetrics.values.forEach { metrics ->
+            println(metrics.summary())
+        }
+        
+        println("=" * 70)
     }
 }
 
@@ -196,3 +273,6 @@ class SpringDomainEventConsumer(
     level = DeprecationLevel.WARNING
 )
 typealias DomainEventConsumer = SpringDomainEventConsumer
+
+// 유틸리티 확장 함수
+private operator fun String.times(n: Int): String = this.repeat(n)

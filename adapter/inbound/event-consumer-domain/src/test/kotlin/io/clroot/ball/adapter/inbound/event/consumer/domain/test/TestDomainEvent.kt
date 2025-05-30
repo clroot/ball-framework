@@ -8,5 +8,22 @@ import io.clroot.ball.domain.event.DomainEvent
 data class TestDomainEvent(
     override val id: String,
     override val type: String,
-    override val occurredAt: java.time.Instant
-) : DomainEvent
+    override val occurredAt: java.time.Instant,
+    val message: String = "Default test message"
+) : DomainEvent {
+    
+    companion object {
+        fun create(
+            id: String = "test-${System.currentTimeMillis()}",
+            type: String = "TestEvent",
+            message: String = "Test message"
+        ): TestDomainEvent {
+            return TestDomainEvent(
+                id = id,
+                type = type,
+                occurredAt = java.time.Instant.now(),
+                message = message
+            )
+        }
+    }
+}
