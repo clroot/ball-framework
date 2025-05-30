@@ -23,15 +23,19 @@ include("adapter:shared:messaging-common")
 
 // ## Adapter Outbound modules
 include("adapter:outbound")
+// ### Data Access Adapter
 include("adapter:outbound:data-access-core")
 include("adapter:outbound:data-access-jpa")
 include("adapter:outbound:data-access-redis")
+// ### Event Publisher Adapter
 include("adapter:outbound:event-publisher-core")
 include("adapter:outbound:event-publisher-domain")
 
 // ## Adapter Inbound modules
 include("adapter:inbound")
+// ### HTTP Adapter
 include("adapter:inbound:rest")
+// ### Event Consumer Adapter
 include("adapter:inbound:event-consumer-core")
 include("adapter:inbound:event-consumer-domain")
 
