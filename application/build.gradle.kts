@@ -4,5 +4,4 @@ dependencies {
     implementation(project(":shared:lock"))
 
     compileOnly("org.springframework:spring-context")
-    compileOnly("org.springframework:spring-tx")
 }

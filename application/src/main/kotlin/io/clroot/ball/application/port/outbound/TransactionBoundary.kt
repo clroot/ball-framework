@@ -5,14 +5,14 @@ import arrow.core.Either
 /**
  * 트랜잭션 관리자 인터페이스
  */
-interface TransactionManager {
+interface TransactionBoundary {
     /**
      * 트랜잭션 내에서 함수 실행
      *
      * @param block 트랜잭션 내에서 실행할 함수
      * @return 함수 실행 결과
      */
-    fun <T> withTransaction(block: () -> T): T
+    fun <T> execute(block: () -> T): T
 
     /**
      * 새로운 트랜잭션 내에서 함수 실행
@@ -20,11 +20,11 @@ interface TransactionManager {
      * @param block 새로운 트랜잭션 내에서 실행할 함수
      * @return 함수 실행 결과
      */
-    fun <T> withNewTransaction(block: () -> T): T
+    fun <T> executeIsolated(block: () -> T): T
 
-    fun <E : Any, T> withTransaction(block: () -> Either<E, T>): Either<E, T> {
+    fun <E : Any, T> execute(block: () -> Either<E, T>): Either<E, T> {
         return Either.catch {
-            withNewTransaction {
+            executeIsolated {
                 block().fold({ error -> throw TransactionWrappedException(error) }, { it })
             }
         }.fold(
