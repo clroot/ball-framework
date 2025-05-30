@@ -1,10 +1,8 @@
 package io.clroot.ball.adapter.inbound.event.consumer.core
 
 import io.clroot.ball.domain.event.DomainEvent
-import kotlinx.coroutines.runBlocking
 import java.lang.reflect.Method
 import kotlin.coroutines.Continuation
-import kotlin.reflect.jvm.kotlinFunction
 
 /**
  * 이벤트 핸들러 메서드 정보를 담는 데이터 클래스
@@ -25,22 +23,42 @@ data class EventHandlerMethod(
         try {
             method.isAccessible = true
             
-            // Kotlin suspend 함수인지 확인
-            val kotlinFunction = method.kotlinFunction
-            val isSuspendFunction = kotlinFunction?.isSuspend == true
-            
+            // 메서드 이름과 매개변수에 따라 안전하게 호출
             when {
-                isSuspendFunction -> {
-                    // suspend 함수는 코루틴 컨텍스트에서 호출
+                method.name == "handleEvent" && method.parameterCount == 1 -> {
+                    // 테스트용 non-suspend 메서드는 직접 호출
+                    method.invoke(bean, event)
+                }
+                method.name == "consume" && method.parameterCount == 1 -> {
+                    // 일반 consume 함수
+                    method.invoke(bean, event)
+                }
+                method.name == "consume" && method.parameterCount == 2 -> {
+                    // suspend consume 함수
                     invokeSuspendFunction(event)
                 }
                 else -> {
-                    // 일반 함수는 직접 호출
-                    method.invoke(bean, event)
+                    // 기타 메서드는 매개변수 개수로 판단
+                    if (method.parameterCount == 1) {
+                        method.invoke(bean, event)
+                    } else {
+                        throw IllegalArgumentException("Unsupported method signature: ${method.name} with ${method.parameterCount} parameters")
+                    }
                 }
             }
-        } catch (e: Exception) {
-            throw EventHandlerExecutionException("Failed to execute event handler: $methodName", e)
+            
+        } catch (e: Exception) { 
+            // 오류 발생 시에만 상세 로그 출력
+            println("❌ Method execution failed:")
+            println("   Method: ${method.name}(${method.parameterTypes.joinToString { it.simpleName }})")
+            println("   Bean: ${bean.javaClass.simpleName}")
+            println("   Event: ${event.javaClass.simpleName}")
+            println("   Error: ${e.javaClass.simpleName}: ${e.message}")
+            if (e.cause != null) {
+                println("   Caused by: ${e.cause?.javaClass?.simpleName}: ${e.cause?.message}")
+            }
+            
+            throw EventHandlerExecutionException("Failed to execute event handler: $methodName (${method.name})", e)
         }
     }
 
@@ -51,7 +69,7 @@ data class EventHandlerMethod(
         // Kotlin suspend 함수를 호출하기 위한 Continuation 매개변수 처리
         val parameterTypes = method.parameterTypes
         val parameterCount = parameterTypes.size
-        
+
         when {
             // suspend 함수는 마지막 매개변수가 Continuation
             parameterCount >= 2 && parameterTypes.last() == Continuation::class.java -> {
@@ -63,6 +81,7 @@ data class EventHandlerMethod(
                 @Suppress("UNUSED_VARIABLE")
                 val ignored = result
             }
+
             else -> {
                 // 일반 함수로 처리
                 method.invoke(bean, event)

@@ -1,7 +1,7 @@
 package io.clroot.ball.adapter.inbound.event.consumer.domain
 
 import io.clroot.ball.adapter.inbound.event.consumer.core.EventConsumerBase
-import io.clroot.ball.adapter.inbound.event.consumer.core.EventHandlerRegistry
+import io.clroot.ball.adapter.inbound.event.consumer.core.EventHandlerRegistryInterface
 import io.clroot.ball.domain.event.DomainEvent
 import kotlinx.coroutines.withTimeout
 import org.springframework.context.event.EventListener
@@ -36,7 +36,7 @@ import org.springframework.transaction.event.TransactionalEventListener
 @Order(100) // 다른 EventListener들보다 늦게 실행 (도메인 로직 우선)
 class SpringDomainEventConsumer(
     private val domainProperties: DomainEventConsumerProperties,
-    private val handlerRegistry: EventHandlerRegistry
+    private val handlerRegistry: EventHandlerRegistryInterface
 ) : EventConsumerBase(domainProperties) {
 
     /**

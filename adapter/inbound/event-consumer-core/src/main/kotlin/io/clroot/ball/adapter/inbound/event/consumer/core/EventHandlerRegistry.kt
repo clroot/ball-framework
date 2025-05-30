@@ -23,7 +23,7 @@ import java.util.concurrent.ConcurrentHashMap
  * 실제 핸들러는 애플리케이션 계층에 위치합니다.
  */
 @Component
-class EventHandlerRegistry : ApplicationContextAware {
+open class EventHandlerRegistry : ApplicationContextAware, EventHandlerRegistryInterface {
 
     private val log = LoggerFactory.getLogger(javaClass)
     private lateinit var applicationContext: ApplicationContext
@@ -43,21 +43,21 @@ class EventHandlerRegistry : ApplicationContextAware {
     /**
      * 특정 이벤트 타입에 대한 핸들러들 반환
      */
-    fun getHandlers(eventType: Class<out DomainEvent>): List<EventHandlerMethod> {
+    override fun getHandlers(eventType: Class<out DomainEvent>): List<EventHandlerMethod> {
         return handlerMap[eventType]?.toList() ?: emptyList()
     }
 
     /**
      * 모든 핸들러가 처리하는 이벤트 타입들 반환
      */
-    fun getAllHandledEventTypes(): Set<Class<out DomainEvent>> {
+    override fun getAllHandledEventTypes(): Set<Class<out DomainEvent>> {
         return handlerMap.keys.toSet()
     }
 
     /**
      * 핸들러 등록
      */
-    fun registerHandler(eventType: Class<out DomainEvent>, handler: EventHandlerMethod) {
+    override fun registerHandler(eventType: Class<out DomainEvent>, handler: EventHandlerMethod) {
         handlerMap.computeIfAbsent(eventType) { mutableListOf() }.add(handler)
         log.debug("Registered event handler: {} -> {}", eventType.simpleName, handler.methodName)
     }
@@ -65,7 +65,7 @@ class EventHandlerRegistry : ApplicationContextAware {
     /**
      * 핸들러 제거
      */
-    fun unregisterHandler(eventType: Class<out DomainEvent>, handler: EventHandlerMethod) {
+    override fun unregisterHandler(eventType: Class<out DomainEvent>, handler: EventHandlerMethod) {
         handlerMap[eventType]?.remove(handler)
         log.debug("Unregistered event handler: {} -> {}", eventType.simpleName, handler.methodName)
     }
@@ -99,14 +99,8 @@ class EventHandlerRegistry : ApplicationContextAware {
             try {
                 val eventType = handler.eventType.java as Class<out DomainEvent>
 
-                val handlerMethod = EventHandlerMethod(
-                    bean = handler,
-                    method = handler.javaClass.getMethod("consume", eventType),
-                    eventType = eventType,
-                    methodName = "${handler.handlerName}.consume",
-                    async = handler.async,
-                    order = handler.order
-                )
+                // 팩토리를 사용하여 안전하게 EventHandlerMethod 생성
+                val handlerMethod = EventHandlerMethodFactory.createFromPort(handler)
 
                 registerHandler(eventType, handlerMethod)
                 count++
@@ -119,6 +113,8 @@ class EventHandlerRegistry : ApplicationContextAware {
                     handler.order
                 )
 
+            } catch (e: EventHandlerCreationException) {
+                log.error("Failed to create EventHandlerMethod for bean: {} - {}", beanName, e.message, e)
             } catch (e: Exception) {
                 log.warn("Failed to register EventConsumerPort bean: {}", beanName, e)
             }
