@@ -7,6 +7,7 @@ dependencies {
     api(project(":shared:arrow"))
 
     api("org.springframework.data:spring-data-commons")
+    api("org.springframework:spring-context")
 
     // Jackson for JSON processing
     api("com.fasterxml.jackson.core:jackson-databind")

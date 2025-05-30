@@ -1,9 +1,11 @@
-package io.clroot.ball.adapter.outbound.persistence.core.utils
+package io.clroot.ball.adapter.outbound.persistence.core
 
 import io.clroot.ball.domain.model.core.paging.*
 import org.springframework.data.domain.Page as SpringPage
 import org.springframework.data.domain.Pageable as SpringPageable
 import org.springframework.data.domain.Sort as SpringSort
+
+typealias RepositoryBean = org.springframework.stereotype.Repository
 
 object SpringDataConverter {
     fun toSpringPageable(pageRequest: PageRequest): SpringPageable {
