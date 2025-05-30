@@ -1,6 +1,6 @@
 package io.clroot.ball.adapter.outbound.event.publisher.domain
 
-import io.clroot.ball.application.port.outbound.DomainEventPublisher as DomainEventPublisherPort
+import io.clroot.ball.application.port.outbound.EventProducerPort
 import org.slf4j.LoggerFactory
 import org.springframework.boot.autoconfigure.AutoConfiguration
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
@@ -11,24 +11,24 @@ import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Primary
 
 /**
- * 도메인 이벤트 발행자 자동 설정
+ * Spring 도메인 이벤트 발행자 자동 설정
  * 
  * 이 설정 클래스는 다음 조건을 만족할 때 활성화됩니다:
  * - ball.events.domain.enabled = true (기본값)
- * - DomainEventPublisher 빈이 아직 정의되지 않은 경우
+ * - EventProducerPort 빈이 아직 정의되지 않은 경우
  * 
  * 자동으로 다음 빈들을 등록합니다:
- * - DomainEventPublisher: 도메인 이벤트 발행 구현체
+ * - SpringDomainEventProducer: Spring ApplicationEvent 기반 도메인 이벤트 발행 구현체
  * 
  * 사용 예시:
  * ```kotlin
  * @Service
  * class UserService(
- *     private val eventPublisher: DomainEventPublisher
+ *     private val eventProducer: EventProducerPort
  * ) {
- *     fun createUser(request: CreateUserRequest) {
+ *     suspend fun createUser(request: CreateUserRequest) {
  *         // ... 비즈니스 로직
- *         eventPublisher.publish(UserCreatedEvent(user.id, user.email))
+ *         eventProducer.produce(UserCreatedEvent(user.id, user.email))
  *     }
  * }
  * ```
@@ -46,27 +46,36 @@ class DomainEventPublisherAutoConfiguration {
     private val log = LoggerFactory.getLogger(javaClass)
 
     /**
-     * 도메인 이벤트 발행자 빈 등록
+     * Spring 도메인 이벤트 발행자 빈 등록
      * 
-     * @Primary 어노테이션을 통해 기본 DomainEventPublisher로 설정됩니다.
-     * 다른 DomainEventPublisher 구현체가 있을 경우 이 빈이 우선적으로 사용됩니다.
+     * @Primary 어노테이션을 통해 기본 EventProducerPort로 설정됩니다.
+     * 다른 EventProducerPort 구현체가 있을 경우 이 빈이 우선적으로 사용됩니다.
      */
     @Bean
     @Primary
-    @ConditionalOnMissingBean(DomainEventPublisherPort::class)
-    fun domainEventPublisher(
+    @ConditionalOnMissingBean(EventProducerPort::class)
+    fun eventProducerPort(
         applicationEventPublisher: ApplicationEventPublisher,
         properties: DomainEventPublisherProperties
-    ): DomainEventPublisherPort {
+    ): EventProducerPort {
         
-        log.info("Configuring Domain Event Publisher with properties: async={}, retry={}, metrics={}", 
+        log.info("Configuring Spring Domain Event Producer with properties: async={}, retry={}, metrics={}", 
             properties.async, properties.enableRetry, properties.enableMetrics)
         
         if (properties.enableDebugLogging) {
-            log.debug("Domain Event Publisher debug logging is enabled")
+            log.debug("Spring Domain Event Producer debug logging is enabled")
         }
         
-        return DomainEventPublisher(applicationEventPublisher, properties)
+        return SpringDomainEventProducer(applicationEventPublisher, properties)
+    }
+    
+    /**
+     * 호환성을 위한 DomainEventPublisher 별칭
+     */
+    @Bean
+    @ConditionalOnMissingBean(name = ["domainEventPublisher"])
+    fun domainEventPublisher(eventProducerPort: EventProducerPort): EventProducerPort {
+        return eventProducerPort
     }
 
     /**

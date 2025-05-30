@@ -3,7 +3,7 @@ package io.clroot.ball.application.orchestration
 import arrow.core.Either
 import arrow.core.left
 import arrow.core.right
-import io.clroot.ball.application.port.outbound.DomainEventPublisher
+import io.clroot.ball.application.port.outbound.EventProducerPort
 import io.clroot.ball.domain.event.DomainEvent
 import io.clroot.ball.domain.model.core.StateMachine
 import io.clroot.ball.domain.model.core.StateTransitionError
@@ -26,7 +26,7 @@ abstract class ProcessManager<T, E> {
     /**
      * 도메인 이벤트 발행자
      */
-    protected abstract val eventPublisher: DomainEventPublisher
+    protected abstract val eventPublisher: EventProducerPort
     
     /**
      * 프로세스 시작
@@ -65,8 +65,8 @@ abstract class ProcessManager<T, E> {
      *
      * @param event 발행할 도메인 이벤트
      */
-    protected fun publishEvent(event: DomainEvent) {
-        eventPublisher.publish(event)
+    protected suspend fun publishEvent(event: DomainEvent) {
+        eventPublisher.produce(event)
     }
 }
 
@@ -83,7 +83,7 @@ abstract class ProcessManager<T, E> {
  */
 abstract class StateMachineProcessManager<S, E, X>(
     private val stateMachine: StateMachine<S, E>,
-    override val eventPublisher: DomainEventPublisher
+    override val eventPublisher: EventProducerPort
 ) : ProcessManager<S, X>() {
     override var state: S = stateMachine.getCurrentState()
     

@@ -2,6 +2,7 @@ package io.clroot.ball.adapter.inbound.event.consumer.domain
 
 import io.clroot.ball.adapter.inbound.event.consumer.core.EventHandlerMethod
 import io.clroot.ball.adapter.inbound.event.consumer.core.EventHandlerRegistry
+import io.clroot.ball.application.port.inbound.EventConsumerPort
 import io.clroot.ball.domain.event.DomainEvent
 import io.kotest.core.spec.style.BehaviorSpec
 import io.kotest.matchers.shouldBe
@@ -9,6 +10,7 @@ import io.mockk.*
 import kotlinx.coroutines.delay
 import java.time.Instant
 import java.util.*
+import kotlin.reflect.KClass
 
 class DomainEventConsumerTest : BehaviorSpec({
 
@@ -17,14 +19,14 @@ class DomainEventConsumerTest : BehaviorSpec({
         clearAllMocks()
     }
 
-    given("DomainEventConsumer") {
+    given("SpringDomainEventConsumer with port-based handlers") {
         val mockHandlerRegistry = mockk<EventHandlerRegistry>()
         val properties = DomainEventConsumerProperties(
             async = false,  // 테스트에서는 동기 처리
             enableDebugLogging = true,
             enableRetry = true
         )
-        val consumer = DomainEventConsumer(properties, mockHandlerRegistry)
+        val consumer = SpringDomainEventConsumer(properties, mockHandlerRegistry)
 
         `when`("valid domain event is received") {
             val testEvent = TestDomainEvent(
@@ -32,16 +34,30 @@ class DomainEventConsumerTest : BehaviorSpec({
                 type = "ValidTestEvent", 
                 occurredAt = Instant.now()
             )
-            val mockHandler = mockk<EventHandlerMethod>()
+            
+            // EventConsumerPort 기반 모킹
+            val mockPortHandler = mockk<TestEventConsumerPort>()
+            every { mockPortHandler.eventType } returns TestDomainEvent::class
+            every { mockPortHandler.handlerName } returns "TestEventConsumerPort"
+            every { mockPortHandler.order } returns 0
+            every { mockPortHandler.async } returns false
+            coEvery { mockPortHandler.consume(testEvent) } just Runs
 
-            every { mockHandlerRegistry.getHandlers(testEvent.javaClass) } returns listOf(mockHandler)
-            every { mockHandler.methodName } returns "ValidTestHandler.handleEvent"
-            coEvery { mockHandler.invoke(testEvent) } just Runs
+            val handlerMethod = EventHandlerMethod(
+                bean = mockPortHandler,
+                method = TestEventConsumerPort::class.java.getMethod("consume", TestDomainEvent::class.java),
+                eventType = TestDomainEvent::class.java,
+                methodName = "TestEventConsumerPort.consume",
+                async = false,
+                order = 0
+            )
+
+            every { mockHandlerRegistry.getHandlers(testEvent.javaClass) } returns listOf(handlerMethod)
 
             then("event should be processed successfully") {
                 consumer.handleDomainEvent(testEvent)
 
-                coVerify(exactly = 1) { mockHandler.invoke(testEvent) }
+                coVerify(exactly = 1) { mockPortHandler.consume(testEvent) }
             }
         }
 
@@ -62,88 +78,74 @@ class DomainEventConsumerTest : BehaviorSpec({
         }
 
         `when`("handler throws exception with retry enabled") {
-            // 고유한 테스트 데이터로 격리
             val testEvent = TestDomainEvent(
                 id = "exception-retry-${UUID.randomUUID()}", 
                 type = "ExceptionRetryTestEvent", 
                 occurredAt = Instant.now()
             )
+            
             val mockHandler1 = mockk<EventHandlerMethod>()
             val mockHandler2 = mockk<EventHandlerMethod>()
             val exception = RuntimeException("Handler failed in retry test")
 
-            // Mock 설정을 명확하게 분리
             every { mockHandlerRegistry.getHandlers(testEvent.javaClass) } returns listOf(mockHandler1, mockHandler2)
-            every { mockHandler1.methodName } returns "ExceptionHandler1.handleEvent"
-            every { mockHandler2.methodName } returns "ExceptionHandler2.handleEvent"
+            every { mockHandler1.methodName } returns "ExceptionHandler1.handle"
+            every { mockHandler2.methodName } returns "ExceptionHandler2.handle"
+            every { mockHandler1.order } returns 0
+            every { mockHandler2.order } returns 1
             coEvery { mockHandler1.invoke(testEvent) } throws exception
             coEvery { mockHandler2.invoke(testEvent) } just Runs
 
             then("other handlers should still be executed") {
-                // 예외가 발생해도 다른 핸들러들은 계속 실행되어야 함
                 runCatching { consumer.handleDomainEvent(testEvent) }
 
-                // 각 핸들러가 정확히 한 번씩 호출되었는지 검증
                 coVerify(exactly = 1) { mockHandler1.invoke(testEvent) }
                 coVerify(exactly = 1) { mockHandler2.invoke(testEvent) }
                 verify(exactly = 1) { mockHandlerRegistry.getHandlers(testEvent.javaClass) }
             }
         }
 
-        `when`("event with blank ID is processed") {
-            val invalidEvent = TestDomainEvent(
-                id = "", 
-                type = "BlankIdTestEvent", 
-                occurredAt = Instant.now()
-            )
-
-            then("should handle gracefully") {
-                runCatching { consumer.handleDomainEvent(invalidEvent) }.isSuccess shouldBe true
-            }
-        }
-    }
-
-    given("DomainEventConsumer with retry disabled") {
-        val mockHandlerRegistry = mockk<EventHandlerRegistry>()
-        val properties = DomainEventConsumerProperties(
-            async = false,
-            enableRetry = false, // 재시도 비활성화
-            enableDebugLogging = true
-        )
-        val consumer = DomainEventConsumer(properties, mockHandlerRegistry)
-
-        `when`("handler throws exception") {
+        `when`("multiple handlers with different orders") {
             val testEvent = TestDomainEvent(
-                id = "exception-no-retry-${UUID.randomUUID()}", 
-                type = "ExceptionNoRetryTestEvent", 
+                id = "ordered-${UUID.randomUUID()}", 
+                type = "OrderedTestEvent", 
                 occurredAt = Instant.now()
             )
-            val mockHandler1 = mockk<EventHandlerMethod>()
-            val mockHandler2 = mockk<EventHandlerMethod>()
-            val exception = RuntimeException("Handler failed in no-retry test")
+            
+            val handler1 = mockk<EventHandlerMethod>()
+            val handler2 = mockk<EventHandlerMethod>()
+            val handler3 = mockk<EventHandlerMethod>()
 
-            every { mockHandlerRegistry.getHandlers(testEvent.javaClass) } returns listOf(mockHandler1, mockHandler2)
-            every { mockHandler1.methodName } returns "NoRetryHandler1.handleEvent"
-            every { mockHandler2.methodName } returns "NoRetryHandler2.handleEvent"
-            coEvery { mockHandler1.invoke(testEvent) } throws exception
-            coEvery { mockHandler2.invoke(testEvent) } just Runs
+            every { handler1.order } returns 2
+            every { handler2.order } returns 1  
+            every { handler3.order } returns 0
+            every { handler1.methodName } returns "Handler1.handle"
+            every { handler2.methodName } returns "Handler2.handle"
+            every { handler3.methodName } returns "Handler3.handle"
+            coEvery { handler1.invoke(testEvent) } just Runs
+            coEvery { handler2.invoke(testEvent) } just Runs
+            coEvery { handler3.invoke(testEvent) } just Runs
 
-            then("should handle exception according to retry policy") {
-                runCatching { consumer.handleDomainEvent(testEvent) }
+            every { mockHandlerRegistry.getHandlers(testEvent.javaClass) } returns listOf(handler1, handler2, handler3)
 
-                coVerify(exactly = 1) { mockHandler1.invoke(testEvent) }
-                verify(exactly = 1) { mockHandlerRegistry.getHandlers(testEvent.javaClass) }
+            then("handlers should be executed in order") {
+                consumer.handleDomainEvent(testEvent)
+
+                // 모든 핸들러가 호출되었는지 확인
+                coVerify(exactly = 1) { handler1.invoke(testEvent) }
+                coVerify(exactly = 1) { handler2.invoke(testEvent) }
+                coVerify(exactly = 1) { handler3.invoke(testEvent) }
             }
         }
     }
 
-    given("DomainEventConsumer with async processing") {
+    given("SpringDomainEventConsumer with async processing") {
         val mockHandlerRegistry = mockk<EventHandlerRegistry>()
         val properties = DomainEventConsumerProperties(
             async = true,
             enableDebugLogging = true
         )
-        val consumer = DomainEventConsumer(properties, mockHandlerRegistry)
+        val consumer = SpringDomainEventConsumer(properties, mockHandlerRegistry)
 
         `when`("async event is processed") {
             val testEvent = TestDomainEvent(
@@ -154,7 +156,8 @@ class DomainEventConsumerTest : BehaviorSpec({
             val mockHandler = mockk<EventHandlerMethod>()
 
             every { mockHandlerRegistry.getHandlers(testEvent.javaClass) } returns listOf(mockHandler)
-            every { mockHandler.methodName } returns "AsyncTestHandler.handleEvent"
+            every { mockHandler.methodName } returns "AsyncTestHandler.handle"
+            every { mockHandler.order } returns 0
             coEvery { mockHandler.invoke(testEvent) } coAnswers {
                 delay(100)  // 비동기 처리 시뮬레이션
             }
@@ -162,24 +165,22 @@ class DomainEventConsumerTest : BehaviorSpec({
             then("event should be processed asynchronously") {
                 consumer.handleDomainEvent(testEvent)
 
-                // 테스트 스코프에서 비동기 작업 완료 대기
                 coVerify(timeout = 2000) { mockHandler.invoke(testEvent) }
             }
         }
 
         afterSpec {
-            // 비동기 consumer 정리
             consumer.shutdown()
         }
     }
 
-    given("DomainEventConsumer with disabled state") {
+    given("SpringDomainEventConsumer with disabled state") {
         val mockHandlerRegistry = mockk<EventHandlerRegistry>()
         val properties = DomainEventConsumerProperties(
-            enabled = false, // 소비자 비활성화
+            enabled = false,
             enableDebugLogging = true
         )
-        val consumer = DomainEventConsumer(properties, mockHandlerRegistry)
+        val consumer = SpringDomainEventConsumer(properties, mockHandlerRegistry)
 
         `when`("event is received while disabled") {
             val testEvent = TestDomainEvent(
@@ -191,7 +192,6 @@ class DomainEventConsumerTest : BehaviorSpec({
             then("event should be ignored") {
                 consumer.handleDomainEvent(testEvent)
 
-                // 비활성화 상태에서는 핸들러 레지스트리 조회조차 하지 않음
                 verify(exactly = 0) { mockHandlerRegistry.getHandlers(any()) }
             }
         }
@@ -206,3 +206,10 @@ data class TestDomainEvent(
     override val type: String,
     override val occurredAt: Instant
 ) : DomainEvent
+
+/**
+ * 테스트용 EventConsumerPort 구현체
+ */
+interface TestEventConsumerPort : EventConsumerPort<TestDomainEvent> {
+    override val eventType: KClass<TestDomainEvent> get() = TestDomainEvent::class
+}

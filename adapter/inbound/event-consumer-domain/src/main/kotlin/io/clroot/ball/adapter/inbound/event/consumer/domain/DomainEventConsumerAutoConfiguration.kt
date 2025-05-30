@@ -61,25 +61,34 @@ class DomainEventConsumerAutoConfiguration {
     }
 
     /**
-     * 도메인 이벤트 소비자 빈 등록
+     * Spring 도메인 이벤트 소비자 빈 등록
      */
     @Bean
-    @ConditionalOnMissingBean(DomainEventConsumer::class)
-    fun domainEventConsumer(
+    @ConditionalOnMissingBean(SpringDomainEventConsumer::class)
+    fun springDomainEventConsumer(
         properties: DomainEventConsumerProperties,
         eventHandlerRegistry: EventHandlerRegistry
-    ): DomainEventConsumer {
+    ): SpringDomainEventConsumer {
 
         log.info(
-            "Configuring Domain Event Consumer with properties: async={}, retry={}, metrics={}",
+            "Configuring Spring Domain Event Consumer with properties: async={}, retry={}, metrics={}",
             properties.async, properties.enableRetry, properties.enableMetrics
         )
 
         if (properties.enableDebugLogging) {
-            log.debug("Domain Event Consumer debug logging is enabled")
+            log.debug("Spring Domain Event Consumer debug logging is enabled")
         }
 
-        return DomainEventConsumer(properties, eventHandlerRegistry)
+        return SpringDomainEventConsumer(properties, eventHandlerRegistry)
+    }
+    
+    /**
+     * 호환성을 위한 DomainEventConsumer 별칭
+     */
+    @Bean
+    @ConditionalOnMissingBean(name = ["domainEventConsumer"])
+    fun domainEventConsumer(springDomainEventConsumer: SpringDomainEventConsumer): SpringDomainEventConsumer {
+        return springDomainEventConsumer
     }
 
     /**

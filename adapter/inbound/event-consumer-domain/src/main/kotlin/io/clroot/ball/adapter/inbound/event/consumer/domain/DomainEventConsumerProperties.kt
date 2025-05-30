@@ -79,6 +79,12 @@ data class DomainEventConsumerProperties @ConstructorBinding constructor(
      * 트랜잭션 커밋 후 처리 여부
      * 기본값: false (즉시 처리)
      */
-    val processAfterCommit: Boolean = false
+    val processAfterCommit: Boolean = false,
+    
+    /**
+     * 핸들러 오류 시 다음 핸들러 계속 실행 여부
+     * 기본값: true (개별 핸들러 실패가 전체에 영향을 주지 않도록)
+     */
+    val continueOnError: Boolean = true
 
 ) : EventConsumerProperties

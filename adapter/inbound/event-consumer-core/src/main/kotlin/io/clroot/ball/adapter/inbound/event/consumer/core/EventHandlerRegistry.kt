@@ -1,5 +1,6 @@
 package io.clroot.ball.adapter.inbound.event.consumer.core
 
+import io.clroot.ball.application.port.inbound.EventConsumerPort
 import io.clroot.ball.domain.event.DomainEvent
 import jakarta.annotation.PostConstruct
 import org.slf4j.LoggerFactory
@@ -13,7 +14,13 @@ import java.util.concurrent.ConcurrentHashMap
  * 이벤트 핸들러 레지스트리
  *
  * 애플리케이션 컨텍스트에서 이벤트 핸들러들을 찾아 등록하고 관리합니다.
- * 이벤트 타입별로 핸들러들을 매핑하여 효율적인 이벤트 처리를 지원합니다.
+ *
+ * 지원하는 핸들러 유형:
+ * 1. EventConsumerPort 구현체 (권장)
+ * 2. @DomainEventHandler 어노테이션 메서드 (호환성)
+ *
+ * 헥사고날 아키텍처에서 어댑터는 순수하게 기술적 연결만 담당하며,
+ * 실제 핸들러는 애플리케이션 계층에 위치합니다.
  */
 @Component
 class EventHandlerRegistry : ApplicationContextAware {
@@ -69,53 +76,56 @@ class EventHandlerRegistry : ApplicationContextAware {
     private fun scanAndRegisterHandlers() {
         log.info("Scanning for event handlers...")
 
-        val handlerBeans = applicationContext.getBeansWithAnnotation(Component::class.java)
         var totalHandlers = 0
 
-        for ((beanName, bean) in handlerBeans) {
-            val handlerMethods = findEventHandlerMethods(bean)
-
-            if (handlerMethods.isNotEmpty()) {
-                log.debug("Found {} event handlers in bean: {}", handlerMethods.size, beanName)
-
-                for (handlerMethod in handlerMethods) {
-                    registerHandler(handlerMethod.eventType, handlerMethod)
-                    totalHandlers++
-                }
-            }
-        }
+        totalHandlers += scanPortBasedHandlers()
 
         log.info(
             "Event handler scanning completed. Registered {} handlers for {} event types",
-            totalHandlers, handlerMap.size
+            totalHandlers,
+            handlerMap.size
         )
     }
 
     /**
-     * 빈에서 이벤트 핸들러 메서드들을 찾기
+     * EventConsumerPort 구현체들 스캔
      */
-    private fun findEventHandlerMethods(bean: Any): List<EventHandlerMethod> {
-        val handlers = mutableListOf<EventHandlerMethod>()
-        val beanClass = bean.javaClass
+    @Suppress("UNCHECKED_CAST")
+    private fun scanPortBasedHandlers(): Int {
+        val portHandlers = applicationContext.getBeansOfType(EventConsumerPort::class.java)
+        var count = 0
 
-        for (method in beanClass.declaredMethods) {
-            // @EventHandler 어노테이션이 있는 메서드 찾기
-            if (method.isAnnotationPresent(EventHandler::class.java)) {
-                val eventType = extractEventTypeFromMethod(method)
-                if (eventType != null) {
-                    handlers.add(
-                        EventHandlerMethod(
-                            bean = bean,
-                            method = method,
-                            eventType = eventType,
-                            methodName = "${beanClass.simpleName}.${method.name}"
-                        )
-                    )
-                }
+        for ((beanName, handler) in portHandlers) {
+            try {
+                val eventType = handler.eventType.java as Class<out DomainEvent>
+
+                val handlerMethod = EventHandlerMethod(
+                    bean = handler,
+                    method = handler.javaClass.getMethod("consume", eventType),
+                    eventType = eventType,
+                    methodName = "${handler.handlerName}.consume",
+                    async = handler.async,
+                    order = handler.order
+                )
+
+                registerHandler(eventType, handlerMethod)
+                count++
+
+                log.debug(
+                    "Found EventConsumerPort: {} -> {} (async={}, order={})",
+                    eventType.simpleName,
+                    handler.handlerName,
+                    handler.async,
+                    handler.order
+                )
+
+            } catch (e: Exception) {
+                log.warn("Failed to register EventConsumerPort bean: {}", beanName, e)
             }
         }
 
-        return handlers
+        log.info("Registered {} EventConsumerPort implementations", count)
+        return count
     }
 
     /**
@@ -136,11 +146,9 @@ class EventHandlerRegistry : ApplicationContextAware {
             firstParameter as Class<out DomainEvent>
         } else {
             log.warn(
-                "Event handler method parameter is not a DomainEvent: {} ({})",
-                method.name, firstParameter.simpleName
+                "Event handler method parameter is not a DomainEvent: {} ({})", method.name, firstParameter.simpleName
             )
             null
         }
     }
 }
-

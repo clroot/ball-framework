@@ -18,7 +18,7 @@ class DomainEventPublisherTest : BehaviorSpec({
             enableDebugLogging = true,
             enableRetry = true
         )
-        val publisher = DomainEventPublisher(applicationEventPublisher, properties)
+        val publisher = SpringDomainEventProducer(applicationEventPublisher, properties)
 
         `when`("valid domain event is published") {
             val testEvent = TestDomainEvent("test-id", "TestEvent", Instant.now())
@@ -26,7 +26,7 @@ class DomainEventPublisherTest : BehaviorSpec({
             every { applicationEventPublisher.publishEvent(any<DomainEventWrapper>()) } just Runs
 
             then("event should be published successfully") {
-                publisher.publish(testEvent)
+                publisher.produce(testEvent)
 
                 verify(exactly = 1) {
                     applicationEventPublisher.publishEvent(any<DomainEventWrapper>())
@@ -38,7 +38,7 @@ class DomainEventPublisherTest : BehaviorSpec({
             val invalidEvent = TestDomainEvent("", "TestEvent", Instant.now())
 
             then("should throw IllegalArgumentException") {
-                val exception = runCatching { publisher.publish(invalidEvent) }
+                val exception = runCatching { publisher.produce(invalidEvent) }
                 exception.isFailure shouldBe true
                 exception.exceptionOrNull() shouldNotBe null
             }
@@ -48,7 +48,7 @@ class DomainEventPublisherTest : BehaviorSpec({
             val invalidEvent = TestDomainEvent("test-id", "", Instant.now())
 
             then("should throw IllegalArgumentException") {
-                val exception = runCatching { publisher.publish(invalidEvent) }
+                val exception = runCatching { publisher.produce(invalidEvent) }
                 exception.isFailure shouldBe true
                 exception.exceptionOrNull() shouldNotBe null
             }
@@ -61,7 +61,7 @@ class DomainEventPublisherTest : BehaviorSpec({
             every { applicationEventPublisher.publishEvent(any<DomainEventWrapper>()) } throws publishException
 
             then("should propagate the exception") {
-                val exception = runCatching { publisher.publish(testEvent) }
+                val exception = runCatching { publisher.produce(testEvent) }
                 exception.isFailure shouldBe true
                 exception.exceptionOrNull() shouldBe publishException
             }
@@ -71,7 +71,7 @@ class DomainEventPublisherTest : BehaviorSpec({
     given("DomainEventPublisher with retry disabled") {
         val applicationEventPublisher = mockk<ApplicationEventPublisher>()
         val properties = DomainEventPublisherProperties(enableRetry = false)
-        val publisher = DomainEventPublisher(applicationEventPublisher, properties)
+        val publisher = SpringDomainEventProducer(applicationEventPublisher, properties)
 
         `when`("publishing fails") {
             val testEvent = TestDomainEvent("test-id", "TestEvent", Instant.now())
@@ -80,7 +80,7 @@ class DomainEventPublisherTest : BehaviorSpec({
             every { applicationEventPublisher.publishEvent(any<DomainEventWrapper>()) } throws publishException
 
             then("should not attempt retry") {
-                val exception = runCatching { publisher.publish(testEvent) }
+                val exception = runCatching { publisher.produce(testEvent) }
                 exception.isFailure shouldBe true
 
                 // 재시도가 비활성화되어 있으므로 1번만 호출되어야 함

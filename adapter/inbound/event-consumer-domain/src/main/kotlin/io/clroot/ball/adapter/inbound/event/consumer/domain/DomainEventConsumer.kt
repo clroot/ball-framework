@@ -11,20 +11,30 @@ import org.springframework.transaction.event.TransactionPhase
 import org.springframework.transaction.event.TransactionalEventListener
 
 /**
- * 도메인 이벤트 소비자
+ * Spring ApplicationEvent 기반 도메인 이벤트 소비자
  *
- * Spring ApplicationEvent 메커니즘을 통해 도메인 이벤트를 수신하고 처리합니다.
+ * Spring의 ApplicationEventPublisher 메커니즘을 통해 발행된 도메인 이벤트를 수신하고 처리합니다.
  * 주로 같은 프로세스 내에서 발생하는 도메인 이벤트들을 즉시 처리하는 역할을 담당합니다.
  *
- * 특징:
- * - Spring ApplicationEvent 기반
- * - 프로세스 내 이벤트 처리
- * - 트랜잭션 내/외 처리 지원
- * - 동기/비동기 처리 지원
+ * 기술적 특징:
+ * - Spring ApplicationEvent 기반 (프로세스 내 메모리 처리)
+ * - 높은 성능 (네트워크 오버헤드 없음)
+ * - 트랜잭션 컨텍스트 공유
+ * - JVM 종료 시 이벤트 손실 가능 (메모리 기반)
+ * 
+ * vs 외부 메시징 시스템:
+ * - SpringDomainEventConsumer: 프로세스 내, 즉시 처리, 높은 성능
+ * - KafkaEventConsumer: 프로세스 간, 내구성, 확장성 (미래 구현)
+ * 
+ * 사용 용도:
+ * - 도메인 로직 내부의 이벤트 처리
+ * - 같은 프로세스 내의 다른 컴포넌트와의 통신
+ * - 즉시 처리가 필요한 비즈니스 이벤트
+ * - 개발/테스트 환경에서의 단순한 이벤트 처리
  */
 @Component
 @Order(100) // 다른 EventListener들보다 늦게 실행 (도메인 로직 우선)
-class DomainEventConsumer(
+class SpringDomainEventConsumer(
     private val domainProperties: DomainEventConsumerProperties,
     private val handlerRegistry: EventHandlerRegistry
 ) : EventConsumerBase(domainProperties) {
@@ -38,7 +48,7 @@ class DomainEventConsumer(
     @EventListener
     fun handleDomainEvent(event: DomainEvent) {
         if (!domainProperties.enabled) {
-            log.debug("Domain event consumer is disabled, skipping event: {}", event.type)
+            log.debug("Spring domain event consumer is disabled, skipping event: {}", event.type)
             return
         }
 
@@ -86,13 +96,19 @@ class DomainEventConsumer(
             return
         }
 
-        log.debug("Executing {} handlers for domain event: {}", handlers.size, event.type)
+        // 핸들러들을 order 기준으로 정렬 (낮은 order가 먼저 실행)
+        val sortedHandlers = handlers.sorted()
+        
+        log.debug("Executing {} handlers for domain event: {} (order: {})", 
+            sortedHandlers.size, event.type, sortedHandlers.map { "${it.methodName}(${it.order})" })
 
         // 타임아웃 적용하여 핸들러 실행
         withTimeout(domainProperties.timeoutMs) {
-            for (handler in handlers) {
+            for (handler in sortedHandlers) {
                 try {
-                    log.debug("Executing handler: {} for event: {}", handler.methodName, event.type)
+                    log.debug("Executing handler: {} (order={}, async={}) for event: {}", 
+                        handler.methodName, handler.order, handler.async, event.type)
+                    
                     handler.invoke(event)
 
                     // 성공 메트릭 기록
@@ -105,8 +121,11 @@ class DomainEventConsumer(
                     recordHandlerErrorMetrics(event, handler, e)
 
                     // 전체 처리를 중단할지 결정 (설정에 따라)
-                    if (!domainProperties.enableRetry) {
+                    if (!domainProperties.continueOnError) {
+                        log.warn("Stopping handler execution due to error and continueOnError=false")
                         throw e
+                    } else {
+                        log.debug("Continuing with next handler despite error (continueOnError=true)")
                     }
                 }
             }
@@ -121,7 +140,7 @@ class DomainEventConsumer(
 
         if (domainProperties.enableDebugLogging) {
             log.debug(
-                "Starting domain event processing: {} (ID: {})",
+                "[SPRING] Starting domain event processing: {} (ID: {})",
                 event.type, event.id
             )
         }
@@ -134,7 +153,7 @@ class DomainEventConsumer(
         super.afterEventProcessing(event)
 
         if (domainProperties.enableDebugLogging) {
-            log.debug("Completed domain event processing: {} (ID: {})", event.type, event.id)
+            log.debug("[SPRING] Completed domain event processing: {} (ID: {})", event.type, event.id)
         }
 
         // 도메인 이벤트 특화 후처리 로직 (예: 캐시 갱신)
@@ -152,14 +171,28 @@ class DomainEventConsumer(
     /**
      * 핸들러별 에러 메트릭 기록
      */
-    private fun recordHandlerErrorMetrics(event: DomainEvent, handler: Any, error: Exception) {
+    private fun recordHandlerErrorMetrics(event: DomainEvent, handler: io.clroot.ball.adapter.inbound.event.consumer.core.EventHandlerMethod, error: Exception) {
         if (domainProperties.enableMetrics) {
             // TODO: Micrometer 메트릭 수집
-            // counter("domain.events.handler.errors")
+            // counter("spring.domain.events.handler.errors")
             //     .tag("event.type", event.type)
             //     .tag("handler", handler.methodName)
+            //     .tag("handler.order", handler.order.toString())
+            //     .tag("handler.async", handler.async.toString())
             //     .tag("error.type", error.javaClass.simpleName)
             //     .increment()
         }
     }
 }
+
+/**
+ * @deprecated SpringDomainEventConsumer를 사용하세요.
+ * 
+ * 이 별칭은 호환성을 위해 제공되지만, 새로운 코드에서는 SpringDomainEventConsumer를 직접 사용하는 것을 권장합니다.
+ */
+@Deprecated(
+    message = "Use SpringDomainEventConsumer instead",
+    replaceWith = ReplaceWith("SpringDomainEventConsumer"),
+    level = DeprecationLevel.WARNING
+)
+typealias DomainEventConsumer = SpringDomainEventConsumer
