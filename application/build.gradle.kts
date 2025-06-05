@@ -1,10 +1,10 @@
 dependencies {
     api(project(":domain"))
-    api("io.arrow-kt:arrow-core:2.0.1")
-    implementation(project(":shared:arrow"))
-    implementation(project(":shared:lock"))
+    api("org.springframework.boot:spring-boot-starter")
+    api(project(":shared:arrow"))
+    api(project(":shared:lock"))
 
-    compileOnly("org.springframework:spring-context")
-
-    testApi("io.kotest.extensions:kotest-assertions-arrow:2.0.0")
+    testApi("org.springframework.boot:spring-boot-starter-test")
+    testApi("org.mockito.kotlin:mockito-kotlin:5.4.0")
+    testApi("com.ninja-squad:springmockk:4.0.2")
 }

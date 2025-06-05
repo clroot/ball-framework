@@ -3,5 +3,6 @@ subprojects {
         api(project(":domain"))
         api(project(":application"))
         api(project(":shared:arrow"))
+        api(project(":shared:jackson"))
     }
 }

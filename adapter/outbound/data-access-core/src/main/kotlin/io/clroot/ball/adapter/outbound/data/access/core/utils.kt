@@ -47,7 +47,6 @@ object SpringDataConverter {
     private fun fromSpringSort(springSort: SpringSort): Sort {
         val orders = springSort.map { springOrder ->
             val direction = when (springOrder.direction) {
-                SpringSort.Direction.ASC -> Direction.ASC
                 SpringSort.Direction.DESC -> Direction.DESC
                 else -> Direction.ASC
             }
