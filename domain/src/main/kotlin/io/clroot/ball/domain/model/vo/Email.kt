@@ -1,8 +1,6 @@
 package io.clroot.ball.domain.model.vo
 
-import arrow.core.Either
-import arrow.core.left
-import arrow.core.right
+import io.clroot.ball.domain.exception.ValidationException
 import io.clroot.ball.domain.model.core.ValueObject
 
 /**
@@ -18,14 +16,14 @@ value class Email private constructor(val value: String) : ValueObject {
          * 문자열로부터 이메일 객체 생성
          *
          * @param value 이메일 문자열
-         * @return 유효한 이메일이면 Email 객체, 아니면 ValidationError
+         * @return Email 객체
+         * @throws ValidationException 유효하지 않은 이메일 형식인 경우
          */
-        fun from(value: String): Either<ValidationError, Email> {
-            return if (isValidEmail(value)) {
-                Email(value).right()
-            } else {
-                ValidationError("Invalid email format: $value").left()
+        fun from(value: String): Email {
+            if (!isValidEmail(value)) {
+                throw ValidationException("Invalid email format: $value")
             }
+            return Email(value)
         }
 
         /**
@@ -41,11 +39,6 @@ value class Email private constructor(val value: String) : ValueObject {
             val emailRegex = "^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$"
             return value.matches(emailRegex.toRegex()) && !value.contains(" ")
         }
-
-        /**
-         * 유효성 검증 오류
-         */
-        data class ValidationError(val message: String)
     }
 
     override fun toString(): String = value

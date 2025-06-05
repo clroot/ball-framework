@@ -1,6 +1,8 @@
 package io.clroot.ball.adapter.outbound.data.access.jpa.converter
 
 import io.clroot.ball.domain.model.vo.BinaryId
+import io.clroot.ball.domain.exception.InvalidIdException
+import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
@@ -46,14 +48,13 @@ class BinaryIdConverterTest : StringSpec({
         binaryId shouldBe null
     }
     
-    "should reject invalid byte arrays gracefully" {
+    "should throw InvalidIdException for invalid byte arrays" {
         // Given
-        val invalidBytes = ByteArray(8) // Wrong size
+        val invalidBytes = ByteArray(8) // Wrong size (expected: 16 bytes)
         
-        // When
-        val result = converter.convertToEntityAttribute(invalidBytes)
-        
-        // Then
-        result shouldBe null // Should handle error gracefully
+        // When & Then
+        shouldThrow<InvalidIdException> {
+            converter.convertToEntityAttribute(invalidBytes)
+        }
     }
 })

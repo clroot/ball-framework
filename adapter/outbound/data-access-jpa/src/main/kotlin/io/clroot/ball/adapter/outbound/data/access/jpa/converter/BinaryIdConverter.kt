@@ -17,6 +17,6 @@ class BinaryIdConverter : AttributeConverter<BinaryId, ByteArray> {
 
     override fun convertToEntityAttribute(dbData: ByteArray?): BinaryId? {
         if (dbData == null) return null
-        return BinaryId.fromBytes(dbData).getOrNull()
+        return BinaryId.fromBytes(dbData)
     }
 }

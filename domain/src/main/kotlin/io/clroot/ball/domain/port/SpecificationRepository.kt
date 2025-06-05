@@ -1,9 +1,5 @@
 package io.clroot.ball.domain.port
 
-import arrow.core.Either
-import arrow.core.Option
-import arrow.core.Some
-import arrow.core.none
 import io.clroot.ball.domain.model.core.EntityBase
 import io.clroot.ball.domain.model.core.specification.Specification
 
@@ -35,7 +31,8 @@ interface SpecificationRepository<T : EntityBase<ID>, ID : Any> : Repository<T, 
      * 재사용 가능하고 테스트 가능한 형태로 캡슐화할 수 있습니다.
      * 
      * @param specification 엔티티가 만족해야 하는 명세
-     * @return 성공 시 명세를 만족하는 엔티티 목록, 실패 시 PersistenceError
+     * @return 명세를 만족하는 엔티티 목록
+     * @throws PersistenceException 조회 중 오류가 발생한 경우
      * 
      * @since 2.0
      * 
@@ -44,26 +41,26 @@ interface SpecificationRepository<T : EntityBase<ID>, ID : Any> : Repository<T, 
      * val activeUsers = userRepository.findBySpecification(ActiveUserSpecification())
      * ```
      */
-    fun findBySpecification(specification: Specification<T>): Either<PersistenceError, List<T>>
+    fun findBySpecification(specification: Specification<T>): List<T>
 
     /**
      * 명세를 만족하는 첫 번째 엔티티를 조회합니다.
      * 
      * 명세를 만족하는 엔티티가 여러 개 있어도 첫 번째 엔티티만 반환합니다.
-     * 조건을 만족하는 엔티티가 없으면 None을 반환합니다.
+     * 조건을 만족하는 엔티티가 없으면 null을 반환합니다.
      * 
      * 기본 구현은 findBySpecification을 호출한 후 첫 번째 요소를 추출합니다.
      * 성능 최적화가 필요한 경우 구현체에서 오버라이드할 수 있습니다.
      * 
      * @param specification 엔티티가 만족해야 하는 명세
-     * @return 성공 시 명세를 만족하는 첫 번째 엔티티(Option), 실패 시 PersistenceError
+     * @return 명세를 만족하는 첫 번째 엔티티, 없으면 null
+     * @throws PersistenceException 조회 중 오류가 발생한 경우
      * 
      * @since 2.0
      */
-    fun findOneBySpecification(specification: Specification<T>): Either<PersistenceError, Option<T>> {
-        return findBySpecification(specification).map { entities ->
-            if (entities.isEmpty()) none() else Some(entities.first())
-        }
+    fun findOneBySpecification(specification: Specification<T>): T? {
+        val entities = findBySpecification(specification)
+        return entities.firstOrNull()
     }
 
     /**
@@ -74,6 +71,7 @@ interface SpecificationRepository<T : EntityBase<ID>, ID : Any> : Repository<T, 
      * 
      * @param id 확인할 엔티티의 식별자
      * @return 엔티티가 존재하면 true, 존재하지 않으면 false
+     * @throws PersistenceException 조회 중 오류가 발생한 경우
      * 
      * @since 2.0
      */
@@ -87,6 +85,7 @@ interface SpecificationRepository<T : EntityBase<ID>, ID : Any> : Repository<T, 
      * 
      * @param specification 엔티티가 만족해야 하는 명세
      * @return 명세를 만족하는 엔티티가 존재하면 true, 존재하지 않으면 false
+     * @throws PersistenceException 조회 중 오류가 발생한 경우
      * 
      * @since 2.0
      * 
@@ -104,7 +103,8 @@ interface SpecificationRepository<T : EntityBase<ID>, ID : Any> : Repository<T, 
      * findBySpecification 후 size를 확인하는 것보다 성능상 유리합니다.
      * 
      * @param specification 엔티티가 만족해야 하는 명세
-     * @return 성공 시 명세를 만족하는 엔티티 개수, 실패 시 PersistenceError
+     * @return 명세를 만족하는 엔티티 개수
+     * @throws PersistenceException 조회 중 오류가 발생한 경우
      * 
      * @since 2.0
      * 
@@ -113,5 +113,5 @@ interface SpecificationRepository<T : EntityBase<ID>, ID : Any> : Repository<T, 
      * val activeUserCount = userRepository.countBySpecification(ActiveUserSpecification())
      * ```
      */
-    fun countBySpecification(specification: Specification<T>): Either<PersistenceError, Long>
+    fun countBySpecification(specification: Specification<T>): Long
 }

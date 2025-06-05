@@ -1,57 +1,69 @@
 package io.clroot.ball.domain.model
 
+import io.clroot.ball.domain.exception.ValidationException
 import io.clroot.ball.domain.model.vo.Email
-import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertTrue
-import org.junit.jupiter.api.Test
+import io.kotest.assertions.throwables.shouldThrow
+import io.kotest.core.spec.style.FunSpec
+import io.kotest.matchers.shouldBe
+import io.kotest.matchers.string.shouldContain
 
-class EmailTest {
+class EmailTest : FunSpec({
     
-    @Test
-    fun `should create valid email`() {
-        // given
-        val validEmail = "test@example.com"
-        
-        // when
-        val result = Email.from(validEmail)
-        
-        // then
-        assertTrue(result.isRight())
-        result.map { email ->
-            assertEquals(validEmail, email.value)
+    context("Email creation") {
+        test("should create valid email") {
+            // given
+            val validEmail = "test@example.com"
+            
+            // when
+            val email = Email.from(validEmail)
+            
+            // then
+            email.value shouldBe validEmail
         }
-    }
-    
-    @Test
-    fun `should reject invalid email`() {
-        // given
-        val invalidEmails = listOf(
-            "invalid-email",
-            "missing@tld",
-            "@missing-local-part.com",
-            "spaces in@email.com",
-            ""
-        )
         
-        // when & then
-        invalidEmails.forEach { invalidEmail ->
-            val result = Email.from(invalidEmail)
-            assertTrue(result.isLeft())
-            result.mapLeft { error ->
-                assertTrue(error.message.contains("Invalid email format"))
+        test("should reject invalid email formats") {
+            // given
+            val invalidEmails = listOf(
+                "invalid-email",
+                "missing@tld",
+                "@missing-local-part.com",
+                "spaces in@email.com",
+                ""
+            )
+            
+            // when & then
+            invalidEmails.forEach { invalidEmail ->
+                val exception = shouldThrow<ValidationException> {
+                    Email.from(invalidEmail)
+                }
+                exception.message shouldContain "Invalid email format"
+            }
+        }
+        
+        test("should convert to string correctly") {
+            // given
+            val emailStr = "test@example.com"
+            
+            // when
+            val email = Email.from(emailStr)
+            
+            // then
+            email.toString() shouldBe emailStr
+        }
+        
+        test("should handle complex valid email formats") {
+            // given
+            val validComplexEmails = listOf(
+                "user.name+tag@example.com",
+                "user123@sub.domain.co.uk",
+                "test-email@example-domain.org"
+            )
+            
+            // when & then
+            validComplexEmails.forEach { validEmail ->
+                val email = Email.from(validEmail)
+                email.value shouldBe validEmail
             }
         }
     }
-    
-    @Test
-    fun `should convert to string`() {
-        // given
-        val emailStr = "test@example.com"
-        
-        // when
-        val email = Email.from(emailStr).getOrNull()
-        
-        // then
-        assertEquals(emailStr, email.toString())
-    }
-}
+})

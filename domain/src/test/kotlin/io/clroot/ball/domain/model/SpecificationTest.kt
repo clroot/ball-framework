@@ -1,12 +1,15 @@
 package io.clroot.ball.domain.model
 
+import io.clroot.ball.domain.exception.SpecificationNotSatisfiedException
 import io.clroot.ball.domain.model.core.EntityBase
 import io.clroot.ball.domain.model.core.specification.Specification
-import org.junit.jupiter.api.Assertions.assertFalse
-import org.junit.jupiter.api.Assertions.assertTrue
-import org.junit.jupiter.api.Test
+import io.kotest.assertions.throwables.shouldThrow
+import io.kotest.core.spec.style.FunSpec
+import io.kotest.matchers.shouldBe
+import io.kotest.matchers.string.shouldContain
+import java.time.Instant
 
-class SpecificationTest {
+class SpecificationTest : FunSpec({
 
     // 테스트용 사용자 클래스
     data class User(
@@ -15,7 +18,7 @@ class SpecificationTest {
         val age: Int,
         val email: String,
         val isActive: Boolean = true
-    ) : EntityBase<String>(id)
+    ) : EntityBase<String>(id, Instant.now(), Instant.now(), null)
 
     // 테스트용 명세 구현
     class AdultUserSpecification : Specification<User> {
@@ -33,93 +36,108 @@ class SpecificationTest {
         }
     }
 
-    @Test
-    fun `should satisfy single specification`() {
-        // given
-        val user = User("1", "John Doe", 25, "john@example.com")
-        val adultSpec = AdultUserSpecification()
+    context("Single specification") {
+        test("should satisfy specification") {
+            // given
+            val user = User("1", "John Doe", 25, "john@example.com")
+            val adultSpec = AdultUserSpecification()
 
-        // when & then
-        assertTrue(adultSpec.isSatisfiedBy(user))
-    }
+            // when & then
+            adultSpec.isSatisfiedBy(user) shouldBe true
+        }
 
-    @Test
-    fun `should not satisfy single specification`() {
-        // given
-        val user = User("1", "John Doe", 16, "john@example.com")
-        val adultSpec = AdultUserSpecification()
+        test("should not satisfy specification") {
+            // given
+            val user = User("1", "John Doe", 16, "john@example.com")
+            val adultSpec = AdultUserSpecification()
 
-        // when & then
-        assertFalse(adultSpec.isSatisfiedBy(user))
-    }
-
-    @Test
-    fun `should combine specifications with AND`() {
-        // given
-        val user1 = User("1", "John Doe", 25, "john@example.com", true)
-        val user2 = User("2", "Jane Doe", 25, "jane@example.com", false)
-
-        val adultSpec = AdultUserSpecification()
-        val activeSpec = ActiveUserSpecification()
-        val combinedSpec = adultSpec.and(activeSpec)
-
-        // when & then
-        assertTrue(combinedSpec.isSatisfiedBy(user1))
-        assertFalse(combinedSpec.isSatisfiedBy(user2))
-    }
-
-    @Test
-    fun `should combine specifications with OR`() {
-        // given
-        val user1 = User("1", "John Doe", 25, "john@example.com", false)
-        val user2 = User("2", "Jane Doe", 16, "jane@example.com", true)
-        val user3 = User("3", "Bob Smith", 16, "bob@example.com", false)
-
-        val adultSpec = AdultUserSpecification()
-        val activeSpec = ActiveUserSpecification()
-        val combinedSpec = adultSpec.or(activeSpec)
-
-        // when & then
-        assertTrue(combinedSpec.isSatisfiedBy(user1))
-        assertTrue(combinedSpec.isSatisfiedBy(user2))
-        assertFalse(combinedSpec.isSatisfiedBy(user3))
-    }
-
-    @Test
-    fun `should negate specification with NOT`() {
-        // given
-        val user1 = User("1", "John Doe", 25, "john@example.com")
-        val user2 = User("2", "Jane Doe", 16, "jane@example.com")
-
-        val adultSpec = AdultUserSpecification()
-        val notAdultSpec = adultSpec.not()
-
-        // when & then
-        assertFalse(notAdultSpec.isSatisfiedBy(user1))
-        assertTrue(notAdultSpec.isSatisfiedBy(user2))
-    }
-
-    @Test
-    fun `should validate and return Either`() {
-        // given
-        val user1 = User("1", "John Doe", 25, "john@example.com")
-        val user2 = User("2", "Jane Doe", 16, "jane@example.com")
-
-        val adultSpec = AdultUserSpecification()
-        val error = "User must be at least 18 years old"
-
-        // when & then
-        val result1 = adultSpec.validate(user1, error)
-        assertTrue(result1.isRight())
-
-        val result2 = adultSpec.validate(user2, error)
-        assertTrue(result2.isLeft())
-        result2.mapLeft { errorMsg ->
-            assertEquals(error, errorMsg)
+            // when & then
+            adultSpec.isSatisfiedBy(user) shouldBe false
         }
     }
 
-    private fun assertEquals(expected: String, actual: String) {
-        assertTrue(expected == actual)
+    context("Combined specifications") {
+        test("should combine specifications with AND") {
+            // given
+            val user1 = User("1", "John Doe", 25, "john@example.com", true)
+            val user2 = User("2", "Jane Doe", 25, "jane@example.com", false)
+
+            val adultSpec = AdultUserSpecification()
+            val activeSpec = ActiveUserSpecification()
+            val combinedSpec = adultSpec.and(activeSpec)
+
+            // when & then
+            combinedSpec.isSatisfiedBy(user1) shouldBe true
+            combinedSpec.isSatisfiedBy(user2) shouldBe false
+        }
+
+        test("should combine specifications with OR") {
+            // given
+            val user1 = User("1", "John Doe", 25, "john@example.com", false)
+            val user2 = User("2", "Jane Doe", 16, "jane@example.com", true)
+            val user3 = User("3", "Bob Smith", 16, "bob@example.com", false)
+
+            val adultSpec = AdultUserSpecification()
+            val activeSpec = ActiveUserSpecification()
+            val combinedSpec = adultSpec.or(activeSpec)
+
+            // when & then
+            combinedSpec.isSatisfiedBy(user1) shouldBe true
+            combinedSpec.isSatisfiedBy(user2) shouldBe true
+            combinedSpec.isSatisfiedBy(user3) shouldBe false
+        }
+
+        test("should negate specification with NOT") {
+            // given
+            val user1 = User("1", "John Doe", 25, "john@example.com")
+            val user2 = User("2", "Jane Doe", 16, "jane@example.com")
+
+            val adultSpec = AdultUserSpecification()
+            val notAdultSpec = adultSpec.not()
+
+            // when & then
+            notAdultSpec.isSatisfiedBy(user1) shouldBe false
+            notAdultSpec.isSatisfiedBy(user2) shouldBe true
+        }
     }
-}
+
+    context("Validation") {
+        test("should validate successfully and return original object") {
+            // given
+            val user = User("1", "John Doe", 25, "john@example.com")
+            val adultSpec = AdultUserSpecification()
+            val errorMessage = "User must be at least 18 years old"
+
+            // when
+            val result = adultSpec.validate(user, errorMessage)
+
+            // then
+            result shouldBe user
+        }
+
+        test("should throw SpecificationNotSatisfiedException for invalid object") {
+            // given
+            val user = User("2", "Jane Doe", 16, "jane@example.com")
+            val adultSpec = AdultUserSpecification()
+            val errorMessage = "User must be at least 18 years old"
+
+            // when & then
+            val exception = shouldThrow<SpecificationNotSatisfiedException> {
+                adultSpec.validate(user, errorMessage)
+            }
+            exception.message shouldBe errorMessage
+        }
+
+        test("should validate with default error message") {
+            // given
+            val user = User("2", "Jane Doe", 16, "jane@example.com")
+            val adultSpec = AdultUserSpecification()
+
+            // when & then
+            val exception = shouldThrow<SpecificationNotSatisfiedException> {
+                adultSpec.validate(user)
+            }
+            exception.message shouldContain "Specification not satisfied for:"
+        }
+    }
+})

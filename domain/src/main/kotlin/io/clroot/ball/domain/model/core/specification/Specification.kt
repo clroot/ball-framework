@@ -1,8 +1,6 @@
 package io.clroot.ball.domain.model.core.specification
 
-import arrow.core.Either
-import arrow.core.left
-import arrow.core.right
+import io.clroot.ball.domain.exception.SpecificationNotSatisfiedException
 
 /**
  * 명세 (Specification)
@@ -45,13 +43,26 @@ interface Specification<T> {
     fun not(): Specification<T> = NotSpecification(this)
     
     /**
-     * 명세를 검증하고 결과를 Either로 반환
+     * 명세를 검증하고 조건을 만족하지 않으면 예외를 발생시킴
      *
      * @param t 검증 대상 객체
-     * @param error 명세를 만족하지 않을 때 반환할 오류
-     * @return 만족하면 Right(t), 아니면 Left(error)
+     * @param errorMessage 명세를 만족하지 않을 때 사용할 오류 메시지
+     * @return 조건을 만족하는 경우 원본 객체 반환
+     * @throws SpecificationNotSatisfiedException 명세를 만족하지 않는 경우
      */
-    fun <E> validate(t: T, error: E): Either<E, T> =
-        if (isSatisfiedBy(t)) t.right() else error.left()
+    fun validate(t: T, errorMessage: String): T {
+        if (!isSatisfiedBy(t)) {
+            throw SpecificationNotSatisfiedException(errorMessage)
+        }
+        return t
+    }
+    
+    /**
+     * 명세를 검증하고 조건을 만족하지 않으면 기본 오류 메시지로 예외를 발생시킨다
+     *
+     * @param t 검증 대상 객체
+     * @return 조건을 만족하는 경우 원본 객체 반환
+     * @throws SpecificationNotSatisfiedException 명세를 만족하지 않는 경우
+     */
+    fun validate(t: T): T = validate(t, "Specification not satisfied for: $t")
 }
-

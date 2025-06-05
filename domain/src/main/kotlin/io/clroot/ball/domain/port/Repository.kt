@@ -1,7 +1,5 @@
 package io.clroot.ball.domain.port
 
-import arrow.core.Either
-import arrow.core.Option
 import io.clroot.ball.domain.model.core.EntityBase
 
 /**
@@ -11,8 +9,8 @@ import io.clroot.ball.domain.model.core.EntityBase
  * 헥사고날 아키텍처에서 아웃바운드 포트 역할을 하며, 도메인 계층이 영속성 계층에
  * 의존하지 않도록 추상화를 제공합니다.
  *
- * 함수형 프로그래밍 원칙을 따라 Arrow-kt의 Either와 Option을 사용하여
- * 타입 안전한 에러 처리와 null 처리를 제공합니다.
+ * 간소화된 에러 처리를 위해 nullable 타입과 예외를 사용합니다.
+ * 영속성 관련 에러는 PersistenceException으로 처리됩니다.
  *
  * @param T 관리할 엔티티 타입 (EntityBase를 상속해야 함)
  * @param ID 엔티티의 식별자 타입
@@ -27,11 +25,12 @@ interface Repository<T : EntityBase<ID>, ID : Any> {
      * 식별자로 엔티티를 조회합니다.
      *
      * @param id 조회할 엔티티의 식별자
-     * @return 엔티티가 존재하면 Some(entity), 존재하지 않으면 None
+     * @return 엔티티가 존재하면 엔티티 객체, 존재하지 않으면 null
+     * @throws PersistenceException 조회 중 오류가 발생한 경우
      *
      * @since 2.0
      */
-    fun findById(id: ID): Option<T>
+    fun findById(id: ID): T?
 
     /**
      * 모든 엔티티를 조회합니다.
@@ -39,12 +38,13 @@ interface Repository<T : EntityBase<ID>, ID : Any> {
      * 대용량 데이터 환경에서는 성능 이슈가 발생할 수 있으므로,
      * 페이징이 필요한 경우 SpecificationRepository의 사용을 권장합니다.
      *
-     * @return 성공 시 엔티티 목록, 실패 시 PersistenceError
+     * @return 엔티티 목록
+     * @throws PersistenceException 조회 중 오류가 발생한 경우
      *
      * @since 2.0
      * @see SpecificationRepository
      */
-    fun findAll(): Either<PersistenceError, List<T>>
+    fun findAll(): List<T>
 
     /**
      * 엔티티를 저장하거나 업데이트합니다.
@@ -53,11 +53,12 @@ interface Repository<T : EntityBase<ID>, ID : Any> {
      * 구체적인 동작은 구현체에 따라 달라질 수 있습니다.
      *
      * @param entity 저장할 엔티티
-     * @return 성공 시 저장된 엔티티, 실패 시 PersistenceError
+     * @return 저장된 엔티티
+     * @throws PersistenceException 저장 중 오류가 발생한 경우
      *
      * @since 2.0
      */
-    fun save(entity: T): Either<PersistenceError, T>
+    fun save(entity: T): T
 
     /**
      * 식별자로 엔티티를 조회하여 수정합니다.
@@ -66,20 +67,20 @@ interface Repository<T : EntityBase<ID>, ID : Any> {
      * 이 방법은 최신 상태의 엔티티를 보장하며, 동시성 이슈를 방지하는 데 도움이 됩니다.
      * 
      * 수정 작업은 트랜잭션 내에서 수행되어야 하며, 엔티티가 존재하지 않는 경우
-     * PersistenceError를 반환합니다.
+     * EntityNotFoundException을 발생시킵니다.
      *
      * @param id 수정할 엔티티의 식별자
      * @param modifier 엔티티를 수정하는 함수 (부수효과를 허용하는 mutable 수정)
-     * @return 성공 시 수정된 엔티티, 실패 시 PersistenceError
-     * 
-     * @throws PersistenceError 엔티티가 존재하지 않거나 수정 중 오류가 발생한 경우
+     * @return 수정된 엔티티
+     * @throws EntityNotFoundException 엔티티가 존재하지 않는 경우
+     * @throws PersistenceException 수정 중 오류가 발생한 경우
      * 
      * @since 2.0
      */
     fun update(
         id: ID,
         modifier: (T) -> Unit,
-    ): Either<PersistenceError, T>
+    ): T
 
     /**
      * 기존 엔티티를 수정합니다.
@@ -92,7 +93,9 @@ interface Repository<T : EntityBase<ID>, ID : Any> {
      *
      * @param entity 수정할 엔티티 (식별자 추출 목적)
      * @param modifier 엔티티를 수정하는 함수 (부수효과를 허용하는 mutable 수정)
-     * @return 성공 시 수정된 엔티티, 실패 시 PersistenceError
+     * @return 수정된 엔티티
+     * @throws EntityNotFoundException 엔티티가 존재하지 않는 경우
+     * @throws PersistenceException 수정 중 오류가 발생한 경우
      * 
      * @see update(ID, (T) -> Unit)
      * 
@@ -101,7 +104,7 @@ interface Repository<T : EntityBase<ID>, ID : Any> {
     fun update(
         entity: T,
         modifier: (T) -> Unit,
-    ): Either<PersistenceError, T> = update(entity.id, modifier)
+    ): T = update(entity.id, modifier)
 
     /**
      * 엔티티를 삭제합니다.
@@ -109,12 +112,12 @@ interface Repository<T : EntityBase<ID>, ID : Any> {
      * 구현체에 따라 물리적 삭제 또는 논리적 삭제(soft delete)로 동작할 수 있습니다.
      *
      * @param entity 삭제할 엔티티
-     * @return 성공 시 Unit, 실패 시 PersistenceError
+     * @throws PersistenceException 삭제 중 오류가 발생한 경우
      *
      * @since 2.0
      */
-    fun delete(entity: T): Either<PersistenceError, Unit> {
-        return delete(entity.id)
+    fun delete(entity: T) {
+        delete(entity.id)
     }
 
     /**
@@ -123,9 +126,9 @@ interface Repository<T : EntityBase<ID>, ID : Any> {
      * 구현체에 따라 물리적 삭제 또는 논리적 삭제(soft delete)로 동작할 수 있습니다.
      *
      * @param id 삭제할 엔티티의 식별자
-     * @return 성공 시 Unit, 실패 시 PersistenceError
+     * @throws PersistenceException 삭제 중 오류가 발생한 경우
      *
      * @since 2.0
      */
-    fun delete(id: ID): Either<PersistenceError, Unit>
+    fun delete(id: ID)
 }

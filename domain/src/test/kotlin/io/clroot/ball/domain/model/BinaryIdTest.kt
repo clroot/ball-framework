@@ -1,9 +1,8 @@
 package io.clroot.ball.domain.model
 
+import io.clroot.ball.domain.exception.InvalidIdException
 import io.clroot.ball.domain.model.vo.BinaryId
-import io.clroot.ball.domain.model.vo.IdError.InvalidIdError
-import io.kotest.assertions.arrow.core.shouldBeLeft
-import io.kotest.assertions.arrow.core.shouldBeRight
+import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.string.shouldHaveLength
@@ -22,36 +21,39 @@ class BinaryIdTest : FunSpec({
             val validUlid = BinaryId.new().toString()
             val result = BinaryId.fromString(validUlid)
 
-            result.shouldBeRight().toString() shouldBe validUlid
+            result.toString() shouldBe validUlid
         }
 
-        test("fromString() should return InvalidIdError for an invalid ULID string") {
+        test("fromString() should throw InvalidIdException for an invalid ULID string") {
             val invalidUlid = "invalid-ulid"
-            val result = BinaryId.fromString(invalidUlid)
-
-            result.shouldBeLeft(InvalidIdError)
+            
+            shouldThrow<InvalidIdException> {
+                BinaryId.fromString(invalidUlid)
+            }
         }
 
-        test("fromString() should return InvalidIdError for a ULID with incorrect length") {
+        test("fromString() should throw InvalidIdException for a ULID with incorrect length") {
             val shortUlid = "12345"
-            val result = BinaryId.fromString(shortUlid)
-
-            result.shouldBeLeft(InvalidIdError)
+            
+            shouldThrow<InvalidIdException> {
+                BinaryId.fromString(shortUlid)
+            }
         }
 
-        test("fromString() should return InvalidIdError for a ULID with invalid characters") {
+        test("fromString() should throw InvalidIdException for a ULID with invalid characters") {
             val invalidCharsUlid =
                 "0123456789ABCDEFGHIJKLMNOPQR" // Contains 'I' and 'O' which are not in Crockford's base32
-            val result = BinaryId.fromString(invalidCharsUlid)
-
-            result.shouldBeLeft(InvalidIdError)
+            
+            shouldThrow<InvalidIdException> {
+                BinaryId.fromString(invalidCharsUlid)
+            }
         }
 
         test("toString() should return the ULID string") {
             val ulidString = BinaryId.new().toString()
-            val binaryId = BinaryId.fromString(ulidString).getOrNull()
+            val binaryId = BinaryId.fromString(ulidString)
 
-            binaryId?.toString() shouldBe ulidString
+            binaryId.toString() shouldBe ulidString
         }
     }
 
@@ -63,11 +65,12 @@ class BinaryIdTest : FunSpec({
             bytes.size shouldBe 16
         }
 
-        test("fromBytes() should fail with invalid byte length") {
+        test("fromBytes() should throw InvalidIdException with invalid byte length") {
             val invalidBytes = ByteArray(8) // 8 bytes instead of 16
-            val result = BinaryId.fromBytes(invalidBytes)
             
-            result.shouldBeLeft(InvalidIdError)
+            shouldThrow<InvalidIdException> {
+                BinaryId.fromBytes(invalidBytes)
+            }
         }
     }
 
@@ -86,7 +89,7 @@ class BinaryIdTest : FunSpec({
             val libraryULID = ULID.nextULID().toString()
             val result = BinaryId.fromString(libraryULID)
             
-            result.shouldBeRight().toString() shouldBe libraryULID
+            result.toString() shouldBe libraryULID
         }
 
         test("timestamp ordering should be preserved") {

@@ -1,8 +1,7 @@
 package io.clroot.ball.domain.model.vo
 
-import arrow.core.Either
+import io.clroot.ball.domain.exception.InvalidIdException
 import io.clroot.ball.domain.model.core.ValueObject
-import io.clroot.ball.domain.model.vo.IdError.InvalidIdError
 
 /**
  * ULID 기반의 바이너리 ID
@@ -21,21 +20,33 @@ value class BinaryId(
 
         /**
          * 문자열로부터 BinaryId 생성
+         * 
+         * @param value ULID 문자열
+         * @return BinaryId 인스턴스
+         * @throws InvalidIdException 잘못된 ULID 형식인 경우
          */
-        fun fromString(value: String): Either<IdError, BinaryId> =
-            Either.catch {
-                require(ULIDSupport.isValidULID(value)) { "Invalid ULID format: $value" }
-                BinaryId(value)
-            }.mapLeft { InvalidIdError }
+        fun fromString(value: String): BinaryId {
+            if (!ULIDSupport.isValidULID(value)) {
+                throw InvalidIdException("Invalid ULID format: $value")
+            }
+            return BinaryId(value)
+        }
 
         /**
          * 바이너리 데이터로부터 BinaryId 생성
+         * 
+         * @param bytes ULID 바이너리 데이터
+         * @return BinaryId 인스턴스
+         * @throws InvalidIdException 잘못된 바이너리 데이터인 경우
          */
-        fun fromBytes(bytes: ByteArray): Either<IdError, BinaryId> =
-            Either.catch {
+        fun fromBytes(bytes: ByteArray): BinaryId {
+            try {
                 val ulid = ULIDSupport.bytesToULID(bytes)
-                BinaryId(ulid)
-            }.mapLeft { InvalidIdError }
+                return BinaryId(ulid)
+            } catch (e: Exception) {
+                throw InvalidIdException("Invalid ULID bytes: ${e.message}")
+            }
+        }
     }
 
     /**

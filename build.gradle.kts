@@ -41,9 +41,6 @@ subprojects {
         api("org.jetbrains.kotlin:kotlin-reflect")
         api("org.jetbrains.kotlin:kotlin-stdlib")
 
-        // Arrow-kt
-        api("io.arrow-kt:arrow-core:2.0.1")
-
         // Logging
         api("org.slf4j:slf4j-api")
 
@@ -51,7 +48,7 @@ subprojects {
         testApi("io.kotest:kotest-runner-junit5:5.9.1")
         testApi("io.kotest:kotest-assertions-core:5.9.1")
         testApi("io.kotest:kotest-assertions-core:5.9.1")
-        testApi("io.kotest.extensions:kotest-assertions-arrow:2.0.0")
+
         testApi("io.mockk:mockk:1.13.10")
         testApi(kotlin("test"))
     }
