@@ -1,6 +1,7 @@
 dependencies {
     api(project(":domain"))
     api("org.springframework.boot:spring-boot-starter")
+    api("org.springframework:spring-tx")
     api(project(":shared:arrow"))
     api(project(":shared:lock"))
 
