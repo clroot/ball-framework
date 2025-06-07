@@ -3,11 +3,10 @@ package io.clroot.ball.adapter.inbound.rest.exception
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
-import io.kotest.matchers.string.shouldContain
 
-class SimpleLocationExtractorTest : DescribeSpec({
+class ExceptionLocationExtractorTest : DescribeSpec({
 
-    describe("SimpleLocationExtractor") {
+    describe("ExceptionLocationExtractor") {
 
         describe("extractLocation") {
 
@@ -21,7 +20,7 @@ class SimpleLocationExtractorTest : DescribeSpec({
                     )
 
                     // when
-                    val location = SimpleLocationExtractor.extractLocation(exception)
+                    val location = ExceptionLocationExtractor.extractLocation(exception)
 
                     // then
                     location shouldBe "UserService.createUser:42"
@@ -36,7 +35,7 @@ class SimpleLocationExtractorTest : DescribeSpec({
                     )
 
                     // when
-                    val location = SimpleLocationExtractor.extractLocation(exception)
+                    val location = ExceptionLocationExtractor.extractLocation(exception)
 
                     // then
                     location shouldBe null
@@ -48,7 +47,7 @@ class SimpleLocationExtractorTest : DescribeSpec({
                     exception.stackTrace = emptyArray()
 
                     // when
-                    val location = SimpleLocationExtractor.extractLocation(exception)
+                    val location = ExceptionLocationExtractor.extractLocation(exception)
 
                     // then
                     location shouldBe null
@@ -65,7 +64,7 @@ class SimpleLocationExtractorTest : DescribeSpec({
                     )
 
                     // when
-                    val location = SimpleLocationExtractor.extractLocation(exception)
+                    val location = ExceptionLocationExtractor.extractLocation(exception)
 
                     // then
                     location shouldBe "UserController.getUser:25"
@@ -80,7 +79,7 @@ class SimpleLocationExtractorTest : DescribeSpec({
                     )
 
                     // when
-                    val location = SimpleLocationExtractor.extractLocation(exception)
+                    val location = ExceptionLocationExtractor.extractLocation(exception)
 
                     // then
                     location shouldBe "UserService.updateUser:89"
@@ -95,7 +94,7 @@ class SimpleLocationExtractorTest : DescribeSpec({
                     )
 
                     // when
-                    val location = SimpleLocationExtractor.extractLocation(exception)
+                    val location = ExceptionLocationExtractor.extractLocation(exception)
 
                     // then
                     location shouldBe "UserRepository.save:15"
@@ -110,7 +109,7 @@ class SimpleLocationExtractorTest : DescribeSpec({
                     )
 
                     // when
-                    val location = SimpleLocationExtractor.extractLocation(exception)
+                    val location = ExceptionLocationExtractor.extractLocation(exception)
 
                     // then
                     location shouldBe "ProductController.deleteProduct:67"
@@ -125,7 +124,7 @@ class SimpleLocationExtractorTest : DescribeSpec({
                     )
 
                     // when
-                    val location = SimpleLocationExtractor.extractLocation(exception)
+                    val location = ExceptionLocationExtractor.extractLocation(exception)
 
                     // then
                     location shouldBe "MyApplication.main:12"
@@ -140,7 +139,7 @@ class SimpleLocationExtractorTest : DescribeSpec({
                     )
 
                     // when
-                    val location = SimpleLocationExtractor.extractLocation(exception)
+                    val location = ExceptionLocationExtractor.extractLocation(exception)
 
                     // then
                     location shouldBe "EmailService.sendEmail:33"
@@ -155,7 +154,7 @@ class SimpleLocationExtractorTest : DescribeSpec({
                     )
 
                     // when
-                    val location = SimpleLocationExtractor.extractLocation(exception)
+                    val location = ExceptionLocationExtractor.extractLocation(exception)
 
                     // then
                     location shouldBe "UserServiceImpl.validateUser:156"
@@ -168,7 +167,7 @@ class SimpleLocationExtractorTest : DescribeSpec({
                     )
 
                     // when
-                    val location = SimpleLocationExtractor.extractLocation(exception)
+                    val location = ExceptionLocationExtractor.extractLocation(exception)
 
                     // then
                     location shouldBe "MyClass\$InnerClass.process:78"
@@ -181,7 +180,7 @@ class SimpleLocationExtractorTest : DescribeSpec({
                     )
 
                     // when
-                    val location = SimpleLocationExtractor.extractLocation(exception)
+                    val location = ExceptionLocationExtractor.extractLocation(exception)
 
                     // then
                     location shouldBe "EventHandler\$1.handle:45"
@@ -194,7 +193,7 @@ class SimpleLocationExtractorTest : DescribeSpec({
                     )
 
                     // when
-                    val location = SimpleLocationExtractor.extractLocation(exception)
+                    val location = ExceptionLocationExtractor.extractLocation(exception)
 
                     // then
                     location shouldBe "NativeMethod.nativeCall:0"
@@ -207,7 +206,7 @@ class SimpleLocationExtractorTest : DescribeSpec({
                     )
 
                     // when
-                    val location = SimpleLocationExtractor.extractLocation(exception)
+                    val location = ExceptionLocationExtractor.extractLocation(exception)
 
                     // then
                     location shouldBe "UnknownSource.unknownMethod:-1"
@@ -228,7 +227,7 @@ class SimpleLocationExtractorTest : DescribeSpec({
                 )
 
                 // when
-                val location = SimpleLocationExtractor.extractLocation(exception)
+                val location = ExceptionLocationExtractor.extractLocation(exception)
 
                 // then
                 location shouldBe "UserService.processUser:42"
@@ -243,7 +242,7 @@ class SimpleLocationExtractorTest : DescribeSpec({
                 )
 
                 // when
-                val location = SimpleLocationExtractor.extractLocation(exception)
+                val location = ExceptionLocationExtractor.extractLocation(exception)
 
                 // then
                 location shouldBe "UserService.processUser:42"
@@ -263,7 +262,7 @@ class SimpleLocationExtractorTest : DescribeSpec({
                 )
 
                 // when
-                val location = SimpleLocationExtractor.extractLocation(exception)
+                val location = ExceptionLocationExtractor.extractLocation(exception)
 
                 // then
                 location shouldNotBe null
@@ -277,11 +276,16 @@ class SimpleLocationExtractorTest : DescribeSpec({
                 exception.stackTrace = arrayOf(
                     StackTraceElement("com.example.ValidationService", "validateInput", "ValidationService.kt", 67),
                     StackTraceElement("kotlin.PreconditionsKt", "require", "Preconditions.kt", 15),
-                    StackTraceElement("org.springframework.web.method.support.InvocableHandlerMethod", "doInvoke", "InvocableHandlerMethod.java", 190)
+                    StackTraceElement(
+                        "org.springframework.web.method.support.InvocableHandlerMethod",
+                        "doInvoke",
+                        "InvocableHandlerMethod.java",
+                        190
+                    )
                 )
 
                 // when
-                val location = SimpleLocationExtractor.extractLocation(exception)
+                val location = ExceptionLocationExtractor.extractLocation(exception)
 
                 // then
                 location shouldNotBe null
@@ -300,7 +304,7 @@ class SimpleLocationExtractorTest : DescribeSpec({
                 )
 
                 // when
-                val location = SimpleLocationExtractor.extractLocation(exception)
+                val location = ExceptionLocationExtractor.extractLocation(exception)
 
                 // then
                 location shouldBe null
@@ -317,7 +321,7 @@ class SimpleLocationExtractorTest : DescribeSpec({
                 )
 
                 // when
-                val location = SimpleLocationExtractor.extractLocation(exception)
+                val location = ExceptionLocationExtractor.extractLocation(exception)
 
                 // then
                 location shouldBe "FirstController.handleRequest:15" // 첫 번째만 선택되어야 함

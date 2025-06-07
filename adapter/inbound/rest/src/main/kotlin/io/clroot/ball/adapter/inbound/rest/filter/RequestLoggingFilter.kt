@@ -1,4 +1,4 @@
-package io.clroot.ball.adapter.inbound.rest.logging
+package io.clroot.ball.adapter.inbound.rest.filter
 
 import io.clroot.ball.domain.slf4j
 import jakarta.servlet.FilterChain

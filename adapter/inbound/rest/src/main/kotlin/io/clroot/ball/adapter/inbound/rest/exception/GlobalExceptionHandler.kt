@@ -1,8 +1,8 @@
 package io.clroot.ball.adapter.inbound.rest.exception
 
-import io.clroot.ball.adapter.inbound.rest.dto.DebugInfo
-import io.clroot.ball.adapter.inbound.rest.dto.ErrorResponse
-import io.clroot.ball.adapter.inbound.rest.logging.RequestLoggingFilter.Companion.TRACE_ID_MDC_KEY
+import io.clroot.ball.adapter.inbound.rest.dto.error.DebugInfo
+import io.clroot.ball.adapter.inbound.rest.dto.error.ErrorResponse
+import io.clroot.ball.adapter.inbound.rest.filter.RequestLoggingFilter.Companion.TRACE_ID_MDC_KEY
 import io.clroot.ball.domain.exception.*
 import jakarta.servlet.http.HttpServletRequest
 import org.slf4j.LoggerFactory
@@ -130,7 +130,7 @@ class GlobalExceptionHandler(
             method = request.method,
             exceptionType = exception::class.simpleName,
             stackTrace = exception.stackTraceToString(),
-            location = SimpleLocationExtractor.extractLocation(exception) // 한 줄로 끝!
+            location = ExceptionLocationExtractor.extractLocation(exception)
         )
     }
 

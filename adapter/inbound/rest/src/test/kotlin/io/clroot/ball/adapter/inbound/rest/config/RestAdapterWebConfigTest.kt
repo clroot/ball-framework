@@ -8,7 +8,7 @@ import io.mockk.mockk
 import io.mockk.verify
 import org.springframework.format.FormatterRegistry
 
-class BallWebMvcConfigTest : DescribeSpec({
+class RestAdapterWebConfigTest : DescribeSpec({
 
     describe("BallWebMvcConfig") {
         
@@ -18,7 +18,7 @@ class BallWebMvcConfigTest : DescribeSpec({
             val sortConverter = mockk<StringToSortConverter>(relaxed = true)
             val registry = mockk<FormatterRegistry>(relaxed = true)
             
-            val config = BallWebMvcConfig(pageRequestConverter, sortConverter)
+            val config = RestAdapterWebConfig(pageRequestConverter, sortConverter)
             
             // when
             config.addFormatters(registry)
@@ -34,7 +34,7 @@ class BallWebMvcConfigTest : DescribeSpec({
             val sortConverter = mockk<StringToSortConverter>()
             
             // when
-            val config = BallWebMvcConfig(pageRequestConverter, sortConverter)
+            val config = RestAdapterWebConfig(pageRequestConverter, sortConverter)
             
             // then (컴파일 오류가 없으면 의존성 주입이 올바름)
             config shouldBe config

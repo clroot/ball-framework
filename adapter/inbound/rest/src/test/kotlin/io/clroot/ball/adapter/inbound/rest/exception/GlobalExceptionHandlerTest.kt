@@ -1,6 +1,5 @@
 package io.clroot.ball.adapter.inbound.rest.exception
 
-import io.clroot.ball.adapter.inbound.rest.dto.ErrorResponse
 import io.clroot.ball.domain.exception.*
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.shouldBe

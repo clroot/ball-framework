@@ -1,4 +1,4 @@
-package io.clroot.ball.adapter.inbound.rest
+package io.clroot.ball.adapter.inbound.rest.extension
 
 import arrow.core.Either
 import arrow.core.left
@@ -10,9 +10,7 @@ import io.clroot.ball.domain.exception.ValidationException
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.shouldBe
-import io.kotest.matchers.types.shouldBeInstanceOf
 import org.springframework.http.HttpStatus
-import org.springframework.http.ResponseEntity
 
 class EitherExtensionsTest : DescribeSpec({
 

@@ -2,8 +2,8 @@ package io.clroot.ball.adapter.inbound.rest.controller
 
 import arrow.core.left
 import arrow.core.right
-import io.clroot.ball.adapter.inbound.rest.toResponseEntity
-import io.clroot.ball.adapter.inbound.rest.toResponseEntityWithNull
+import io.clroot.ball.adapter.inbound.rest.extension.toResponseEntity
+import io.clroot.ball.adapter.inbound.rest.extension.toResponseEntityWithNull
 import io.clroot.ball.application.ApplicationError
 import io.clroot.ball.domain.exception.DomainException
 import io.clroot.ball.domain.exception.ValidationException
