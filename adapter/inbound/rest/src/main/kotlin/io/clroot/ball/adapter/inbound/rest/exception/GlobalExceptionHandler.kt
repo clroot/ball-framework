@@ -1,5 +1,7 @@
 package io.clroot.ball.adapter.inbound.rest.exception
 
+import io.clroot.ball.adapter.inbound.rest.dto.DebugInfo
+import io.clroot.ball.adapter.inbound.rest.dto.ErrorResponse
 import io.clroot.ball.adapter.inbound.rest.logging.RequestLoggingFilter.Companion.TRACE_ID_MDC_KEY
 import io.clroot.ball.domain.exception.*
 import jakarta.servlet.http.HttpServletRequest

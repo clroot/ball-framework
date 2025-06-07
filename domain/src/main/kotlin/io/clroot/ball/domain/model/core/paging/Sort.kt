@@ -13,4 +13,13 @@ data class Sort(
     fun and(other: Sort): Sort = Sort(orders + other.orders)
     fun ascending(property: String): Sort = Sort(orders + Order.asc(property))
     fun descending(property: String): Sort = Sort(orders + Order.desc(property))
+
+    val isSorted: Boolean get() = orders.isNotEmpty()
+
+    val isUnsorted: Boolean get() = !isSorted
+
+
+    fun isEmpty(): Boolean {
+        return orders.isEmpty()
+    }
 }

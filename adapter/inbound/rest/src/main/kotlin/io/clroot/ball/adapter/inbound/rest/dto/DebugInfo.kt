@@ -1,4 +1,4 @@
-package io.clroot.ball.adapter.inbound.rest.exception
+package io.clroot.ball.adapter.inbound.rest.dto
 
 import com.fasterxml.jackson.annotation.JsonInclude
 
