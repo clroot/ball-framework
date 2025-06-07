@@ -12,7 +12,7 @@ class StringToPageRequestConverter : Converter<String, PageRequest> {
         val parts = source.split(",").map { it.trim() }
 
         val page = parts.getOrNull(0)?.toIntOrNull() ?: 0
-        val size = parts.getOrNull(1)?.toIntOrNull() ?: 20
+        val size = parts.getOrNull(1)?.toIntOrNull() ?: PageRequest.DEFAULT_SIZE
         val sortParts = parts.drop(2)
 
         val sort = parseSortFromParts(sortParts)

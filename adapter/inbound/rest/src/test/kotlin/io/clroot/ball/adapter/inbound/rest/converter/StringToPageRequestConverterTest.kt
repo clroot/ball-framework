@@ -1,6 +1,7 @@
 package io.clroot.ball.adapter.inbound.rest.converter
 
 import io.clroot.ball.domain.model.core.paging.Direction
+import io.clroot.ball.domain.model.core.paging.PageRequest
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
@@ -35,7 +36,7 @@ class StringToPageRequestConverterTest : DescribeSpec({
                 
                 // then
                 result.page shouldBe 2
-                result.size shouldBe 20 // 기본값
+                result.size shouldBe PageRequest.DEFAULT_SIZE
                 result.sort.isUnsorted shouldBe true
             }
             
@@ -48,7 +49,7 @@ class StringToPageRequestConverterTest : DescribeSpec({
                 
                 // then
                 result.page shouldBe 0
-                result.size shouldBe 20
+                result.size shouldBe PageRequest.DEFAULT_SIZE
                 result.sort.isUnsorted shouldBe true
             }
             
@@ -73,7 +74,7 @@ class StringToPageRequestConverterTest : DescribeSpec({
                 
                 // then
                 result.page shouldBe 1
-                result.size shouldBe 20
+                result.size shouldBe 30
             }
         }
         
