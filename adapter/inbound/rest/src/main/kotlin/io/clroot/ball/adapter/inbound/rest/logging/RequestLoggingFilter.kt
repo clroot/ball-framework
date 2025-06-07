@@ -1,9 +1,9 @@
 package io.clroot.ball.adapter.inbound.rest.logging
 
+import io.clroot.ball.domain.slf4j
 import jakarta.servlet.FilterChain
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
-import org.slf4j.LoggerFactory
 import org.slf4j.MDC
 import org.springframework.core.Ordered
 import org.springframework.core.annotation.Order
@@ -12,7 +12,7 @@ import org.springframework.web.filter.OncePerRequestFilter
 import org.springframework.web.util.ContentCachingRequestWrapper
 import org.springframework.web.util.ContentCachingResponseWrapper
 import java.io.UnsupportedEncodingException
-import java.util.UUID
+import java.util.*
 
 /**
  * 요청 로깅 필터
@@ -24,7 +24,7 @@ import java.util.UUID
 @Order(Ordered.HIGHEST_PRECEDENCE)
 class RequestLoggingFilter : OncePerRequestFilter() {
 
-    private val log = LoggerFactory.getLogger(this::class.java)
+    private val log = slf4j()
     
     companion object {
         const val TRACE_ID_HEADER = "X-Trace-Id"

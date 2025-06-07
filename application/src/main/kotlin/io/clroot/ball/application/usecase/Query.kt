@@ -1,11 +1,21 @@
 package io.clroot.ball.application.usecase
 
-import arrow.core.Option
+import arrow.core.Either
+import arrow.core.raise.either
+import io.clroot.ball.application.ApplicationError
 import org.springframework.transaction.annotation.Transactional
 
 abstract class Query<TQuery, TResult> {
     @Transactional(readOnly = true)
-    abstract fun execute(query: TQuery): Option<TResult>
+    open fun execute(query: TQuery): Either<ApplicationError, TResult?> = either {
+        try {
+            executeInternal(query)
+        } catch (e: io.clroot.ball.domain.exception.DomainException) {
+            raise(ApplicationError.DomainError(e))
+        } catch (e: Exception) {
+            raise(ApplicationError.SystemError(e.message ?: "Unknown error", e))
+        }
+    }
 
-    protected fun <T> T?.toOption(): Option<T> = Option.fromNullable(this)
+    protected abstract fun executeInternal(query: TQuery): TResult?
 }

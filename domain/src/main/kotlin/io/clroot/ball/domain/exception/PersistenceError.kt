@@ -1,6 +1,4 @@
-package io.clroot.ball.domain.port
-
-import io.clroot.ball.domain.exception.DomainException
+package io.clroot.ball.domain.exception
 
 /**
  * 영속성 계층에서 발생하는 기본 예외
