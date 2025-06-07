@@ -24,10 +24,23 @@ class StringToPageRequestConverter : Converter<String, PageRequest> {
         if (sortParts.isEmpty()) return Sort.unsorted()
 
         val orders = sortParts.mapNotNull { part ->
+            val trimmedPart = part.trim()
+            if (trimmedPart.isBlank()) return@mapNotNull null
+            
             when {
-                part.contains(":desc") -> Order.desc(part.substringBefore(":desc"))
-                part.contains(":asc") -> Order.asc(part.substringBefore(":asc"))
-                part.isNotBlank() -> Order.asc(part)
+                // :desc 패턴 처리
+                trimmedPart.contains(":desc") -> {
+                    val property = trimmedPart.substringBefore(":desc").trim()
+                    if (property.isNotBlank()) Order.desc(property) else null
+                }
+                // :asc 패턴 처리
+                trimmedPart.contains(":asc") -> {
+                    val property = trimmedPart.substringBefore(":asc").trim()
+                    if (property.isNotBlank()) Order.asc(property) else null
+                }
+                // 방향 지정 없는 경우 (콜론으로 끝나는 경우 제외)
+                !trimmedPart.endsWith(":") -> Order.asc(trimmedPart)
+                // 잘못된 형식 (콜론으로 끝나는 경우)
                 else -> null
             }
         }

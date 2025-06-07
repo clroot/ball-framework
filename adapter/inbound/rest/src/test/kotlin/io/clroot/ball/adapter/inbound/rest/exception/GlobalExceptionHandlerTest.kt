@@ -150,7 +150,8 @@ class GlobalExceptionHandlerTest : DescribeSpec({
             bindingResult.addError(FieldError("user", "name", "Name is required"))
             bindingResult.addError(FieldError("user", "email", "Email format is invalid"))
             
-            val exception = MethodArgumentNotValidException(mockk(), bindingResult)
+            val parameter = mockk<org.springframework.core.MethodParameter>(relaxed = true)
+            val exception = MethodArgumentNotValidException(parameter, bindingResult)
             
             // when
             val response = handler.handleValidationException(exception, request)

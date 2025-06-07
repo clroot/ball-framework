@@ -215,60 +215,77 @@ class SimpleLocationExtractorTest : DescribeSpec({
             }
         }
 
-        describe("isFrameworkCode private 메서드 동작") {
+        describe("프레임워크 패키지 필터링 검증") {
 
-            it("프레임워크 패키지들을 올바르게 식별해야 한다") {
-                // given & when & then
-                SimpleLocationExtractor.isFrameworkCode("java.util.ArrayList") shouldBe true
-                SimpleLocationExtractor.isFrameworkCode("kotlin.collections.List") shouldBe true
-                SimpleLocationExtractor.isFrameworkCode("org.springframework.boot.SpringApplication") shouldBe true
-                SimpleLocationExtractor.isFrameworkCode("io.clroot.ball.domain.Entity") shouldBe true
-                SimpleLocationExtractor.isFrameworkCode("org.apache.catalina.startup.Bootstrap") shouldBe true
-                SimpleLocationExtractor.isFrameworkCode("org.junit.jupiter.api.Test") shouldBe true
+            it("프레임워크 패키지들이 올바르게 필터링되는지 확인해야 한다") {
+                // given - 프레임워크 코드가 포함된 스택 트레이스
+                val exception = createExceptionWithCustomStack(
+                    Triple("java.util.ArrayList", "add", 10),
+                    Triple("kotlin.collections.List", "first", 5),
+                    Triple("org.springframework.boot.SpringApplication", "run", 100),
+                    Triple("io.clroot.ball.domain.Entity", "getId", 15),
+                    Triple("com.example.UserService", "processUser", 42) // 마지막에 사용자 코드
+                )
 
-                // 사용자 코드는 프레임워크 코드가 아님
-                SimpleLocationExtractor.isFrameworkCode("com.example.UserService") shouldBe false
-                SimpleLocationExtractor.isFrameworkCode("com.mycompany.ProductController") shouldBe false
-                SimpleLocationExtractor.isFrameworkCode("org.example.MyApplication") shouldBe false // org.springframework가 아닌 org.example
+                // when
+                val location = SimpleLocationExtractor.extractLocation(exception)
+
+                // then
+                location shouldBe "UserService.processUser:42"
+            }
+
+            it("사용자 코드가 첫 번째에 있으면 그것을 반환해야 한다") {
+                // given
+                val exception = createExceptionWithCustomStack(
+                    Triple("com.example.UserService", "processUser", 42),
+                    Triple("org.springframework.boot.SpringApplication", "run", 100),
+                    Triple("java.util.ArrayList", "add", 10)
+                )
+
+                // when
+                val location = SimpleLocationExtractor.extractLocation(exception)
+
+                // then
+                location shouldBe "UserService.processUser:42"
             }
         }
 
         describe("실제 예외 시나리오") {
 
             it("실제 NullPointerException 스택 트레이스를 처리해야 한다") {
-                // given - 실제 NPE 발생시키기
-                val exception = try {
-                    val nullString: String? = null
-                    nullString!!.length // NPE 발생
-                    RuntimeException("Should not reach here")
-                } catch (e: KotlinNullPointerException) {
-                    e
-                }
+                // given - 실제 NPE를 시뮬레이션
+                val exception = RuntimeException("Test NPE")
+                // 실제 스택 트레이스를 모방한 커스텀 스택 생성
+                exception.stackTrace = arrayOf(
+                    StackTraceElement("com.example.UserService", "processUser", "UserService.kt", 42),
+                    StackTraceElement("java.lang.Object", "getClass", "Object.java", 50),
+                    StackTraceElement("kotlin.jvm.internal.Intrinsics", "checkNotNull", "Intrinsics.java", 25)
+                )
 
                 // when
                 val location = SimpleLocationExtractor.extractLocation(exception)
 
                 // then
                 location shouldNotBe null
-                location shouldContain "SimpleLocationExtractorTest"
-                location shouldContain ":"
+                location shouldBe "UserService.processUser:42"
             }
 
             it("실제 IllegalArgumentException 스택 트레이스를 처리해야 한다") {
-                // given - 실제 예외 발생시키기
-                val exception = try {
-                    require(false) { "Test exception" }
-                    RuntimeException("Should not reach here")
-                } catch (e: IllegalArgumentException) {
-                    e
-                }
+                // given - 실제 예외를 시뮬레이션
+                val exception = IllegalArgumentException("Test exception")
+                // 실제 스택 트레이스를 모방한 커스텀 스택 생성
+                exception.stackTrace = arrayOf(
+                    StackTraceElement("com.example.ValidationService", "validateInput", "ValidationService.kt", 67),
+                    StackTraceElement("kotlin.PreconditionsKt", "require", "Preconditions.kt", 15),
+                    StackTraceElement("org.springframework.web.method.support.InvocableHandlerMethod", "doInvoke", "InvocableHandlerMethod.java", 190)
+                )
 
                 // when
                 val location = SimpleLocationExtractor.extractLocation(exception)
 
                 // then
                 location shouldNotBe null
-                location shouldContain "SimpleLocationExtractorTest"
+                location shouldBe "ValidationService.validateInput:67"
             }
         }
 
@@ -317,24 +334,4 @@ private fun createExceptionWithCustomStack(vararg frames: Triple<String, String,
     }.toTypedArray()
     exception.stackTrace = stackTrace
     return exception
-}
-
-// SimpleLocationExtractor의 private 메서드 테스트를 위한 확장
-private fun SimpleLocationExtractor.isFrameworkCode(className: String): Boolean {
-    val frameworkPackages = setOf(
-        "java.",
-        "kotlin.",
-        "jdk.",
-        "sun.",
-        "com.sun.",
-        "org.springframework.",
-        "io.clroot.ball.",
-        "org.apache.catalina.",
-        "org.apache.tomcat.",
-        "org.eclipse.jetty.",
-        "org.junit.",
-        "org.mockito.",
-        "org.testcontainers."
-    )
-    return frameworkPackages.any { className.startsWith(it) }
 }
