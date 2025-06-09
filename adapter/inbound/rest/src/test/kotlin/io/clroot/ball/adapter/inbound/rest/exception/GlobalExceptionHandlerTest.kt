@@ -1,6 +1,10 @@
 package io.clroot.ball.adapter.inbound.rest.exception
 
-import io.clroot.ball.domain.exception.*
+import io.clroot.ball.adapter.outbound.data.access.core.exception.DuplicateEntityException
+import io.clroot.ball.adapter.outbound.data.access.core.exception.EntityNotFoundException
+import io.clroot.ball.adapter.outbound.data.access.core.exception.PersistenceException
+import io.clroot.ball.domain.exception.BusinessRuleException
+import io.clroot.ball.domain.exception.DomainValidationException
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
@@ -27,10 +31,10 @@ class GlobalExceptionHandlerTest : DescribeSpec({
 
     describe("handleDomainException") {
         
-        context("ValidationException 처리") {
-            it("ValidationException을 400 Bad Request로 변환해야 한다") {
+        context("DomainValidationException 처리") {
+            it("DomainValidationException을 400 Bad Request로 변환해야 한다") {
                 // given
-                val exception = ValidationException("Invalid user data")
+                val exception = DomainValidationException("Invalid user data")
                 
                 // when
                 val response = handler.handleDomainException(exception, request)
@@ -43,10 +47,10 @@ class GlobalExceptionHandlerTest : DescribeSpec({
             }
         }
         
-        context("BusinessRuleViolationException 처리") {
-            it("BusinessRuleViolationException을 400 Bad Request로 변환해야 한다") {
+        context("BusinessRuleException 처리") {
+            it("BusinessRuleException을 400 Bad Request로 변환해야 한다") {
                 // given
-                val exception = BusinessRuleViolationException("Cannot delete user with active orders")
+                val exception = BusinessRuleException("Cannot delete user with active orders")
                 
                 // when
                 val response = handler.handleDomainException(exception, request)
@@ -55,36 +59,6 @@ class GlobalExceptionHandlerTest : DescribeSpec({
                 response.statusCode shouldBe HttpStatus.BAD_REQUEST
                 response.body?.code shouldBe ErrorCodes.BUSINESS_RULE_VIOLATION
                 response.body?.message shouldBe "Cannot delete user with active orders"
-            }
-        }
-        
-        context("SpecificationNotSatisfiedException 처리") {
-            it("SpecificationNotSatisfiedException을 400 Bad Request로 변환해야 한다") {
-                // given
-                val exception = SpecificationNotSatisfiedException("User specification not satisfied")
-                
-                // when
-                val response = handler.handleDomainException(exception, request)
-                
-                // then
-                response.statusCode shouldBe HttpStatus.BAD_REQUEST
-                response.body?.code shouldBe ErrorCodes.VALIDATION_FAILED
-                response.body?.message shouldBe "User specification not satisfied"
-            }
-        }
-        
-        context("InvalidIdException 처리") {
-            it("InvalidIdException을 400 Bad Request로 변환해야 한다") {
-                // given
-                val exception = InvalidIdException("Invalid user ID format")
-                
-                // when
-                val response = handler.handleDomainException(exception, request)
-                
-                // then
-                response.statusCode shouldBe HttpStatus.BAD_REQUEST
-                response.body?.code shouldBe ErrorCodes.INVALID_ID
-                response.body?.message shouldBe "Invalid user ID format"
             }
         }
     }
@@ -186,7 +160,7 @@ class GlobalExceptionHandlerTest : DescribeSpec({
             it("디버그 정보가 포함되어야 한다") {
                 // given
                 every { environment.activeProfiles } returns arrayOf("dev")
-                val exception = ValidationException("Test exception")
+                val exception = DomainValidationException("Test exception")
                 
                 // when
                 val response = handler.handleDomainException(exception, request)
@@ -195,7 +169,7 @@ class GlobalExceptionHandlerTest : DescribeSpec({
                 response.body?.debug shouldNotBe null
                 response.body?.debug?.path shouldBe "/api/v1/users"
                 response.body?.debug?.method shouldBe "POST"
-                response.body?.debug?.exceptionType shouldBe "ValidationException"
+                response.body?.debug?.exceptionType shouldBe "DomainValidationException"
             }
         }
         
@@ -203,7 +177,7 @@ class GlobalExceptionHandlerTest : DescribeSpec({
             it("디버그 정보가 포함되지 않아야 한다") {
                 // given
                 every { environment.activeProfiles } returns arrayOf("prod")
-                val exception = ValidationException("Test exception")
+                val exception = DomainValidationException("Test exception")
                 
                 // when
                 val response = handler.handleDomainException(exception, request)
@@ -218,7 +192,7 @@ class GlobalExceptionHandlerTest : DescribeSpec({
         
         it("MDC에서 추적 ID를 가져와야 한다") {
             // given
-            val exception = ValidationException("Test exception")
+            val exception = DomainValidationException("Test exception")
             
             // when
             val response = handler.handleDomainException(exception, request)

@@ -1,6 +1,6 @@
 package io.clroot.ball.domain.model
 
-import io.clroot.ball.domain.exception.SpecificationNotSatisfiedException
+import io.clroot.ball.domain.exception.DomainValidationException
 import io.clroot.ball.domain.model.specification.Specification
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.FunSpec
@@ -121,7 +121,7 @@ class SpecificationTest : FunSpec({
             val errorMessage = "User must be at least 18 years old"
 
             // when & then
-            val exception = shouldThrow<SpecificationNotSatisfiedException> {
+            val exception = shouldThrow<DomainValidationException> {
                 adultSpec.validate(user, errorMessage)
             }
             exception.message shouldBe errorMessage
@@ -133,7 +133,7 @@ class SpecificationTest : FunSpec({
             val adultSpec = AdultUserSpecification()
 
             // when & then
-            val exception = shouldThrow<SpecificationNotSatisfiedException> {
+            val exception = shouldThrow<DomainValidationException> {
                 adultSpec.validate(user)
             }
             exception.message shouldContain "Specification not satisfied for:"

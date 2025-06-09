@@ -1,6 +1,6 @@
 package io.clroot.ball.domain.model
 
-import io.clroot.ball.domain.exception.InvalidIdException
+import io.clroot.ball.domain.exception.DomainValidationException
 import io.clroot.ball.domain.model.vo.BinaryId
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.FunSpec
@@ -24,27 +24,27 @@ class BinaryIdTest : FunSpec({
             result.toString() shouldBe validUlid
         }
 
-        test("fromString() should throw InvalidIdException for an invalid ULID string") {
+        test("fromString() should throw DomainValidationException for an invalid ULID string") {
             val invalidUlid = "invalid-ulid"
             
-            shouldThrow<InvalidIdException> {
+            shouldThrow<DomainValidationException> {
                 BinaryId.fromString(invalidUlid)
             }
         }
 
-        test("fromString() should throw InvalidIdException for a ULID with incorrect length") {
+        test("fromString() should throw DomainValidationException for a ULID with incorrect length") {
             val shortUlid = "12345"
             
-            shouldThrow<InvalidIdException> {
+            shouldThrow<DomainValidationException> {
                 BinaryId.fromString(shortUlid)
             }
         }
 
-        test("fromString() should throw InvalidIdException for a ULID with invalid characters") {
+        test("fromString() should throw DomainValidationException for a ULID with invalid characters") {
             val invalidCharsUlid =
                 "0123456789ABCDEFGHIJKLMNOPQR" // Contains 'I' and 'O' which are not in Crockford's base32
             
-            shouldThrow<InvalidIdException> {
+            shouldThrow<DomainValidationException> {
                 BinaryId.fromString(invalidCharsUlid)
             }
         }
@@ -65,10 +65,10 @@ class BinaryIdTest : FunSpec({
             bytes.size shouldBe 16
         }
 
-        test("fromBytes() should throw InvalidIdException with invalid byte length") {
+        test("fromBytes() should throw DomainValidationException with invalid byte length") {
             val invalidBytes = ByteArray(8) // 8 bytes instead of 16
             
-            shouldThrow<InvalidIdException> {
+            shouldThrow<DomainValidationException> {
                 BinaryId.fromBytes(invalidBytes)
             }
         }

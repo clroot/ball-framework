@@ -1,6 +1,6 @@
 package io.clroot.ball.domain.model.vo
 
-import io.clroot.ball.domain.exception.ValidationException
+import io.clroot.ball.domain.exception.DomainValidationException
 import io.clroot.ball.domain.model.ValueObject
 
 /**
@@ -17,11 +17,11 @@ value class Email private constructor(val value: String) : ValueObject {
          *
          * @param value 이메일 문자열
          * @return Email 객체
-         * @throws ValidationException 유효하지 않은 이메일 형식인 경우
+         * @throws DomainValidationException 유효하지 않은 이메일 형식인 경우
          */
         fun from(value: String): Email {
             if (!isValidEmail(value)) {
-                throw ValidationException("Invalid email format: $value")
+                throw DomainValidationException.fieldValidation("email","Invalid email format: $value")
             }
             return Email(value)
         }

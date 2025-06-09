@@ -1,6 +1,6 @@
 package io.clroot.ball.domain.model.policy
 
-import io.clroot.ball.domain.exception.PolicyViolationException
+import io.clroot.ball.domain.exception.BusinessRuleException
 
 /**
  * 정책 (Policy)
@@ -15,7 +15,7 @@ interface Policy<T> {
      * 정책 검증
      *
      * @param target 검증 대상 객체
-     * @throws PolicyViolationException 정책 위반 시
+     * @throws BusinessRuleException 정책 위반 시
      */
     fun validate(target: T)
 
@@ -29,7 +29,7 @@ interface Policy<T> {
         return try {
             validate(target)
             true
-        } catch (e: PolicyViolationException) {
+        } catch (e: BusinessRuleException) {
             false
         }
     }

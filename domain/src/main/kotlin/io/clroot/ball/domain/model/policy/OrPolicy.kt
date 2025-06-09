@@ -1,6 +1,6 @@
 package io.clroot.ball.domain.model.policy
 
-import io.clroot.ball.domain.exception.PolicyViolationException
+import io.clroot.ball.domain.exception.BusinessRuleException
 
 /**
  * OR 정책
@@ -14,7 +14,7 @@ class OrPolicy<T>(
         try {
             left.validate(target)
             return // 첫 번째 정책이 성공하면 바로 반환
-        } catch (e: PolicyViolationException) {
+        } catch (e: BusinessRuleException) {
             // 첫 번째 정책이 실패하면 두 번째 정책 시도
             right.validate(target) // 이것도 실패하면 예외가 전파됨
         }

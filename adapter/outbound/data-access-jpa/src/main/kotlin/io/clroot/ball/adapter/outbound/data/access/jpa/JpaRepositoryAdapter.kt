@@ -1,8 +1,8 @@
 package io.clroot.ball.adapter.outbound.data.access.jpa
 
-import io.clroot.ball.domain.exception.DatabaseException
-import io.clroot.ball.domain.exception.DuplicateEntityException
-import io.clroot.ball.domain.exception.EntityNotFoundException
+import io.clroot.ball.adapter.outbound.data.access.core.exception.DatabaseException
+import io.clroot.ball.adapter.outbound.data.access.core.exception.DuplicateEntityException
+import io.clroot.ball.adapter.outbound.data.access.core.exception.EntityNotFoundException
 import io.clroot.ball.domain.model.EntityBase
 import io.clroot.ball.domain.port.Repository
 import org.springframework.dao.DataIntegrityViolationException

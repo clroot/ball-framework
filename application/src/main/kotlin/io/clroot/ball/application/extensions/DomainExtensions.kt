@@ -5,6 +5,7 @@ import arrow.core.Either
 import arrow.core.flatMap
 import io.clroot.ball.application.ApplicationError
 import io.clroot.ball.domain.exception.DomainException
+import io.clroot.ball.domain.exception.DomainValidationException
 import io.clroot.ball.domain.model.policy.Policy
 import io.clroot.ball.domain.model.specification.Specification
 
@@ -43,7 +44,7 @@ fun <T> Specification<T>.validateEitherWithDomain(
     if (isSatisfiedBy(target)) {
         Either.Right(target)
     } else {
-        val domainException = io.clroot.ball.domain.exception.SpecificationNotSatisfiedException(errorMessage)
+        val domainException = DomainValidationException(errorMessage)
         Either.Left(ApplicationError.DomainError(domainException))
     }
 
@@ -56,7 +57,7 @@ fun <T> List<Specification<T>>.validateAllEither(
 ): Either<ApplicationError, T> {
     for (spec in this) {
         if (!spec.isSatisfiedBy(target)) {
-            val domainException = io.clroot.ball.domain.exception.SpecificationNotSatisfiedException(errorMessage)
+            val domainException = DomainValidationException(errorMessage)
             return Either.Left(ApplicationError.DomainError(domainException))
         }
     }

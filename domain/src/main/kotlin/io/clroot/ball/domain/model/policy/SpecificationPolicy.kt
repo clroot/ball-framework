@@ -1,6 +1,6 @@
 package io.clroot.ball.domain.model.policy
 
-import io.clroot.ball.domain.exception.PolicyViolationException
+import io.clroot.ball.domain.exception.BusinessRuleException
 import io.clroot.ball.domain.model.specification.Specification
 
 /**
@@ -18,7 +18,7 @@ class SpecificationPolicy<T>(
 ) : Policy<T> {
     override fun validate(target: T) {
         if (!specification.isSatisfiedBy(target)) {
-            throw PolicyViolationException(errorMessageProvider(target))
+            throw BusinessRuleException(errorMessageProvider(target))
         }
     }
 }

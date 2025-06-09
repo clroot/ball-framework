@@ -1,8 +1,6 @@
 package io.clroot.ball.domain.port
 
-import io.clroot.ball.domain.exception.DatabaseException
-import io.clroot.ball.domain.exception.DuplicateEntityException
-import io.clroot.ball.domain.exception.EntityNotFoundException
+import io.clroot.ball.domain.exception.DomainStateException
 import io.clroot.ball.domain.model.EntityBase
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.FunSpec
@@ -49,18 +47,21 @@ class RepositoryTest : FunSpec({
 
         test("should throw DatabaseException when database error occurs") {
             val entity = TestEntity("1")
-            every { repository.save(entity) } throws DatabaseException("Database error")
+            every { repository.save(entity) } throws DomainStateException(
+                "Database error",
+                TestEntity::class.simpleName,
+            )
 
-            shouldThrow<DatabaseException> {
+            shouldThrow<DomainStateException> {
                 repository.save(entity)
             }
         }
 
         test("should throw DuplicateEntityException when entity already exists") {
             val entity = TestEntity("1")
-            every { repository.save(entity) } throws DuplicateEntityException("Entity already exists")
+            every { repository.save(entity) } throws DomainStateException("Entity already exists")
 
-            shouldThrow<DuplicateEntityException> {
+            shouldThrow<DomainStateException> {
                 repository.save(entity)
             }
         }
@@ -85,9 +86,9 @@ class RepositoryTest : FunSpec({
         }
 
         test("should throw DatabaseException when database error occurs") {
-            every { repository.findAll() } throws DatabaseException("Database error")
+            every { repository.findAll() } throws DomainStateException("Database error")
 
-            shouldThrow<DatabaseException> {
+            shouldThrow<DomainStateException> {
                 repository.findAll()
             }
         }
@@ -103,9 +104,9 @@ class RepositoryTest : FunSpec({
         }
 
         test("should throw EntityNotFoundException when entity does not exist") {
-            every { repository.delete("999") } throws EntityNotFoundException("Entity not found")
+            every { repository.delete("999") } throws DomainStateException("Entity not found")
 
-            shouldThrow<EntityNotFoundException> {
+            shouldThrow<DomainStateException> {
                 repository.delete("999")
             }
         }

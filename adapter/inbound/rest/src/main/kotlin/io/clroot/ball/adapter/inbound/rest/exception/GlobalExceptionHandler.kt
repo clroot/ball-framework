@@ -3,7 +3,12 @@ package io.clroot.ball.adapter.inbound.rest.exception
 import io.clroot.ball.adapter.inbound.rest.dto.error.DebugInfo
 import io.clroot.ball.adapter.inbound.rest.dto.error.ErrorResponse
 import io.clroot.ball.adapter.inbound.rest.filter.RequestLoggingFilter.Companion.TRACE_ID_MDC_KEY
-import io.clroot.ball.domain.exception.*
+import io.clroot.ball.adapter.outbound.data.access.core.exception.DuplicateEntityException
+import io.clroot.ball.adapter.outbound.data.access.core.exception.EntityNotFoundException
+import io.clroot.ball.adapter.outbound.data.access.core.exception.PersistenceException
+import io.clroot.ball.domain.exception.BusinessRuleException
+import io.clroot.ball.domain.exception.DomainException
+import io.clroot.ball.domain.exception.DomainValidationException
 import jakarta.servlet.http.HttpServletRequest
 import org.slf4j.LoggerFactory
 import org.slf4j.MDC
@@ -33,10 +38,10 @@ class GlobalExceptionHandler(
         logger.warn("Domain exception: ${e.message}", e)
 
         val (code, status) = when (e) {
-            is ValidationException -> ErrorCodes.VALIDATION_FAILED to 400
-            is BusinessRuleViolationException -> ErrorCodes.BUSINESS_RULE_VIOLATION to 400
-            is SpecificationNotSatisfiedException -> ErrorCodes.VALIDATION_FAILED to 400
-            is InvalidIdException -> ErrorCodes.INVALID_ID to 400
+            is DomainValidationException -> when (e.code) {
+                else -> ErrorCodes.VALIDATION_FAILED to 400
+            }
+            is BusinessRuleException -> ErrorCodes.BUSINESS_RULE_VIOLATION to 400
             else -> ErrorCodes.VALIDATION_FAILED to 400
         }
 

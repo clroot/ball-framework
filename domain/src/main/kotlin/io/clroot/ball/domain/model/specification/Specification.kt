@@ -1,6 +1,6 @@
 package io.clroot.ball.domain.model.specification
 
-import io.clroot.ball.domain.exception.SpecificationNotSatisfiedException
+import io.clroot.ball.domain.exception.DomainValidationException
 
 /**
  * 명세 (Specification)
@@ -48,11 +48,11 @@ interface Specification<T> {
      * @param t 검증 대상 객체
      * @param errorMessage 명세를 만족하지 않을 때 사용할 오류 메시지
      * @return 조건을 만족하는 경우 원본 객체 반환
-     * @throws SpecificationNotSatisfiedException 명세를 만족하지 않는 경우
+     * @throws DomainValidationException 명세를 만족하지 않는 경우
      */
     fun validate(t: T, errorMessage: String): T {
         if (!isSatisfiedBy(t)) {
-            throw SpecificationNotSatisfiedException(errorMessage)
+            throw DomainValidationException(errorMessage)
         }
         return t
     }
@@ -62,7 +62,7 @@ interface Specification<T> {
      *
      * @param t 검증 대상 객체
      * @return 조건을 만족하는 경우 원본 객체 반환
-     * @throws SpecificationNotSatisfiedException 명세를 만족하지 않는 경우
+     * @throws DomainValidationException 명세를 만족하지 않는 경우
      */
     fun validate(t: T): T = validate(t, "Specification not satisfied for: $t")
 }

@@ -1,6 +1,6 @@
 package io.clroot.ball.domain.model.vo
 
-import io.clroot.ball.domain.exception.InvalidIdException
+import io.clroot.ball.domain.exception.DomainValidationException
 import io.clroot.ball.domain.model.ValueObject
 
 /**
@@ -23,11 +23,11 @@ value class BinaryId(
          * 
          * @param value ULID 문자열
          * @return BinaryId 인스턴스
-         * @throws InvalidIdException 잘못된 ULID 형식인 경우
+         * @throws DomainValidationException 잘못된 ULID 형식인 경우
          */
         fun fromString(value: String): BinaryId {
             if (!ULIDSupport.isValidULID(value)) {
-                throw InvalidIdException("Invalid ULID format: $value")
+                throw DomainValidationException("Invalid ULID format: $value")
             }
             return BinaryId(value)
         }
@@ -37,14 +37,14 @@ value class BinaryId(
          * 
          * @param bytes ULID 바이너리 데이터
          * @return BinaryId 인스턴스
-         * @throws InvalidIdException 잘못된 바이너리 데이터인 경우
+         * @throws DomainValidationException 잘못된 바이너리 데이터인 경우
          */
         fun fromBytes(bytes: ByteArray): BinaryId {
             try {
                 val ulid = ULIDSupport.bytesToULID(bytes)
                 return BinaryId(ulid)
             } catch (e: Exception) {
-                throw InvalidIdException("Invalid ULID bytes: ${e.message}")
+                throw DomainValidationException("Invalid ULID bytes: ${e.message}")
             }
         }
     }

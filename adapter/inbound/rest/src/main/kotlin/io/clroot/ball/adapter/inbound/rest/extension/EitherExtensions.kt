@@ -1,8 +1,8 @@
 package io.clroot.ball.adapter.inbound.rest.extension
 
 import arrow.core.Either
+import io.clroot.ball.adapter.outbound.data.access.core.exception.EntityNotFoundException
 import io.clroot.ball.application.ApplicationError
-import io.clroot.ball.domain.exception.EntityNotFoundException
 import org.springframework.http.ResponseEntity
 
 /**

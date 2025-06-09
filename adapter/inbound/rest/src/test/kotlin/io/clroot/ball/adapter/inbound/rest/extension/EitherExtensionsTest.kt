@@ -3,10 +3,10 @@ package io.clroot.ball.adapter.inbound.rest.extension
 import arrow.core.Either
 import arrow.core.left
 import arrow.core.right
+import io.clroot.ball.adapter.outbound.data.access.core.exception.EntityNotFoundException
 import io.clroot.ball.application.ApplicationError
-import io.clroot.ball.domain.exception.BusinessRuleViolationException
-import io.clroot.ball.domain.exception.EntityNotFoundException
-import io.clroot.ball.domain.exception.ValidationException
+import io.clroot.ball.domain.exception.BusinessRuleException
+import io.clroot.ball.domain.exception.DomainValidationException
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.shouldBe
@@ -48,12 +48,12 @@ class EitherExtensionsTest : DescribeSpec({
         context("에러 케이스") {
             it("DomainError일 때 해당 도메인 예외를 던져야 한다") {
                 // given
-                val domainException = ValidationException("Invalid input")
+                val domainException = DomainValidationException("Invalid input")
                 val applicationError = ApplicationError.DomainError(domainException)
                 val either: Either<ApplicationError, String> = applicationError.left()
                 
                 // when & then
-                val thrown = shouldThrow<ValidationException> {
+                val thrown = shouldThrow<DomainValidationException> {
                     either.toResponseEntity()
                 }
                 thrown.message shouldBe "Invalid input"
@@ -116,12 +116,12 @@ class EitherExtensionsTest : DescribeSpec({
         context("에러 케이스") {
             it("Left에 에러가 있을 때 해당 예외를 던져야 한다") {
                 // given
-                val domainException = BusinessRuleViolationException("Business rule violated")
+                val domainException = BusinessRuleException("Business rule violated")
                 val applicationError = ApplicationError.DomainError(domainException)
                 val either: Either<ApplicationError, String?> = applicationError.left()
                 
                 // when & then
-                val thrown = shouldThrow<BusinessRuleViolationException> {
+                val thrown = shouldThrow<BusinessRuleException> {
                     either.toResponseEntityWithNull()
                 }
                 thrown.message shouldBe "Business rule violated"
@@ -133,12 +133,12 @@ class EitherExtensionsTest : DescribeSpec({
         
         it("DomainError는 원래 도메인 예외로 변환되어야 한다") {
             // given
-            val validationException = ValidationException("Validation failed")
+            val validationException = DomainValidationException("Validation failed")
             val domainError = ApplicationError.DomainError(validationException)
             val either: Either<ApplicationError, String> = domainError.left()
             
             // when & then
-            val thrown = shouldThrow<ValidationException> {
+            val thrown = shouldThrow<DomainValidationException> {
                 either.toResponseEntity()
             }
             thrown shouldBe validationException

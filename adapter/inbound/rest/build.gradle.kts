@@ -6,6 +6,7 @@ dependencies {
     api(project(":domain"))
     api(project(":application"))
     api(project(":shared:arrow"))
+    api(project(":adapter:outbound:data-access-core"))
 
     // Spring Web
     api("org.springframework.boot:spring-boot-starter-web")

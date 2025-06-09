@@ -1,6 +1,6 @@
 package io.clroot.ball.domain.model
 
-import io.clroot.ball.domain.exception.ValidationException
+import io.clroot.ball.domain.exception.DomainValidationException
 import io.clroot.ball.domain.model.vo.Email
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.FunSpec
@@ -33,7 +33,7 @@ class EmailTest : FunSpec({
             
             // when & then
             invalidEmails.forEach { invalidEmail ->
-                val exception = shouldThrow<ValidationException> {
+                val exception = shouldThrow<DomainValidationException> {
                     Email.from(invalidEmail)
                 }
                 exception.message shouldContain "Invalid email format"
