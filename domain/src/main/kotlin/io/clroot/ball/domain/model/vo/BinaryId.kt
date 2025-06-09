@@ -1,7 +1,7 @@
 package io.clroot.ball.domain.model.vo
 
 import io.clroot.ball.domain.exception.InvalidIdException
-import io.clroot.ball.domain.model.core.ValueObject
+import io.clroot.ball.domain.model.ValueObject
 
 /**
  * ULID 기반의 바이너리 ID

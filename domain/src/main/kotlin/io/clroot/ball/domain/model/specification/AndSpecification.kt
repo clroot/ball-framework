@@ -1,4 +1,4 @@
-package io.clroot.ball.domain.model.core.specification
+package io.clroot.ball.domain.model.specification
 
 /**
  * AND 명세

@@ -1,4 +1,4 @@
-package io.clroot.ball.domain.model.core.paging
+package io.clroot.ball.domain.model.paging
 
 data class Order(
     val property: String,

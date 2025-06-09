@@ -1,6 +1,5 @@
 package io.clroot.ball.domain.model
 
-import io.clroot.ball.domain.model.core.EntityBase
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe

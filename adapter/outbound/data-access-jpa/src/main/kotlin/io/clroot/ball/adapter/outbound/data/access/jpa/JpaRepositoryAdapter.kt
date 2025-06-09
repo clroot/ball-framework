@@ -3,7 +3,7 @@ package io.clroot.ball.adapter.outbound.data.access.jpa
 import io.clroot.ball.domain.exception.DatabaseException
 import io.clroot.ball.domain.exception.DuplicateEntityException
 import io.clroot.ball.domain.exception.EntityNotFoundException
-import io.clroot.ball.domain.model.core.EntityBase
+import io.clroot.ball.domain.model.EntityBase
 import io.clroot.ball.domain.port.Repository
 import org.springframework.dao.DataIntegrityViolationException
 import org.springframework.data.jpa.repository.JpaRepository

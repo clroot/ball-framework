@@ -1,7 +1,7 @@
 package io.clroot.ball.domain.port
 
-import io.clroot.ball.domain.model.core.EntityBase
-import io.clroot.ball.domain.model.core.specification.Specification
+import io.clroot.ball.domain.model.EntityBase
+import io.clroot.ball.domain.model.specification.Specification
 
 /**
  * 명세 패턴 기반 리포지토리 인터페이스

@@ -1,6 +1,6 @@
 package io.clroot.ball.domain.port
 
-import io.clroot.ball.domain.model.core.EntityBase
+import io.clroot.ball.domain.model.EntityBase
 
 /**
  * 기본 리포지토리 인터페이스

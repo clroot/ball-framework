@@ -3,7 +3,7 @@ package io.clroot.ball.application.usecase
 import arrow.core.Either
 import arrow.core.raise.either
 import io.clroot.ball.application.ApplicationError
-import io.clroot.ball.domain.model.core.AggregateRoot
+import io.clroot.ball.domain.model.AggregateRoot
 import org.springframework.context.ApplicationEventPublisher
 import org.springframework.transaction.annotation.Transactional
 

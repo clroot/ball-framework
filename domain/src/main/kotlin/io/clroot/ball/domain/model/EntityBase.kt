@@ -1,4 +1,4 @@
-package io.clroot.ball.domain.model.core
+package io.clroot.ball.domain.model
 
 import java.time.Instant
 

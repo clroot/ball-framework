@@ -5,8 +5,8 @@ import arrow.core.Either
 import arrow.core.flatMap
 import io.clroot.ball.application.ApplicationError
 import io.clroot.ball.domain.exception.DomainException
-import io.clroot.ball.domain.model.core.specification.Specification
 import io.clroot.ball.domain.model.policy.Policy
+import io.clroot.ball.domain.model.specification.Specification
 
 /**
  * 도메인 계층의 Specification을 Application 계층의 Either로 변환하는 확장 함수들

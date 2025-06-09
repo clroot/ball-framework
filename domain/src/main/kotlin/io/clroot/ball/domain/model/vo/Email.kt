@@ -1,7 +1,7 @@
 package io.clroot.ball.domain.model.vo
 
 import io.clroot.ball.domain.exception.ValidationException
-import io.clroot.ball.domain.model.core.ValueObject
+import io.clroot.ball.domain.model.ValueObject
 
 /**
  * 이메일 값 객체

@@ -1,5 +1,7 @@
 package io.clroot.ball.domain.model.policy
 
+import io.clroot.ball.domain.exception.PolicyViolationException
+
 /**
  * OR 정책
  * 두 정책 중 하나라도 만족하면 성공

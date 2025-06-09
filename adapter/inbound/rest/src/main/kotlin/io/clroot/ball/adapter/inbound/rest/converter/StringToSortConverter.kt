@@ -1,7 +1,7 @@
 package io.clroot.ball.adapter.inbound.rest.converter
 
-import io.clroot.ball.domain.model.core.paging.Order
-import io.clroot.ball.domain.model.core.paging.Sort
+import io.clroot.ball.domain.model.paging.Order
+import io.clroot.ball.domain.model.paging.Sort
 import org.springframework.core.convert.converter.Converter
 import org.springframework.stereotype.Component
 

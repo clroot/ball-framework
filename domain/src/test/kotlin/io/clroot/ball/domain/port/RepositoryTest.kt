@@ -3,7 +3,7 @@ package io.clroot.ball.domain.port
 import io.clroot.ball.domain.exception.DatabaseException
 import io.clroot.ball.domain.exception.DuplicateEntityException
 import io.clroot.ball.domain.exception.EntityNotFoundException
-import io.clroot.ball.domain.model.core.EntityBase
+import io.clroot.ball.domain.model.EntityBase
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe

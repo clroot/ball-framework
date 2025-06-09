@@ -1,6 +1,6 @@
 package io.clroot.ball.adapter.outbound.data.access.core.mapping
 
-import io.clroot.ball.domain.model.core.EntityBase
+import io.clroot.ball.domain.model.EntityBase
 
 
 /**

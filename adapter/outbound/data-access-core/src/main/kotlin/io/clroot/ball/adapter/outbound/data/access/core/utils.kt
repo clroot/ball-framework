@@ -1,6 +1,6 @@
 package io.clroot.ball.adapter.outbound.data.access.core
 
-import io.clroot.ball.domain.model.core.paging.*
+import io.clroot.ball.domain.model.paging.*
 import org.springframework.data.domain.Page as SpringPage
 import org.springframework.data.domain.Pageable as SpringPageable
 import org.springframework.data.domain.Sort as SpringSort

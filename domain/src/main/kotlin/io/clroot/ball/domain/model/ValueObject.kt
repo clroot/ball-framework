@@ -1,4 +1,4 @@
-package io.clroot.ball.domain.model.core
+package io.clroot.ball.domain.model
 
 /**
  * 값 객체 (Value Object)

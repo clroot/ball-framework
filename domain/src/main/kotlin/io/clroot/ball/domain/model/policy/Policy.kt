@@ -1,5 +1,7 @@
 package io.clroot.ball.domain.model.policy
 
+import io.clroot.ball.domain.exception.PolicyViolationException
+
 /**
  * 정책 (Policy)
  *
@@ -49,7 +51,3 @@ interface Policy<T> {
     fun or(other: Policy<T>): Policy<T> = OrPolicy(this, other)
 }
 
-/**
- * 정책 위반 예외
- */
-class PolicyViolationException(message: String) : RuntimeException(message)

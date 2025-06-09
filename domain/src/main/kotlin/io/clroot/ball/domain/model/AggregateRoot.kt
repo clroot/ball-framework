@@ -1,4 +1,4 @@
-package io.clroot.ball.domain.model.core
+package io.clroot.ball.domain.model
 
 import io.clroot.ball.domain.event.DomainEvent
 import java.time.Instant

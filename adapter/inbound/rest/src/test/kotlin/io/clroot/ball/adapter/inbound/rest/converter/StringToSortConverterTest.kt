@@ -1,6 +1,6 @@
 package io.clroot.ball.adapter.inbound.rest.converter
 
-import io.clroot.ball.domain.model.core.paging.Direction
+import io.clroot.ball.domain.model.paging.Direction
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe

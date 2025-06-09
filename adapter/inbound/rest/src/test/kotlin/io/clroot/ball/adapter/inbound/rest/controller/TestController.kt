@@ -7,8 +7,8 @@ import io.clroot.ball.adapter.inbound.rest.extension.toResponseEntityWithNull
 import io.clroot.ball.application.ApplicationError
 import io.clroot.ball.domain.exception.DomainException
 import io.clroot.ball.domain.exception.ValidationException
-import io.clroot.ball.domain.model.core.paging.PageRequest
-import io.clroot.ball.domain.model.core.paging.Sort
+import io.clroot.ball.domain.model.paging.PageRequest
+import io.clroot.ball.domain.model.paging.Sort
 import io.clroot.ball.domain.model.vo.BinaryId
 import io.clroot.ball.domain.model.vo.Email
 import org.springframework.http.ResponseEntity

@@ -1,6 +1,7 @@
-package io.clroot.ball.domain.model.policy
+package io.clroot.ball.domain.exception
 
 sealed class DomainError {
+
     /**
      * 유효성 검증 오류
      */

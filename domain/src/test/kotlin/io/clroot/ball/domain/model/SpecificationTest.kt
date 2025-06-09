@@ -1,8 +1,7 @@
 package io.clroot.ball.domain.model
 
 import io.clroot.ball.domain.exception.SpecificationNotSatisfiedException
-import io.clroot.ball.domain.model.core.EntityBase
-import io.clroot.ball.domain.model.core.specification.Specification
+import io.clroot.ball.domain.model.specification.Specification
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe

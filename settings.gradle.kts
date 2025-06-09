@@ -30,5 +30,6 @@ include("adapter:inbound")
 // ### HTTP Adapter
 include("adapter:inbound:rest")
 
-// # Starter
-include("ball-starter")
+// # SDK
+include("ball-sdk")
+include("ball-sdk:ball-user-sdk")

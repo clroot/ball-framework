@@ -1,6 +1,7 @@
 package io.clroot.ball.domain.model.policy
 
-import io.clroot.ball.domain.model.core.specification.Specification
+import io.clroot.ball.domain.exception.PolicyViolationException
+import io.clroot.ball.domain.model.specification.Specification
 
 /**
  * 명세 기반 정책
