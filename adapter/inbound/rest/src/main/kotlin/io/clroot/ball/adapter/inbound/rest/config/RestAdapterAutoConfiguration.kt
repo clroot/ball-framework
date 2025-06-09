@@ -1,7 +1,5 @@
 package io.clroot.ball.adapter.inbound.rest.config
 
-import io.clroot.ball.adapter.inbound.rest.converter.StringToPageRequestConverter
-import io.clroot.ball.adapter.inbound.rest.converter.StringToSortConverter
 import io.clroot.ball.adapter.inbound.rest.exception.GlobalExceptionHandler
 import io.clroot.ball.adapter.inbound.rest.filter.RequestLoggingFilter
 import org.springframework.boot.autoconfigure.AutoConfiguration
@@ -39,26 +37,5 @@ class RestAdapterAutoConfiguration {
     @ConditionalOnMissingBean
     fun requestLoggingFilter(): RequestLoggingFilter {
         return RequestLoggingFilter()
-    }
-
-    @Bean
-    @ConditionalOnMissingBean
-    fun stringToPageRequestConverter(): StringToPageRequestConverter {
-        return StringToPageRequestConverter()
-    }
-
-    @Bean
-    @ConditionalOnMissingBean
-    fun stringToSortConverter(): StringToSortConverter {
-        return StringToSortConverter()
-    }
-
-    @Bean
-    @ConditionalOnMissingBean
-    fun restAdapterWebConfig(
-        pageRequestConverter: StringToPageRequestConverter,
-        sortConverter: StringToSortConverter
-    ): RestAdapterWebConfig {
-        return RestAdapterWebConfig(pageRequestConverter, sortConverter)
     }
 }
