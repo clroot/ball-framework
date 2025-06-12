@@ -1,7 +1,6 @@
 package io.clroot.ball.adapter.outbound.data.access.jpa.record
 
 import io.clroot.ball.domain.model.AggregateRoot
-import io.clroot.ball.domain.model.EntityBase
 import io.clroot.ball.domain.model.vo.BinaryId
 import jakarta.persistence.Column
 import jakarta.persistence.MappedSuperclass
@@ -15,7 +14,7 @@ import java.time.Instant
  * It is meant to be extended by JPA entity classes that need optimistic locking capabilities.
  */
 @MappedSuperclass
-abstract class BinaryIdAggreateRootRecord<E : EntityBase<BinaryId>>(
+abstract class BinaryIdAggregateRootRecord<E : AggregateRoot<BinaryId>>(
     id: BinaryId,
     createdAt: Instant,
     updatedAt: Instant,

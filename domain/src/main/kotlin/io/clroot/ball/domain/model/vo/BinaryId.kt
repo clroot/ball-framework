@@ -18,6 +18,8 @@ value class BinaryId(
          */
         fun new(): BinaryId = BinaryId(ULIDSupport.generateULID())
 
+        fun generate(): BinaryId = new()
+
         /**
          * 문자열로부터 BinaryId 생성
          * 
