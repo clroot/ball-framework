@@ -301,21 +301,130 @@ class UserServiceTest : FunSpec({
 
 ```kotlin
 // ✅ Good: 도메인 로직을 엔티티 내부에 캡슐화
-class Order : AggregateRoot<BinaryId>(/* ... */) {
-    fun addItem(product: Product, quantity: Int) {
-        validateQuantity(quantity)
-        validateProductAvailability(product)
+class User(
+    id: BinaryId,
+    name: String,
+    email: String,
+    createdAt: Instant,
+    updatedAt: Instant,
+    deletedAt: Instant? = null
+) : AggregateRoot<BinaryId>(id, createdAt, updatedAt, deletedAt) {
 
-        val item = OrderItem(product, quantity)
-        items.add(item)
-        registerEvent(OrderItemAddedEvent(id, item))
+    var name: String = name
+        private set
+    
+    var email: Email = Email(email)
+        private set
+    
+    var isActive: Boolean = true
+        private set
+
+    fun changeName(newName: String) {
+        if (newName.isBlank()) {
+            throw DomainValidationException("이름은 비어있을 수 없습니다")
+        }
+        if (newName.length > 50) {
+            throw DomainValidationException("이름은 50자를 초과할 수 없습니다")
+        }
+        
+        val oldName = this.name
+        this.name = newName
+        registerEvent(UserNameChangedEvent(id, oldName, newName))
+    }
+    
+    fun changeEmail(newEmail: String) {
+        val email = Email(newEmail) // Email 생성 시 유효성 검증됨
+        
+        val oldEmail = this.email
+        this.email = email
+        registerEvent(UserEmailChangedEvent(id, oldEmail.value, email.value))
+    }
+    
+    fun deactivate() {
+        if (!isActive) {
+            throw BusinessRuleException("이미 비활성화된 사용자입니다")
+        }
+        
+        isActive = false
+        registerEvent(UserDeactivatedEvent(id))
+    }
+}
+
+// 도메인 이벤트들
+data class UserNameChangedEvent(
+    val userId: BinaryId,
+    val oldName: String,
+    val newName: String
+) : DomainEvent
+
+data class UserEmailChangedEvent(
+    val userId: BinaryId,
+    val oldEmail: String,
+    val newEmail: String
+) : DomainEvent
+
+data class UserDeactivatedEvent(
+    val userId: BinaryId
+) : DomainEvent
+
+// JPA 어댑터 레코드 예시
+@Entity
+@Table(name = "users")
+class UserJpaRecord(
+    id: BinaryId,
+    
+    @Column(name = "name", nullable = false, length = 50)
+    var name: String,
+
+    @Column(name = "email", nullable = false, unique = true)
+    var email: String,
+
+    @Column(name = "is_active", nullable = false)
+    var isActive: Boolean,
+    
+    createdAt: Instant,
+    
+    updatedAt: Instant,
+    
+    deletedAt: Instant?,
+    
+    version: Long = 0L
+) : BinaryIdAggregateRootRecord<User>(id, createdAt, updatedAt, deletedAt, version) {
+
+    constructor(user: User, version: Long = 0L) : this(
+        id = user.id,
+        name = user.name,
+        email = user.email.value,
+        isActive = user.isActive,
+        createdAt = user.createdAt,
+        updatedAt = user.updatedAt,
+        deletedAt = user.deletedAt,
+        version = version
+    )
+
+    override fun toDomain(): User {
+        return User(
+            id = id,
+            name = name,
+            email = email,
+            createdAt = createdAt,
+            updatedAt = updatedAt,
+            deletedAt = deletedAt
+        )
+    }
+
+    override fun update(entity: User) {
+        this.name = entity.name
+        this.email = entity.email.value
+        this.isActive = entity.isActive
+        // id, createdAt, updatedAt, deletedAt, version은 부모 클래스에서 관리
     }
 }
 
 // ❌ Bad: 도메인 로직이 서비스에 노출됨
-class OrderService {
-    fun addItemToOrder(order: Order, product: Product, quantity: Int) {
-        if (quantity <= 0) throw InvalidQuantityException()
+class UserService {
+    fun changeName(user: User, newName: String) {
+        if (newName.isBlank()) throw IllegalArgumentException()
         // 비즈니스 로직이 서비스에 분산됨
     }
 }
