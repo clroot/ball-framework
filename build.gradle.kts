@@ -2,14 +2,13 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
     kotlin("jvm") version "2.1.20"
-    id("org.jlleitschuh.gradle.ktlint") version "12.1.2"
+    id("org.jlleitschuh.gradle.ktlint") version "13.0.0-rc.1"
     id("org.springframework.boot") version "3.4.4"
     id("io.spring.dependency-management") version "1.1.7"
     id("org.jetbrains.kotlin.plugin.allopen") version "2.1.20"
     id("org.jetbrains.kotlin.plugin.jpa") version "2.1.20"
     id("org.jetbrains.kotlin.plugin.spring") version "2.1.20"
 }
-
 
 allprojects {
     group = "io.clroot.ball"
@@ -20,12 +19,29 @@ allprojects {
     }
 }
 
+tasks.named("bootJar") {
+    enabled = false
+}
+
+tasks.named<Jar>("jar") {
+    enabled = true
+}
+
 subprojects {
     apply {
         plugin("java")
         plugin("org.jetbrains.kotlin.jvm")
         plugin("org.springframework.boot")
         plugin("io.spring.dependency-management")
+    }
+
+    tasks.named("bootJar") {
+        enabled = false
+    }
+
+    tasks.named<Jar>("jar") {
+        enabled = true
+        archiveClassifier.set("")
     }
 
     java {
