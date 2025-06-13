@@ -1,11 +1,5 @@
 subprojects {
-    group = "io.clroot.ball.adapter.outbound"
-    dependencies {
-        api(project(":domain"))
-        api(project(":application"))
-        api(project(":shared:arrow"))
-        api(project(":shared:jackson"))
-    }
+    group = "io.clroot.ball.shared"
     publishing {
         publications {
             create<MavenPublication>("maven") {

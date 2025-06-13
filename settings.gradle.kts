@@ -29,7 +29,3 @@ include("adapter:outbound:data-access-redis")
 include("adapter:inbound")
 // ### HTTP Adapter
 include("adapter:inbound:rest")
-
-// # SDK
-include("ball-sdk")
-include("ball-sdk:ball-user-sdk")

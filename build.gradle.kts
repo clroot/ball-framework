@@ -8,14 +8,50 @@ plugins {
     id("org.jetbrains.kotlin.plugin.allopen") version "2.1.20"
     id("org.jetbrains.kotlin.plugin.jpa") version "2.1.20"
     id("org.jetbrains.kotlin.plugin.spring") version "2.1.20"
+    id("maven-publish")
 }
 
 allprojects {
+    apply {
+        plugin("maven-publish")
+    }
     group = "io.clroot.ball"
     version = "2.0.0-SNAPSHOT"
 
+    val nexusUsername =
+        System.getenv("NEXUS_REPO_USERNAME")
+            ?: throw GradleException(
+                "NEXUS_REPO_USERNAME environment variable must be set",
+            )
+    val nexusPassword =
+        System.getenv("NEXUS_REPO_PASSWORD")
+            ?: throw GradleException(
+                "NEXUS_REPO_PASSWORD environment variable must be set",
+            )
+
     repositories {
         mavenCentral()
+        maven {
+            url = uri("https://nexus.eduvil.co.kr/repository/eduvil-maven-snapshot/")
+            credentials {
+                username = nexusUsername
+                password = nexusPassword
+            }
+        }
+    }
+
+    publishing {
+        repositories {
+            maven {
+                val releasesRepoUrl = uri("https://nexus.eduvil.co.kr/repository/eduvil-maven-release/")
+                val snapshotsRepoUrl = uri("https://nexus.eduvil.co.kr/repository/eduvil-maven-snapshot/")
+                credentials {
+                    username = nexusUsername
+                    password = nexusPassword
+                }
+                url = if (rootProject.version.toString().endsWith("RELEASE")) releasesRepoUrl else snapshotsRepoUrl
+            }
+        }
     }
 }
 

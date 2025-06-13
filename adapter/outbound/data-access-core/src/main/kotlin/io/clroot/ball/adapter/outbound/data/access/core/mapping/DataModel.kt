@@ -12,13 +12,6 @@ import io.clroot.ball.domain.model.EntityBase
  * @param E The domain entity type
  */
 interface DataModel<E : EntityBase<*>> {
-    /**
-     * Converts this JPA entity to a domain entity
-     *
-     * @return The domain entity
-     */
-    fun toDomain(): E
-
     fun update(entity: E)
 
     companion object {

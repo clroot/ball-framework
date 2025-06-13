@@ -1,6 +1,6 @@
 package io.clroot.ball.domain.exception
 
-class DomainValidationException(
+open class DomainValidationException(
     message: String,
     val field: String? = null,
     val code: String? = null,
