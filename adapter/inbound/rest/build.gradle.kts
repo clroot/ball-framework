@@ -6,6 +6,7 @@ dependencies {
     api(project(":domain"))
     api(project(":application"))
     api(project(":shared:arrow"))
+    api(project(":shared:jackson"))
     api(project(":adapter:outbound:data-access-core"))
 
     // Spring Web
