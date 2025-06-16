@@ -7,15 +7,16 @@ import org.springframework.transaction.annotation.Transactional
 
 abstract class Query<TQuery, TResult> {
     @Transactional(readOnly = true)
-    open fun execute(query: TQuery): Either<ApplicationError, TResult?> = either {
-        try {
-            executeInternal(query)
-        } catch (e: io.clroot.ball.domain.exception.DomainException) {
-            raise(ApplicationError.DomainError(e))
-        } catch (e: Exception) {
-            raise(ApplicationError.SystemError(e.message ?: "Unknown error", e))
+    open fun execute(query: TQuery): Either<ApplicationError, TResult> =
+        either {
+            try {
+                executeInternal(query)
+            } catch (e: io.clroot.ball.domain.exception.DomainException) {
+                raise(ApplicationError.DomainError(e))
+            } catch (e: Exception) {
+                raise(ApplicationError.SystemError(e.message ?: "Unknown error", e))
+            }
         }
-    }
 
-    protected abstract fun executeInternal(query: TQuery): TResult?
+    protected abstract fun executeInternal(query: TQuery): TResult
 }
