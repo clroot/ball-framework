@@ -16,7 +16,7 @@ allprojects {
         plugin("maven-publish")
     }
     group = "io.clroot.ball"
-    version = "2.0.0-20250618.2-SNAPSHOT"
+    version = "2.0.0-20250618.3-SNAPSHOT"
 
     val nexusUsername =
         System.getenv("NEXUS_REPO_USERNAME")

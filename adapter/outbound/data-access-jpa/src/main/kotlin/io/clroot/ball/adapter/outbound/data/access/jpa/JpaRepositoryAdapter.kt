@@ -16,25 +16,20 @@ import org.springframework.data.jpa.repository.JpaRepository
  * 복잡한 추상화 없이 단순한 보일러플레이트 제거
  */
 abstract class JpaRepositoryAdapter<T : EntityBase<ID>, ID : Any, J : EntityRecord<T, ID>>(
-    protected val jpaRepository: JpaRepository<J, *>,
+    private val jpaRepository: JpaRepository<J, ID>,
 ) : Repository<T, ID> {
     protected abstract fun J.toDomain(): T
 
     protected abstract fun T.toJpa(): J
 
-    protected abstract fun ID.toJpaId(): Any
-
     fun convertJpaToDomain(jpa: J): T = jpa.toDomain()
 
     fun convertDomainToJpa(domain: T): J = domain.toJpa()
 
-    fun convertIdToJpaId(id: ID): Any = id.toJpaId()
-
     override fun findById(id: ID): T? =
         try {
-            @Suppress("UNCHECKED_CAST")
-            (jpaRepository as JpaRepository<J, Any>)
-                .findById(id.toJpaId())
+            jpaRepository
+                .findById(id)
                 .map { it.toDomain() }
                 .orElse(null)
         } catch (e: Exception) {
@@ -70,8 +65,7 @@ abstract class JpaRepositoryAdapter<T : EntityBase<ID>, ID : Any, J : EntityReco
 
     override fun delete(id: ID) {
         try {
-            @Suppress("UNCHECKED_CAST")
-            (jpaRepository as JpaRepository<J, Any>).deleteById(id.toJpaId())
+            jpaRepository.deleteById(id)
         } catch (e: Exception) {
             throw DatabaseException("Failed to delete entity: $id", e)
         }
