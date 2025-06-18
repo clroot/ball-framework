@@ -15,6 +15,7 @@ Ball Framework는 **헥사고날 아키텍처(Hexagonal Architecture)**와 **도
 - ⚡ **성능 최적화**: Arrow의 함수형 프로그래밍과 효율적인 에러 처리
 - 🧪 **테스트 친화적**: Kotest 기반의 포괄적인 테스트 지원
 - 📦 **모듈화**: 독립적으로 사용 가능한 컴포넌트들
+- 🎯 **유연한 ID 타입**: BinaryId뿐만 아니라 커스텀 ID 타입 지원 (UserId, OrderId 등)
 
 ## 🏛️ 아키텍처 개요
 
@@ -77,21 +78,32 @@ dependencies {
 
 ```kotlin
 import io.clroot.ball.domain.model.AggregateRoot
-import io.clroot.ball.domain.model.vo.BinaryId
+import io.clroot.ball.domain.model.vo.Email
 import java.time.Instant
 
+// 커스텀 ID 타입 정의
+@JvmInline
+value class UserId(val value: String) {
+    companion object {
+        fun new(): UserId = UserId(UUID.randomUUID().toString())
+        fun from(value: String): UserId = UserId(value)
+    }
+}
+
 class User(
-    id: BinaryId,
+    id: UserId,
     private var name: String,
     private var email: Email,
-    createdAt: Instant,
-    updatedAt: Instant,
+    createdAt: Instant = Instant.now(),
+    updatedAt: Instant = Instant.now(),
     deletedAt: Instant? = null
-) : AggregateRoot<BinaryId>(id, createdAt, updatedAt, deletedAt) {
+) : AggregateRoot<UserId>(id, createdAt, updatedAt, deletedAt) {
     
     fun changeName(newName: String) {
+        require(newName.isNotBlank()) { "이름은 비어있을 수 없습니다" }
+        val oldName = this.name
         this.name = newName
-        registerEvent(UserNameChangedEvent(id, newName))
+        registerEvent(UserNameChangedEvent(id, oldName, newName))
     }
 }
 ```
@@ -100,7 +112,6 @@ class User(
 
 ```kotlin
 import io.clroot.ball.application.usecase.UseCase
-import arrow.core.Either
 import io.clroot.ball.application.ApplicationError
 
 @Service
@@ -112,12 +123,66 @@ class UpdateUserNameUseCase(
     override fun executeInternal(command: UpdateUserNameCommand): User {
         return userRepository.update(command.userId) { user ->
             user.changeName(command.newName)
-        }.also { publishEvents(it) }
+        }
+    }
+}
+
+data class UpdateUserNameCommand(
+    val userId: UserId,
+    val newName: String
+)
+```
+
+### 4. JPA 엔티티 및 어댑터
+
+```kotlin
+// JPA 컨버터 정의
+@Converter(autoApply = true)
+class UserIdConverter : AttributeConverter<UserId, String> {
+    override fun convertToDatabaseColumn(attribute: UserId?): String? = attribute?.value
+    override fun convertToEntityAttribute(dbData: String?): UserId? = 
+        dbData?.let { UserId.from(it) }
+}
+
+// JPA 엔티티 레코드
+@Entity
+@Table(name = "users")
+class UserJpaRecord(
+    @Id
+    @Convert(converter = UserIdConverter::class)
+    @Column(name = "id", nullable = false)
+    var id: UserId,
+    
+    @Column(name = "name", nullable = false)
+    var name: String,
+    
+    @Column(name = "email", nullable = false)
+    var email: String,
+    
+    createdAt: Instant,
+    updatedAt: Instant,
+    deletedAt: Instant?
+) : EntityRecord<User, UserId>(createdAt, updatedAt, deletedAt) {
+    
+    constructor(entity: User) : this(
+        id = entity.id,
+        name = entity.name,
+        email = entity.email.value,
+        createdAt = entity.createdAt,
+        updatedAt = entity.updatedAt,
+        deletedAt = entity.deletedAt
+    )
+    
+    override fun toDomain(): User = User(id, name, Email(email), createdAt, updatedAt, deletedAt)
+    override fun update(entity: User) {
+        this.name = entity.name
+        this.email = entity.email.value
+        updateCommonFields(entity)
     }
 }
 ```
 
-### 4. REST 컨트롤러
+### 5. REST 컨트롤러
 
 ```kotlin
 @RestController
@@ -131,7 +196,7 @@ class UserController(
         @PathVariable userId: String,
         @RequestBody request: UpdateUserNameRequest
     ): ResponseEntity<UserResponse> {
-        val command = UpdateUserNameCommand(userId, request.name)
+        val command = UpdateUserNameCommand(UserId.from(userId), request.name)
         
         return updateUserNameUseCase.execute(command)
             .fold(
@@ -230,7 +295,7 @@ IntelliJ IDEA 사용 시 다음 설정을 권장합니다:
 - **RequestLoggingFilter**: 요청/응답 로깅
 
 #### Outbound Adapters
-- **JPA**: Spring Data JPA를 활용한 데이터 접근
+- **JPA**: Spring Data JPA를 활용한 데이터 접근 (제네릭 기반 ID 타입 지원)
 - **Redis**: Redis 기반 캐싱 및 분산 락
 - **Core**: 데이터 접근 공통 추상화
 
@@ -280,7 +345,7 @@ class UserServiceTest : FunSpec({
     
     test("사용자 이름 변경 시 도메인 이벤트가 발행되어야 한다") {
         // given
-        val userId = BinaryId.generate()
+        val userId = UserId.new()
         val user = createUser(userId, "John")
         every { userRepository.findById(userId) } returns user
         every { userRepository.save(any()) } returns user
@@ -302,13 +367,13 @@ class UserServiceTest : FunSpec({
 ```kotlin
 // ✅ Good: 도메인 로직을 엔티티 내부에 캡슐화
 class User(
-    id: BinaryId,
+    id: UserId,
     name: String,
     email: String,
-    createdAt: Instant,
-    updatedAt: Instant,
+    createdAt: Instant = Instant.now(),
+    updatedAt: Instant = Instant.now(),
     deletedAt: Instant? = null
-) : AggregateRoot<BinaryId>(id, createdAt, updatedAt, deletedAt) {
+) : AggregateRoot<UserId>(id, createdAt, updatedAt, deletedAt) {
 
     var name: String = name
         private set
@@ -352,26 +417,29 @@ class User(
 
 // 도메인 이벤트들
 data class UserNameChangedEvent(
-    val userId: BinaryId,
+    val userId: UserId,
     val oldName: String,
     val newName: String
 ) : DomainEvent
 
 data class UserEmailChangedEvent(
-    val userId: BinaryId,
+    val userId: UserId,
     val oldEmail: String,
     val newEmail: String
 ) : DomainEvent
 
 data class UserDeactivatedEvent(
-    val userId: BinaryId
+    val userId: UserId
 ) : DomainEvent
 
 // JPA 어댑터 레코드 예시
 @Entity
 @Table(name = "users")
 class UserJpaRecord(
-    id: BinaryId,
+    @Id
+    @Convert(converter = UserIdConverter::class)
+    @Column(name = "id", nullable = false)
+    var id: UserId,
     
     @Column(name = "name", nullable = false, length = 50)
     var name: String,
@@ -383,23 +451,18 @@ class UserJpaRecord(
     var isActive: Boolean,
     
     createdAt: Instant,
-    
     updatedAt: Instant,
-    
-    deletedAt: Instant?,
-    
-    version: Long = 0L
-) : BinaryIdAggregateRootRecord<User>(id, createdAt, updatedAt, deletedAt, version) {
+    deletedAt: Instant?
+) : EntityRecord<User, UserId>(createdAt, updatedAt, deletedAt) {
 
-    constructor(user: User, version: Long = 0L) : this(
+    constructor(user: User) : this(
         id = user.id,
         name = user.name,
         email = user.email.value,
         isActive = user.isActive,
         createdAt = user.createdAt,
         updatedAt = user.updatedAt,
-        deletedAt = user.deletedAt,
-        version = version
+        deletedAt = user.deletedAt
     )
 
     override fun toDomain(): User {
@@ -417,7 +480,7 @@ class UserJpaRecord(
         this.name = entity.name
         this.email = entity.email.value
         this.isActive = entity.isActive
-        // id, createdAt, updatedAt, deletedAt, version은 부모 클래스에서 관리
+        updateCommonFields(entity)
     }
 }
 
