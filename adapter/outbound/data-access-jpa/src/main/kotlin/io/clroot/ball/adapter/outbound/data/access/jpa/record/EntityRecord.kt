@@ -9,19 +9,18 @@ import java.time.Instant
 
 /**
  * 제네릭 기반 JPA 엔티티 레코드 기본 클래스
- * 
+ *
  * ID 타입에 의존하지 않는 추상 클래스로, 사용자가 구체적인 ID 타입과 컨버터를 정의할 수 있습니다.
- * 
+ *
  * @param E 도메인 엔티티 타입
  * @param ID 식별자 타입 (BinaryId, UserId, OrderId 등)
  */
 @MappedSuperclass
-abstract class EntityRecord<E : EntityBase<ID>, ID : Any>(
+abstract class EntityRecord<E : EntityBase<*>, ID : Any>(
     createdAt: Instant,
     updatedAt: Instant,
-    deletedAt: Instant?
+    deletedAt: Instant?,
 ) : DataModel<E> {
-
     @CreationTimestamp
     var createdAt: Instant = createdAt
         protected set
@@ -39,7 +38,7 @@ abstract class EntityRecord<E : EntityBase<ID>, ID : Any>(
     constructor(entity: EntityBase<ID>) : this(
         createdAt = entity.createdAt,
         updatedAt = entity.updatedAt,
-        deletedAt = entity.deletedAt
+        deletedAt = entity.deletedAt,
     )
 
     /**
