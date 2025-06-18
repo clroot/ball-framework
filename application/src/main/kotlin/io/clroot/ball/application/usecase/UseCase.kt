@@ -3,6 +3,7 @@ package io.clroot.ball.application.usecase
 import arrow.core.Either
 import arrow.core.raise.either
 import io.clroot.ball.application.ApplicationError
+import io.clroot.ball.domain.exception.ExternalSystemException
 import io.clroot.ball.domain.model.AggregateRoot
 import io.clroot.ball.domain.slf4j
 import org.springframework.context.ApplicationEventPublisher
@@ -19,6 +20,9 @@ abstract class UseCase<TCommand, TResult>(
             try {
                 val result = executeInternal(command)
                 result
+            } catch (e: ExternalSystemException) {
+                log.warn("External system error: ${e.message}", e)
+                raise(ApplicationError.ExternalSystemError(e))
             } catch (e: io.clroot.ball.domain.exception.DomainException) {
                 raise(ApplicationError.DomainError(e))
             } catch (e: Exception) {

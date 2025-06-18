@@ -3,6 +3,7 @@ package io.clroot.ball.application.usecase
 import arrow.core.Either
 import arrow.core.raise.either
 import io.clroot.ball.application.ApplicationError
+import io.clroot.ball.domain.exception.ExternalSystemException
 import org.springframework.transaction.annotation.Transactional
 
 abstract class Query<TQuery, TResult> {
@@ -11,6 +12,8 @@ abstract class Query<TQuery, TResult> {
         either {
             try {
                 executeInternal(query)
+            } catch (e: ExternalSystemException) {
+                raise(ApplicationError.ExternalSystemError(e))
             } catch (e: io.clroot.ball.domain.exception.DomainException) {
                 raise(ApplicationError.DomainError(e))
             } catch (e: Exception) {
