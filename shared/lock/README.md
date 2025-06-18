@@ -1,4 +1,4 @@
-# 🔐 Ball Framework - Distributed Lock Module
+# Ball Framework Shared Lock Module
 
 ## 개요
 
@@ -145,8 +145,22 @@ class RedisLockProvider(
     private val redisTemplate: RedisTemplate<String, String>
 ) : LockProvider {
     
-    override fun <T> withLock(key: String, waitTime: Long, leaseTime: Long, block: () -> T): T {
+    override fun acquireLock(key: String, timeout: Long, leaseTime: Long): Lock? {
         // Redis 기반 분산 락 구현
+        return try {
+            val redisLock = redisLockRegistry.obtain(key)
+            if (redisLock.tryLock(timeout, TimeUnit.MILLISECONDS)) {
+                RedisDistributedLock(redisLock, key)
+            } else {
+                null
+            }
+        } catch (e: Exception) {
+            null
+        }
+    }
+    
+    override fun releaseLock(key: String) {
+        // 락 해제 구현
     }
 }
 ```

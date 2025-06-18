@@ -1,6 +1,6 @@
 # ⚽ Ball Framework
 
-**Version:** 2.0.0-SNAPSHOT  
+**Version:** 2.0.0-20250618.2-SNAPSHOT  
 **License:** MIT  
 **Language:** Kotlin  
 **Java Version:** 21+  
@@ -16,6 +16,8 @@ Ball Framework는 **헥사고날 아키텍처(Hexagonal Architecture)**와 **도
 - 🧪 **테스트 친화적**: Kotest 기반의 포괄적인 테스트 지원
 - 📦 **모듈화**: 독립적으로 사용 가능한 컴포넌트들
 - 🎯 **유연한 ID 타입**: BinaryId뿐만 아니라 커스텀 ID 타입 지원 (UserId, OrderId 등)
+- 🔄 **JpaRepositoryAdapter**: 반복되는 변환 로직 제거와 일관된 예외 처리
+- 🌐 **외부 시스템 예외**: ExternalSystemException으로 외부 시스템 오류 처리
 
 ## 🏛️ 아키텍처 개요
 
@@ -275,7 +277,7 @@ IntelliJ IDEA 사용 시 다음 설정을 권장합니다:
 - **EntityBase**: 공통 엔티티 기능 (ID, 생성/수정 시간, 소프트 삭제)
 - **ValueObject**: 불변 값 객체 기반 클래스
 - **Repository**: 영속성 추상화 인터페이스
-- **DomainException**: 도메인별 예외 계층
+- **DomainException**: 도메인별 예외 계층 (도메인 검증, 비즈니스 규칙, 상태 불일치, 외부 시스템 예외)
 
 ### Application 모듈
 
@@ -295,9 +297,9 @@ IntelliJ IDEA 사용 시 다음 설정을 권장합니다:
 - **RequestLoggingFilter**: 요청/응답 로깅
 
 #### Outbound Adapters
-- **JPA**: Spring Data JPA를 활용한 데이터 접근 (제네릭 기반 ID 타입 지원)
-- **Redis**: Redis 기반 캐싱 및 분산 락
-- **Core**: 데이터 접근 공통 추상화
+- **Data Access Core**: 데이터 접근 공통 추상화 및 예외 처리
+- **Data Access JPA**: Spring Data JPA 기반 (JpaRepositoryAdapter, 제네릭 ID 타입, Kotlin JDSL 지원)
+- **Data Access Redis**: Redis 기반 분산 락 제공
 
 ## 🔧 설정 가이드
 
@@ -326,11 +328,21 @@ ball:
   adapter:
     rest:
       enabled: true
-  lock:
-    provider: redis  # local, redis
+      debug: false
+      logging:
+        enabled: true
+    jpa:
+      enabled: true
+      auditing:
+        enabled: true
     redis:
-      wait-time: 10
-      lease-time: 30
+      enabled: true
+  shared:
+    lock:
+      provider: redis  # local, redis
+      redis:
+        wait-time: 10
+        lease-time: 30
 ```
 
 ## 🧪 테스트 가이드
@@ -437,9 +449,8 @@ data class UserDeactivatedEvent(
 @Table(name = "users")
 class UserJpaRecord(
     @Id
-    @Convert(converter = UserIdConverter::class)
-    @Column(name = "id", nullable = false)
-    var id: UserId,
+    @Column(name = "id", columnDefinition = "BINARY(16)", nullable = false)
+    var id: ByteArray,
     
     @Column(name = "name", nullable = false, length = 50)
     var name: String,
@@ -543,12 +554,26 @@ Ball Framework는 오픈소스 프로젝트입니다. 기여를 환영합니다!
 - **KtLint**: 자동 코드 포맷팅 (`./gradlew ktlintFormat`)
 - **테스트 커버리지**: 새로운 코드는 적절한 테스트와 함께 제출
 
+## 📚 모듈별 상세 가이드
+
+각 모듈의 상세한 사용법과 구현 가이드는 해당 모듈의 README를 참조하세요:
+
+- **[Domain 모듈](domain/README.md)**: 도메인 모델, 값 객체, 예외 처리, 명세 패턴
+- **[Application 모듈](application/README.md)**: UseCase, Query, 함수형 에러 처리
+- **[REST Adapter](adapter/inbound/rest/README.md)**: 통합 예외 처리, Either 확장, 요청 로깅
+- **[JPA Adapter](adapter/outbound/data-access-jpa/README.md)**: JpaRepositoryAdapter, 커스텀 ID 타입, JPA 컨버터
+- **[Redis Adapter](adapter/outbound/data-access-redis/README.md)**: Redis 분산 락 구현
+- **[Lock 모듈](shared/lock/README.md)**: @DistributedLock, @LockKey 어노테이션 기반 분산 락
+- **[Shared 모듈](shared/README.md)**: Arrow 확장, Jackson 설정, 공유 유틸리티
+
 ## 📚 추가 자료
 
 - [헥사고날 아키텍처 가이드](https://alistair.cockburn.us/hexagonal-architecture/)
 - [도메인 주도 설계 참고서](https://domainlanguage.com/ddd/)
 - [Arrow 함수형 프로그래밍](https://arrow-kt.io/)
 - [Kotest 테스트 프레임워크](https://kotest.io/)
+- [Spring Data JPA 가이드](https://spring.io/projects/spring-data-jpa)
+- [Kotlin JDSL](https://github.com/line/kotlin-jdsl)
 
 ## 📞 지원 및 문의
 

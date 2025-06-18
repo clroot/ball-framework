@@ -228,6 +228,13 @@ class DomainStateException(
     val entityType: String? = null,
     val entityId: String? = null
 ) : DomainException(message)
+
+// 외부 시스템 예외
+class ExternalSystemException(
+    message: String,
+    val systemName: String? = null,
+    cause: Throwable? = null
+) : DomainException(message)
 ```
 
 ### 팩토리 메서드 활용
