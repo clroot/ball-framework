@@ -9,6 +9,7 @@ object ErrorCodes {
     // 시스템 에러
     const val INTERNAL_ERROR = "INTERNAL_ERROR"
     const val DATABASE_ERROR = "DATABASE_ERROR"
+    const val EXTERNAL_SYSTEM_ERROR = "EXTERNAL_SYSTEM_ERROR"
 
     // HTTP 상태 관련
     const val NOT_FOUND = "NOT_FOUND"

@@ -9,6 +9,7 @@ import io.clroot.ball.adapter.outbound.data.access.core.exception.PersistenceExc
 import io.clroot.ball.domain.exception.BusinessRuleException
 import io.clroot.ball.domain.exception.DomainException
 import io.clroot.ball.domain.exception.DomainValidationException
+import io.clroot.ball.domain.exception.ExternalSystemException
 import jakarta.servlet.http.HttpServletRequest
 import org.slf4j.LoggerFactory
 import org.slf4j.MDC
@@ -21,9 +22,8 @@ import java.util.*
 
 @RestControllerAdvice
 class GlobalExceptionHandler(
-    private val environment: Environment
+    private val environment: Environment,
 ) {
-
     companion object {
         private val logger = LoggerFactory.getLogger(GlobalExceptionHandler::class.java)
     }
@@ -33,24 +33,29 @@ class GlobalExceptionHandler(
      */
     @ExceptionHandler(DomainException::class)
     fun handleDomainException(
-        e: DomainException, request: HttpServletRequest
+        e: DomainException,
+        request: HttpServletRequest,
     ): ResponseEntity<ErrorResponse> {
         logger.warn("Domain exception: ${e.message}", e)
 
-        val (code, status) = when (e) {
-            is DomainValidationException -> when (e.code) {
+        val (code, status) =
+            when (e) {
+                is DomainValidationException ->
+                    when (e.code) {
+                        else -> ErrorCodes.VALIDATION_FAILED to 400
+                    }
+                is BusinessRuleException -> ErrorCodes.BUSINESS_RULE_VIOLATION to 400
+                is ExternalSystemException -> ErrorCodes.EXTERNAL_SYSTEM_ERROR to 500
                 else -> ErrorCodes.VALIDATION_FAILED to 400
             }
-            is BusinessRuleException -> ErrorCodes.BUSINESS_RULE_VIOLATION to 400
-            else -> ErrorCodes.VALIDATION_FAILED to 400
-        }
 
-        val errorResponse = ErrorResponse(
-            code = code,
-            message = e.message ?: "Domain rule violation",
-            traceId = getTraceId(),
-            debug = createDebugInfo(e, request)
-        )
+        val errorResponse =
+            ErrorResponse(
+                code = code,
+                message = e.message ?: "Domain rule violation",
+                traceId = getTraceId(),
+                debug = createDebugInfo(e, request),
+            )
 
         return ResponseEntity.status(status).body(errorResponse)
     }
@@ -60,22 +65,25 @@ class GlobalExceptionHandler(
      */
     @ExceptionHandler(PersistenceException::class)
     fun handlePersistenceException(
-        e: PersistenceException, request: HttpServletRequest
+        e: PersistenceException,
+        request: HttpServletRequest,
     ): ResponseEntity<ErrorResponse> {
         logger.error("Persistence exception: ${e.message}", e)
 
-        val (code, status) = when (e) {
-            is EntityNotFoundException -> ErrorCodes.NOT_FOUND to 404
-            is DuplicateEntityException -> ErrorCodes.DUPLICATE_ENTITY to 409
-            else -> ErrorCodes.DATABASE_ERROR to 500
-        }
+        val (code, status) =
+            when (e) {
+                is EntityNotFoundException -> ErrorCodes.NOT_FOUND to 404
+                is DuplicateEntityException -> ErrorCodes.DUPLICATE_ENTITY to 409
+                else -> ErrorCodes.DATABASE_ERROR to 500
+            }
 
-        val errorResponse = ErrorResponse(
-            code = code,
-            message = e.message ?: "Database error",
-            traceId = getTraceId(),
-            debug = createDebugInfo(e, request)
-        )
+        val errorResponse =
+            ErrorResponse(
+                code = code,
+                message = e.message ?: "Database error",
+                traceId = getTraceId(),
+                debug = createDebugInfo(e, request),
+            )
 
         return ResponseEntity.status(status).body(errorResponse)
     }
@@ -85,19 +93,21 @@ class GlobalExceptionHandler(
      */
     @ExceptionHandler(MethodArgumentNotValidException::class)
     fun handleValidationException(
-        e: MethodArgumentNotValidException, request: HttpServletRequest
+        e: MethodArgumentNotValidException,
+        request: HttpServletRequest,
     ): ResponseEntity<ErrorResponse> {
         logger.warn("Validation exception: ${e.message}")
 
         val fieldErrors = e.bindingResult.fieldErrors.associate { it.field to (it.defaultMessage ?: "Invalid value") }
 
-        val errorResponse = ErrorResponse(
-            code = ErrorCodes.VALIDATION_FAILED,
-            message = "Request validation failed",
-            traceId = getTraceId(),
-            details = fieldErrors,
-            debug = createDebugInfo(e, request)
-        )
+        val errorResponse =
+            ErrorResponse(
+                code = ErrorCodes.VALIDATION_FAILED,
+                message = "Request validation failed",
+                traceId = getTraceId(),
+                details = fieldErrors,
+                debug = createDebugInfo(e, request),
+            )
 
         return ResponseEntity.badRequest().body(errorResponse)
     }
@@ -107,16 +117,18 @@ class GlobalExceptionHandler(
      */
     @ExceptionHandler(Exception::class)
     fun handleGenericException(
-        e: Exception, request: HttpServletRequest
+        e: Exception,
+        request: HttpServletRequest,
     ): ResponseEntity<ErrorResponse> {
         logger.error("Unexpected exception: ${e.message}", e)
 
-        val errorResponse = ErrorResponse(
-            code = ErrorCodes.INTERNAL_ERROR,
-            message = "Internal server error",
-            traceId = getTraceId(),
-            debug = createDebugInfo(e, request)
-        )
+        val errorResponse =
+            ErrorResponse(
+                code = ErrorCodes.INTERNAL_ERROR,
+                message = "Internal server error",
+                traceId = getTraceId(),
+                debug = createDebugInfo(e, request),
+            )
 
         return ResponseEntity.status(500).body(errorResponse)
     }
@@ -126,7 +138,7 @@ class GlobalExceptionHandler(
      */
     private fun createDebugInfo(
         exception: Throwable,
-        request: HttpServletRequest
+        request: HttpServletRequest,
     ): DebugInfo? {
         if (!isDebugMode()) return null
 
@@ -135,7 +147,7 @@ class GlobalExceptionHandler(
             method = request.method,
             exceptionType = exception::class.simpleName,
             stackTrace = exception.stackTraceToString(),
-            location = ExceptionLocationExtractor.extractLocation(exception)
+            location = ExceptionLocationExtractor.extractLocation(exception),
         )
     }
 
