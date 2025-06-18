@@ -5,7 +5,7 @@
 **Language:** Kotlin  
 **Java Version:** 21+  
 
-Ball Framework는 **헥사고날 아키텍처(Hexagonal Architecture)**와 **도메인 주도 설계(DDD)** 원칙을 기반으로 설계된 엔터프라이즈급 Kotlin/Spring 프레임워크입니다.
+Ball Framework는 **헥사고날 아키텍처(Hexagonal Architecture)**, **도메인 주도 설계(DDD)** 원칙을 기반으로 설계된 엔터프라이즈급 Kotlin/Spring 프레임워크입니다.
 
 ## 🎯 주요 특징
 
