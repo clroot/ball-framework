@@ -15,7 +15,7 @@ import org.springframework.data.jpa.repository.JpaRepository
  * 반복되는 변환 로직을 줄여주는 목적
  * 복잡한 추상화 없이 단순한 보일러플레이트 제거
  */
-abstract class JpaRepositoryAdapter<T : EntityBase<ID>, ID : Any, J : EntityRecord<T, JID>, JID : Any>(
+abstract class JpaRepositoryAdapter<T : EntityBase<ID>, ID : Any, J : EntityRecord<T>, JID : Any>(
     private val jpaRepository: JpaRepository<J, JID>,
 ) : Repository<T, ID> {
     protected abstract fun ID.toJpaId(): JID

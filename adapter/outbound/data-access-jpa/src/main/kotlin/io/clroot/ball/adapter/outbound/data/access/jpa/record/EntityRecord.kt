@@ -16,7 +16,7 @@ import java.time.Instant
  * @param ID 식별자 타입 (BinaryId, UserId, OrderId 등)
  */
 @MappedSuperclass
-abstract class EntityRecord<E : EntityBase<*>, ID : Any>(
+abstract class EntityRecord<E : EntityBase<*>>(
     createdAt: Instant,
     updatedAt: Instant,
     deletedAt: Instant?,
@@ -35,7 +35,7 @@ abstract class EntityRecord<E : EntityBase<*>, ID : Any>(
     /**
      * 도메인 엔티티로부터 생성하는 생성자
      */
-    constructor(entity: EntityBase<ID>) : this(
+    constructor(entity: EntityBase<*>) : this(
         createdAt = entity.createdAt,
         updatedAt = entity.updatedAt,
         deletedAt = entity.deletedAt,
@@ -45,7 +45,7 @@ abstract class EntityRecord<E : EntityBase<*>, ID : Any>(
      * 도메인 엔티티의 공통 필드를 업데이트합니다.
      * ID는 변경되지 않으므로 업데이트에서 제외됩니다.
      */
-    protected fun updateCommonFields(entity: EntityBase<ID>) {
+    protected fun updateCommonFields(entity: EntityBase<*>) {
         // createdAt은 변경하지 않음
         this.updatedAt = entity.updatedAt
         this.deletedAt = entity.deletedAt
