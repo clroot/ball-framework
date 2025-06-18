@@ -1,6 +1,7 @@
 package io.clroot.ball.domain.port
 
 import io.clroot.ball.domain.exception.DomainStateException
+import io.clroot.ball.domain.model.AggregateRoot
 import io.clroot.ball.domain.model.EntityBase
 
 /**
@@ -13,15 +14,15 @@ import io.clroot.ball.domain.model.EntityBase
  * 간소화된 에러 처리를 위해 nullable 타입과 예외를 사용합니다.
  * 영속성 관련 에러는 DomainStateException으로 처리됩니다.
  *
- * @param T 관리할 엔티티 타입 (EntityBase를 상속해야 함)
+ * @param T 관리할 엔티티 타입 (EntityBase 또는 AggregateRoot를 상속해야 함)
  * @param ID 엔티티의 식별자 타입
  *
  * @since 2.0
  * @see SpecificationRepository
  * @see EntityBase
+ * @see AggregateRoot
  */
 interface Repository<T : EntityBase<ID>, ID : Any> {
-
     /**
      * 식별자로 엔티티를 조회합니다.
      *
@@ -66,7 +67,7 @@ interface Repository<T : EntityBase<ID>, ID : Any> {
      *
      * 지정된 식별자의 엔티티를 조회한 후, modifier 함수를 적용하여 엔티티를 수정합니다.
      * 이 방법은 최신 상태의 엔티티를 보장하며, 동시성 이슈를 방지하는 데 도움이 됩니다.
-     * 
+     *
      * 수정 작업은 트랜잭션 내에서 수행되어야 하며, 엔티티가 존재하지 않는 경우
      * DomainStateException을 발생시킵니다.
      *
@@ -75,7 +76,7 @@ interface Repository<T : EntityBase<ID>, ID : Any> {
      * @return 수정된 엔티티
      * @throws DomainStateException 엔티티가 존재하지 않는 경우
      * @throws DomainStateException 수정 중 오류가 발생한 경우
-     * 
+     *
      * @since 2.0
      */
     fun update(
@@ -89,7 +90,7 @@ interface Repository<T : EntityBase<ID>, ID : Any> {
      * 주어진 엔티티의 식별자를 사용하여 데이터베이스에서 최신 상태를 조회한 후,
      * modifier 함수를 적용하여 수정합니다. 이는 낙관적 잠금(Optimistic Locking)이나
      * 버전 관리가 필요한 시나리오에서 유용합니다.
-     * 
+     *
      * 내부적으로 `update(entity.id, modifier)`를 호출하는 편의 메서드입니다.
      *
      * @param entity 수정할 엔티티 (식별자 추출 목적)
@@ -97,9 +98,9 @@ interface Repository<T : EntityBase<ID>, ID : Any> {
      * @return 수정된 엔티티
      * @throws DomainStateException 엔티티가 존재하지 않는 경우
      * @throws DomainStateException 수정 중 오류가 발생한 경우
-     * 
+     *
      * @see update(ID, (T) -> Unit)
-     * 
+     *
      * @since 2.0
      */
     fun update(
