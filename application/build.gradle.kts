@@ -18,7 +18,6 @@ publishing {
             groupId = this.groupId
             artifactId = this.artifactId
             version = rootProject.version.toString()
-            println("sibal: ${this.groupId} ${this.artifactId} ${this.version}")
         }
     }
 }
