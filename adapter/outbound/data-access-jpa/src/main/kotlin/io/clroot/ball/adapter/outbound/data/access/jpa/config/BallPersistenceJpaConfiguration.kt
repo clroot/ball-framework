@@ -9,6 +9,6 @@ import org.springframework.context.annotation.Import
 @Import(
     BinaryIdConverter::class,
     DurationConverter::class,
-    io.clroot.ball.adapter.outbound.data.access.jpa.converter.InstantConverter::class,
+    io.clroot.ball.adapter.outbound.data.access.jpa.converter.LocalDateTimeConverter::class,
 )
 class BallPersistenceJpaConfiguration

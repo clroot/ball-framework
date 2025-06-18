@@ -4,7 +4,7 @@ import io.clroot.ball.domain.model.AggregateRoot
 import jakarta.persistence.Column
 import jakarta.persistence.MappedSuperclass
 import jakarta.persistence.Version
-import java.time.Instant
+import java.time.LocalDateTime
 
 /**
  * 제네릭 기반 JPA 집합체 루트 레코드 기본 클래스
@@ -17,9 +17,9 @@ import java.time.Instant
  */
 @MappedSuperclass
 abstract class AggregateRootRecord<E : AggregateRoot<*>>(
-    createdAt: Instant,
-    updatedAt: Instant,
-    deletedAt: Instant?,
+    createdAt: LocalDateTime,
+    updatedAt: LocalDateTime,
+    deletedAt: LocalDateTime?,
     version: Long,
 ) : EntityRecord<E>(createdAt, updatedAt, deletedAt) {
     /**

@@ -13,7 +13,7 @@ import io.clroot.ball.domain.model.vo.BinaryId
 import io.clroot.ball.domain.model.vo.Email
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
-import java.time.Instant
+import java.time.LocalDateTime
 
 /**
  * 테스트 전용 컨트롤러
@@ -24,17 +24,17 @@ import java.time.Instant
 @RestController
 @RequestMapping("/api/test")
 class TestController {
-
     /**
      * Either 성공 케이스 테스트
      */
     @GetMapping("/success")
     fun testSuccess(): ResponseEntity<TestResponse> {
-        val response = TestResponse(
-            id = BinaryId.new().toString(),
-            message = "Success response",
-            timestamp = Instant.now()
-        )
+        val response =
+            TestResponse(
+                id = BinaryId.new().toString(),
+                message = "Success response",
+                timestamp = LocalDateTime.now(),
+            )
         return response.right().toResponseEntity()
     }
 
@@ -51,20 +51,19 @@ class TestController {
      * Either 실패 케이스 테스트 (NotFound)
      */
     @GetMapping("/not-found")
-    fun testNotFound(): ResponseEntity<TestResponse> {
-        return ApplicationError.NotFound.left().toResponseEntity()
-    }
+    fun testNotFound(): ResponseEntity<TestResponse> = ApplicationError.NotFound.left().toResponseEntity()
 
     /**
      * Nullable 응답 테스트 (값 있음)
      */
     @GetMapping("/nullable/found")
     fun testNullableFound(): ResponseEntity<TestResponse> {
-        val response = TestResponse(
-            id = BinaryId.new().toString(),
-            message = "Found response",
-            timestamp = Instant.now()
-        )
+        val response =
+            TestResponse(
+                id = BinaryId.new().toString(),
+                message = "Found response",
+                timestamp = LocalDateTime.now(),
+            )
         return response.right().toResponseEntityWithNull()
     }
 
@@ -72,9 +71,7 @@ class TestController {
      * Nullable 응답 테스트 (null)
      */
     @GetMapping("/nullable/not-found")
-    fun testNullableNotFound(): ResponseEntity<TestResponse> {
-        return (null as TestResponse?).right().toResponseEntityWithNull()
-    }
+    fun testNullableNotFound(): ResponseEntity<TestResponse> = (null as TestResponse?).right().toResponseEntityWithNull()
 
     /**
      * 페이징 파라미터 테스트
@@ -82,24 +79,27 @@ class TestController {
     @GetMapping("/paging")
     fun testPaging(
         @RequestParam(required = false, defaultValue = "0,20") page: PageRequest,
-        @RequestParam(required = false, defaultValue = "") sort: Sort
+        @RequestParam(required = false, defaultValue = "") sort: Sort,
     ): ResponseEntity<PagedTestResponse> {
-        val items = listOf(
-            TestResponse(BinaryId.new().toString(), "Item 1", Instant.now()),
-            TestResponse(BinaryId.new().toString(), "Item 2", Instant.now())
-        )
+        val items =
+            listOf(
+                TestResponse(BinaryId.new().toString(), "Item 1", LocalDateTime.now()),
+                TestResponse(BinaryId.new().toString(), "Item 2", LocalDateTime.now()),
+            )
 
-        val pagedResponse = PagedTestResponse(
-            content = items,
-            page = page.page,
-            size = page.size,
-            totalElements = 2L,
-            sortInfo = if (sort.isSorted) {
-                sort.orders.joinToString(",") { "${it.property}:${it.direction}" }
-            } else {
-                "unsorted"
-            }
-        )
+        val pagedResponse =
+            PagedTestResponse(
+                content = items,
+                page = page.page,
+                size = page.size,
+                totalElements = 2L,
+                sortInfo =
+                    if (sort.isSorted) {
+                        sort.orders.joinToString(",") { "${it.property}:${it.direction}" }
+                    } else {
+                        "unsorted"
+                    },
+            )
 
         return pagedResponse.right().toResponseEntity()
     }
@@ -108,28 +108,33 @@ class TestController {
      * Path Variable 테스트 (BinaryId)
      */
     @GetMapping("/items/{id}")
-    fun testPathVariable(@PathVariable id: String): ResponseEntity<TestResponse> {
-        return try {
+    fun testPathVariable(
+        @PathVariable id: String,
+    ): ResponseEntity<TestResponse> =
+        try {
             val binaryId = BinaryId.fromString(id)
-            val response = TestResponse(
-                id = binaryId.toString(),
-                message = "Found item with ID: ${binaryId}",
-                timestamp = Instant.now()
-            )
+            val response =
+                TestResponse(
+                    id = binaryId.toString(),
+                    message = "Found item with ID: $binaryId",
+                    timestamp = LocalDateTime.now(),
+                )
             response.right().toResponseEntity()
         } catch (e: Exception) {
-            ApplicationError.DomainError(DomainValidationException.invalidId(id))
+            ApplicationError
+                .DomainError(DomainValidationException.invalidId(id))
                 .left()
                 .toResponseEntity()
         }
-    }
 
     /**
      * POST 요청 테스트
      */
     @PostMapping("/items")
-    fun testPostRequest(@RequestBody request: CreateTestRequest): ResponseEntity<TestResponse> {
-        return try {
+    fun testPostRequest(
+        @RequestBody request: CreateTestRequest,
+    ): ResponseEntity<TestResponse> =
+        try {
             // 간단한 검증
             if (request.name.isBlank()) {
                 throw DomainValidationException.fieldValidation("Name", "Name cannot be blank")
@@ -137,29 +142,30 @@ class TestController {
 
             Email.from(request.email) // Email 검증
 
-            val response = TestResponse(
-                id = BinaryId.new().toString(),
-                message = "Created: ${request.name}",
-                timestamp = Instant.now()
-            )
+            val response =
+                TestResponse(
+                    id = BinaryId.new().toString(),
+                    message = "Created: ${request.name}",
+                    timestamp = LocalDateTime.now(),
+                )
             response.right().toResponseEntity()
-
         } catch (e: Exception) {
-            ApplicationError.DomainError(object : DomainException("", e) {})
+            ApplicationError
+                .DomainError(object : DomainException("", e) {})
                 .left()
                 .toResponseEntity()
         }
-    }
 
     /**
      * 시스템 에러 테스트
      */
     @GetMapping("/system-error")
     fun testSystemError(): ResponseEntity<TestResponse> {
-        val systemError = ApplicationError.SystemError(
-            message = "Test system error",
-            cause = RuntimeException("Database connection failed")
-        )
+        val systemError =
+            ApplicationError.SystemError(
+                message = "Test system error",
+                cause = RuntimeException("Database connection failed"),
+            )
         return systemError.left().toResponseEntity()
     }
 }
@@ -170,7 +176,7 @@ class TestController {
 data class TestResponse(
     val id: String,
     val message: String,
-    val timestamp: Instant
+    val timestamp: LocalDateTime,
 )
 
 /**
@@ -181,7 +187,7 @@ data class PagedTestResponse(
     val page: Int,
     val size: Int,
     val totalElements: Long,
-    val sortInfo: String
+    val sortInfo: String,
 )
 
 /**
@@ -189,5 +195,5 @@ data class PagedTestResponse(
  */
 data class CreateTestRequest(
     val name: String,
-    val email: String
+    val email: String,
 )

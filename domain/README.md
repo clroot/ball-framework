@@ -41,9 +41,9 @@ domain/
 ```kotlin
 abstract class EntityBase<ID : Any>(
     open val id: ID,
-    val createdAt: Instant = Instant.now(),
-    val updatedAt: Instant = Instant.now(),
-    val deletedAt: Instant? = null // 소프트 삭제 지원
+    val createdAt: LocalDateTime = LocalDateTime.now(),
+    val updatedAt: LocalDateTime = LocalDateTime.now(),
+    val deletedAt: LocalDateTime? = null // 소프트 삭제 지원
 ) {
     // ID 기반 동등성 구현
     override fun equals(other: Any?): Boolean
@@ -64,9 +64,9 @@ EntityBase를 확장하여 도메인 이벤트 발행 기능을 제공합니다.
 ```kotlin
 abstract class AggregateRoot<ID : Any>(
     id: ID,
-    createdAt: Instant,
-    updatedAt: Instant,
-    deletedAt: Instant?
+    createdAt: LocalDateTime,
+    updatedAt: LocalDateTime,
+    deletedAt: LocalDateTime?
 ) : EntityBase<ID>(id, createdAt, updatedAt, deletedAt) {
     
     private val _domainEvents = mutableListOf<DomainEvent>()
@@ -89,9 +89,9 @@ class Order(
     id: BinaryId,
     val userId: BinaryId,
     var status: OrderStatus = OrderStatus.PENDING,
-    createdAt: Instant = Instant.now(),
-    updatedAt: Instant = Instant.now(),
-    deletedAt: Instant? = null
+    createdAt: LocalDateTime = LocalDateTime.now(),
+    updatedAt: LocalDateTime = LocalDateTime.now(),
+    deletedAt: LocalDateTime? = null
 ) : AggregateRoot<BinaryId>(id, createdAt, updatedAt, deletedAt) {
     
     fun confirm() {
@@ -100,7 +100,7 @@ class Order(
         }
         
         status = OrderStatus.CONFIRMED
-        registerEvent(OrderConfirmedEvent(id, userId, Instant.now()))
+        registerEvent(OrderConfirmedEvent(id, userId, LocalDateTime.now()))
     }
 }
 ```
@@ -305,7 +305,7 @@ data class OrderConfirmedEvent(
     val orderId: BinaryId,
     val userId: BinaryId,
     val totalAmount: Money,
-    override val occurredAt: Instant = Instant.now()
+    override val occurredAt: LocalDateTime = LocalDateTime.now()
 ) : DomainEvent {
     override val id: String = BinaryId.new().toString()
     override val type: String = "OrderConfirmed"
@@ -331,7 +331,7 @@ data class OrderCompletedIntegrationEvent(
     override val destination: String? = null,
     override val correlationId: String = UUID.randomUUID().toString(),
     override val metadata: Map<String, Any> = emptyMap(),
-    override val occurredAt: Instant = Instant.now()
+    override val occurredAt: LocalDateTime = LocalDateTime.now()
 ) : IntegrationEvent {
     override val id: String = BinaryId.new().toString()
     override val type: String = "OrderCompleted"
@@ -663,9 +663,9 @@ class User(
     var email: Email,
     var status: UserStatus = UserStatus.ACTIVE,
     var age: Int,
-    createdAt: Instant = Instant.now(),
-    updatedAt: Instant = Instant.now(),
-    deletedAt: Instant? = null
+    createdAt: LocalDateTime = LocalDateTime.now(),
+    updatedAt: LocalDateTime = LocalDateTime.now(),
+    deletedAt: LocalDateTime? = null
 ) : AggregateRoot<BinaryId>(id, createdAt, updatedAt, deletedAt) {
     
     fun changeName(newName: String) {
@@ -702,9 +702,9 @@ class Order(
     private val _items: MutableList<OrderItem> = mutableListOf(),
     var status: OrderStatus = OrderStatus.PENDING,
     var totalAmount: Money = Money.ZERO,
-    createdAt: Instant = Instant.now(),
-    updatedAt: Instant = Instant.now(),
-    deletedAt: Instant? = null
+    createdAt: LocalDateTime = LocalDateTime.now(),
+    updatedAt: LocalDateTime = LocalDateTime.now(),
+    deletedAt: LocalDateTime? = null
 ) : AggregateRoot<BinaryId>(id, createdAt, updatedAt, deletedAt) {
     
     val items: List<OrderItem> get() = _items.toList()
@@ -817,8 +817,8 @@ class OrderLimitPolicy(
     override fun isSatisfiedBy(user: User): Boolean {
         val todayOrders = orderRepository.countByUserIdAndDateRange(
             user.id,
-            LocalDate.now().atStartOfDay().toInstant(ZoneOffset.UTC),
-            LocalDate.now().plusDays(1).atStartOfDay().toInstant(ZoneOffset.UTC)
+            LocalDate.now().atStartOfDay().toLocalDateTime(ZoneOffset.UTC),
+            LocalDate.now().plusDays(1).atStartOfDay().toLocalDateTime(ZoneOffset.UTC)
         )
         return todayOrders < 10 // 일일 최대 10개 주문
     }

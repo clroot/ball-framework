@@ -1,7 +1,7 @@
 package io.clroot.ball.domain.model
 
 import io.clroot.ball.domain.event.DomainEvent
-import java.time.Instant
+import java.time.LocalDateTime
 
 /**
  * 집합체 루트 (Aggregate Root)
@@ -13,9 +13,9 @@ import java.time.Instant
  */
 abstract class AggregateRoot<ID : Any>(
     id: ID,
-    createdAt: Instant,
-    updatedAt: Instant,
-    deletedAt: Instant?,
+    createdAt: LocalDateTime,
+    updatedAt: LocalDateTime,
+    deletedAt: LocalDateTime?,
 ) : EntityBase<ID>(id, createdAt, updatedAt, deletedAt) {
     private val _domainEvents = mutableListOf<DomainEvent>()
 

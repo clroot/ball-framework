@@ -31,20 +31,20 @@ Ball Framework의 JPA 데이터 액세스 모듈로, 도메인 모델과 JPA 엔
 ```kotlin
 @MappedSuperclass
 abstract class EntityRecord<E : EntityBase<ID>, ID : Any>(
-    createdAt: Instant,
-    updatedAt: Instant,
-    deletedAt: Instant?
+    createdAt: LocalDateTime,
+    updatedAt: LocalDateTime,
+    deletedAt: LocalDateTime?
 ) : DataModel<E> {
     
     @CreationTimestamp
-    var createdAt: Instant = createdAt
+    var createdAt: LocalDateTime = createdAt
         protected set
 
     @UpdateTimestamp
-    var updatedAt: Instant = updatedAt
+    var updatedAt: LocalDateTime = updatedAt
         protected set
 
-    var deletedAt: Instant? = deletedAt
+    var deletedAt: LocalDateTime? = deletedAt
         protected set
 }
 ```
@@ -56,9 +56,9 @@ abstract class EntityRecord<E : EntityBase<ID>, ID : Any>(
 ```kotlin
 @MappedSuperclass
 abstract class AggregateRootRecord<E : AggregateRoot<ID>, ID : Any>(
-    createdAt: Instant,
-    updatedAt: Instant,
-    deletedAt: Instant?,
+    createdAt: LocalDateTime,
+    updatedAt: LocalDateTime,
+    deletedAt: LocalDateTime?,
     version: Long
 ) : EntityRecord<E, ID>(createdAt, updatedAt, deletedAt) {
     
@@ -140,9 +140,9 @@ class UserJpaRecord(
     @Enumerated(EnumType.STRING)
     var status: UserStatus,
     
-    createdAt: Instant,
-    updatedAt: Instant,
-    deletedAt: Instant?
+    createdAt: LocalDateTime,
+    updatedAt: LocalDateTime,
+    deletedAt: LocalDateTime?
 ) : EntityRecord<User, UserId>(createdAt, updatedAt, deletedAt) {
     
     constructor(entity: User) : this(
@@ -201,9 +201,9 @@ class OrderJpaRecord(
     @Embedded
     var totalAmount: MoneyEmbeddable,
     
-    createdAt: Instant,
-    updatedAt: Instant,
-    deletedAt: Instant?,
+    createdAt: LocalDateTime,
+    updatedAt: LocalDateTime,
+    deletedAt: LocalDateTime?,
     version: Long
 ) : AggregateRootRecord<Order, OrderId>(createdAt, updatedAt, deletedAt, version) {
     
@@ -318,9 +318,9 @@ class User(
     var name: String,
     var email: Email,
     var status: UserStatus = UserStatus.ACTIVE,
-    createdAt: Instant = Instant.now(),
-    updatedAt: Instant = Instant.now(),
-    deletedAt: Instant? = null
+    createdAt: LocalDateTime = LocalDateTime.now(),
+    updatedAt: LocalDateTime = LocalDateTime.now(),
+    deletedAt: LocalDateTime? = null
 ) : EntityBase<UserId>(id, createdAt, updatedAt, deletedAt) {
     
     fun changeName(newName: String) {
@@ -347,9 +347,9 @@ class Order(
     private val _items: MutableList<OrderItem> = mutableListOf(),
     var status: OrderStatus = OrderStatus.PENDING,
     var totalAmount: Money = Money.ZERO,
-    createdAt: Instant = Instant.now(),
-    updatedAt: Instant = Instant.now(),
-    deletedAt: Instant? = null
+    createdAt: LocalDateTime = LocalDateTime.now(),
+    updatedAt: LocalDateTime = LocalDateTime.now(),
+    deletedAt: LocalDateTime? = null
 ) : AggregateRoot<OrderId>(id, createdAt, updatedAt, deletedAt) {
     
     val items: List<OrderItem> get() = _items.toList()
@@ -446,9 +446,9 @@ class OrderService(
 class UserJpaRecord(
     id: BinaryId,
     var name: String,
-    createdAt: Instant,
-    updatedAt: Instant,
-    deletedAt: Instant?
+    createdAt: LocalDateTime,
+    updatedAt: LocalDateTime,
+    deletedAt: LocalDateTime?
 ) : BinaryIdEntityRecord<User>(id, createdAt, updatedAt, deletedAt) {
     // ...
 }
@@ -464,9 +464,9 @@ class UserJpaRecord(
     
     var name: String,
     
-    createdAt: Instant,
-    updatedAt: Instant,
-    deletedAt: Instant?
+    createdAt: LocalDateTime,
+    updatedAt: LocalDateTime,
+    deletedAt: LocalDateTime?
 ) : EntityRecord<User, UserId>(createdAt, updatedAt, deletedAt) {
     // ...
 }

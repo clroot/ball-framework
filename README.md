@@ -79,7 +79,7 @@ dependencies {
 ```kotlin
 import io.clroot.ball.domain.model.AggregateRoot
 import io.clroot.ball.domain.model.vo.Email
-import java.time.Instant
+import java.time.LocalDateTime
 
 // 커스텀 ID 타입 정의
 @JvmInline
@@ -94,9 +94,9 @@ class User(
     id: UserId,
     private var name: String,
     private var email: Email,
-    createdAt: Instant = Instant.now(),
-    updatedAt: Instant = Instant.now(),
-    deletedAt: Instant? = null
+    createdAt: LocalDateTime = LocalDateTime.now(),
+    updatedAt: LocalDateTime = LocalDateTime.now(),
+    deletedAt: LocalDateTime? = null
 ) : AggregateRoot<UserId>(id, createdAt, updatedAt, deletedAt) {
     
     fun changeName(newName: String) {
@@ -159,9 +159,9 @@ class UserJpaRecord(
     @Column(name = "email", nullable = false)
     var email: String,
     
-    createdAt: Instant,
-    updatedAt: Instant,
-    deletedAt: Instant?
+    createdAt: LocalDateTime,
+    updatedAt: LocalDateTime,
+    deletedAt: LocalDateTime?
 ) : EntityRecord<User, UserId>(createdAt, updatedAt, deletedAt) {
     
     constructor(entity: User) : this(
@@ -370,9 +370,9 @@ class User(
     id: UserId,
     name: String,
     email: String,
-    createdAt: Instant = Instant.now(),
-    updatedAt: Instant = Instant.now(),
-    deletedAt: Instant? = null
+    createdAt: LocalDateTime = LocalDateTime.now(),
+    updatedAt: LocalDateTime = LocalDateTime.now(),
+    deletedAt: LocalDateTime? = null
 ) : AggregateRoot<UserId>(id, createdAt, updatedAt, deletedAt) {
 
     var name: String = name
@@ -450,9 +450,9 @@ class UserJpaRecord(
     @Column(name = "is_active", nullable = false)
     var isActive: Boolean,
     
-    createdAt: Instant,
-    updatedAt: Instant,
-    deletedAt: Instant?
+    createdAt: LocalDateTime,
+    updatedAt: LocalDateTime,
+    deletedAt: LocalDateTime?
 ) : EntityRecord<User, UserId>(createdAt, updatedAt, deletedAt) {
 
     constructor(user: User) : this(

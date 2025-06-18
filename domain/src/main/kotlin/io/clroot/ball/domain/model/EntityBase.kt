@@ -1,12 +1,12 @@
 package io.clroot.ball.domain.model
 
-import java.time.Instant
+import java.time.LocalDateTime
 
 abstract class EntityBase<ID : Any>(
     open val id: ID,
-    val createdAt: Instant = Instant.now(),
-    val updatedAt: Instant = Instant.now(),
-    val deletedAt: Instant? = null,
+    val createdAt: LocalDateTime = LocalDateTime.now(),
+    val updatedAt: LocalDateTime = LocalDateTime.now(),
+    val deletedAt: LocalDateTime? = null,
 ) {
     override fun equals(other: Any?): Boolean {
         if (this === other) return true

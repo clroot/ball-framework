@@ -5,7 +5,7 @@ import io.clroot.ball.domain.model.EntityBase
 import jakarta.persistence.MappedSuperclass
 import org.hibernate.annotations.CreationTimestamp
 import org.hibernate.annotations.UpdateTimestamp
-import java.time.Instant
+import java.time.LocalDateTime
 
 /**
  * 제네릭 기반 JPA 엔티티 레코드 기본 클래스
@@ -17,19 +17,19 @@ import java.time.Instant
  */
 @MappedSuperclass
 abstract class EntityRecord<E : EntityBase<*>>(
-    createdAt: Instant,
-    updatedAt: Instant,
-    deletedAt: Instant?,
+    createdAt: LocalDateTime,
+    updatedAt: LocalDateTime,
+    deletedAt: LocalDateTime?,
 ) : DataModel<E> {
     @CreationTimestamp
-    var createdAt: Instant = createdAt
+    var createdAt: LocalDateTime = createdAt
         protected set
 
     @UpdateTimestamp
-    var updatedAt: Instant = updatedAt
+    var updatedAt: LocalDateTime = updatedAt
         protected set
 
-    var deletedAt: Instant? = deletedAt
+    var deletedAt: LocalDateTime? = deletedAt
         protected set
 
     /**

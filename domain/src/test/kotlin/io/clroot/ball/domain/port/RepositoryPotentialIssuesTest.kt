@@ -3,7 +3,7 @@ package io.clroot.ball.domain.port
 import io.clroot.ball.domain.model.AggregateRoot
 import io.clroot.ball.domain.model.EntityBase
 import io.clroot.ball.domain.model.vo.BinaryId
-import java.time.Instant
+import java.time.LocalDateTime
 
 /**
  * Repository 사용 시 발생할 수 있는 잠재적 문제들을 테스트
@@ -13,9 +13,9 @@ class RepositoryPotentialIssuesTest {
     class Product(
         id: BinaryId,
         val name: String,
-        createdAt: Instant = Instant.now(),
-        updatedAt: Instant = Instant.now(),
-        deletedAt: Instant? = null,
+        createdAt: LocalDateTime = LocalDateTime.now(),
+        updatedAt: LocalDateTime = LocalDateTime.now(),
+        deletedAt: LocalDateTime? = null,
     ) : AggregateRoot<BinaryId>(id, createdAt, updatedAt, deletedAt)
 
     interface ProductRepository : Repository<Product, BinaryId>
