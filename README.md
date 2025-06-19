@@ -138,22 +138,13 @@ data class UpdateUserNameCommand(
 ### 4. JPA 엔티티 및 어댑터
 
 ```kotlin
-// JPA 컨버터 정의
-@Converter(autoApply = true)
-class UserIdConverter : AttributeConverter<UserId, String> {
-    override fun convertToDatabaseColumn(attribute: UserId?): String? = attribute?.value
-    override fun convertToEntityAttribute(dbData: String?): UserId? = 
-        dbData?.let { UserId.from(it) }
-}
-
 // JPA 엔티티 레코드
 @Entity
 @Table(name = "users")
 class UserJpaRecord(
     @Id
-    @Convert(converter = UserIdConverter::class)
-    @Column(name = "id", nullable = false)
-    var id: UserId,
+    @Column(name = "id", columnDefinition = "BINARY(16)", nullable = false)
+    var id: ByteArray,
     
     @Column(name = "name", nullable = false)
     var name: String,
@@ -298,7 +289,7 @@ IntelliJ IDEA 사용 시 다음 설정을 권장합니다:
 
 #### Outbound Adapters
 - **Data Access Core**: 데이터 접근 공통 추상화 및 예외 처리
-- **Data Access JPA**: Spring Data JPA 기반 (JpaRepositoryAdapter, 제네릭 ID 타입, Kotlin JDSL 지원)
+- **Data Access JPA**: Spring Data JPA 기반 (JpaRepositoryAdapter, Kotlin JDSL 지원)
 - **Data Access Redis**: Redis 기반 분산 락 제공
 
 ## 🔧 설정 가이드
@@ -464,7 +455,7 @@ class UserJpaRecord(
     createdAt: LocalDateTime,
     updatedAt: LocalDateTime,
     deletedAt: LocalDateTime?
-) : EntityRecord<User, UserId>(createdAt, updatedAt, deletedAt) {
+) : EntityRecord<User>(createdAt, updatedAt, deletedAt) {
 
     constructor(user: User) : this(
         id = user.id,
@@ -475,17 +466,6 @@ class UserJpaRecord(
         updatedAt = user.updatedAt,
         deletedAt = user.deletedAt
     )
-
-    override fun toDomain(): User {
-        return User(
-            id = id,
-            name = name,
-            email = email,
-            createdAt = createdAt,
-            updatedAt = updatedAt,
-            deletedAt = deletedAt
-        )
-    }
 
     override fun update(entity: User) {
         this.name = entity.name

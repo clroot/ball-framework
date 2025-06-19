@@ -2,7 +2,6 @@ package io.clroot.ball.adapter.outbound.data.access.core.mapping
 
 import io.clroot.ball.domain.model.EntityBase
 
-
 /**
  * Interface for JPA entity classes that can be converted to domain entities
  *
@@ -13,17 +12,4 @@ import io.clroot.ball.domain.model.EntityBase
  */
 interface DataModel<E : EntityBase<*>> {
     fun update(entity: E)
-
-    companion object {
-        /**
-         * Creates a data model from a domain entity
-         *
-         * @param entity The domain entity
-         * @param factory A function that creates a data model from a domain entity
-         * @return The data model
-         */
-        fun <E : EntityBase<*>, D : DataModel<E>> fromEntity(entity: E, factory: (E) -> D): D {
-            return factory(entity)
-        }
-    }
 }
