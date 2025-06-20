@@ -32,19 +32,18 @@ allprojects {
     repositories {
         mavenCentral()
         maven {
-            url = uri("https://nexus.eduvil.co.kr/repository/eduvil-maven-snapshot/")
-            credentials {
-                username = nexusUsername
-                password = nexusPassword
-            }
+            url = uri("https://nexus.eduvil.co.kr/repository/maven-snapshots/")
+        }
+        maven {
+            url = uri("https://nexus.eduvil.co.kr/repository/maven-releases/")
         }
     }
 
     publishing {
         repositories {
             maven {
-                val releasesRepoUrl = uri("https://nexus.eduvil.co.kr/repository/eduvil-maven-release/")
-                val snapshotsRepoUrl = uri("https://nexus.eduvil.co.kr/repository/eduvil-maven-snapshot/")
+                val releasesRepoUrl = uri("https://nexus.eduvil.co.kr/repository/maven-releases/")
+                val snapshotsRepoUrl = uri("https://nexus.eduvil.co.kr/repository/maven-snapshots/")
                 credentials {
                     username = nexusUsername
                     password = nexusPassword
