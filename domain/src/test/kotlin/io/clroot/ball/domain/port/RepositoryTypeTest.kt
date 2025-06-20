@@ -36,15 +36,6 @@ class TestUserRepositoryImpl : TestUserRepository {
     override fun delete(id: BinaryId) {
         storage.remove(id)
     }
-
-    override fun update(
-        id: BinaryId,
-        modifier: (TestUser) -> Unit,
-    ): TestUser {
-        val user = findById(id) ?: throw IllegalStateException("User not found")
-        modifier(user)
-        return save(user)
-    }
 }
 
 // 다양한 사용 패턴 테스트
@@ -60,7 +51,8 @@ class RepositoryTypeUsageTest {
         val found = repository.findById(user.id)
 
         // 업데이트
-        repository.update(user.id) { it.changeName("Jane") }
+        user.changeName("Jane")
+        repository.save(user)
 
         // 삭제
         repository.delete(user)

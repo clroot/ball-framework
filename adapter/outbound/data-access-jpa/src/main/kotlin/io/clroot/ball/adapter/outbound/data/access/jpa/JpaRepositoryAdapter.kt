@@ -2,12 +2,12 @@ package io.clroot.ball.adapter.outbound.data.access.jpa
 
 import io.clroot.ball.adapter.outbound.data.access.core.exception.DatabaseException
 import io.clroot.ball.adapter.outbound.data.access.core.exception.DuplicateEntityException
-import io.clroot.ball.adapter.outbound.data.access.core.exception.EntityNotFoundException
 import io.clroot.ball.adapter.outbound.data.access.jpa.record.EntityRecord
 import io.clroot.ball.domain.model.EntityBase
 import io.clroot.ball.domain.port.Repository
 import org.springframework.dao.DataIntegrityViolationException
 import org.springframework.data.jpa.repository.JpaRepository
+import org.springframework.data.repository.findByIdOrNull
 
 /**
  * JPA Repository 어댑터 기본 클래스
@@ -16,7 +16,7 @@ import org.springframework.data.jpa.repository.JpaRepository
  * 복잡한 추상화 없이 단순한 보일러플레이트 제거
  */
 abstract class JpaRepositoryAdapter<T : EntityBase<ID>, ID : Any, J : EntityRecord<T>, JID : Any>(
-    private val jpaRepository: JpaRepository<J, JID>,
+    protected val springDataRepository: JpaRepository<J, JID>,
 ) : Repository<T, ID> {
     protected abstract fun ID.toJpaId(): JID
 
@@ -30,7 +30,7 @@ abstract class JpaRepositoryAdapter<T : EntityBase<ID>, ID : Any, J : EntityReco
 
     override fun findById(id: ID): T? =
         try {
-            jpaRepository
+            springDataRepository
                 .findById(id.toJpaId())
                 .map { it.toDomain() }
                 .orElse(null)
@@ -40,34 +40,30 @@ abstract class JpaRepositoryAdapter<T : EntityBase<ID>, ID : Any, J : EntityReco
 
     override fun findAll(): List<T> =
         try {
-            jpaRepository.findAll().map { it.toDomain() }
+            springDataRepository.findAll().map { it.toDomain() }
         } catch (e: Exception) {
             throw DatabaseException("Failed to find all entities", e)
         }
 
-    override fun save(entity: T): T =
+    override fun save(entity: T): T {
+        val existingRecord = springDataRepository.findByIdOrNull(entity.id.toJpaId())
         try {
-            val jpaEntity = entity.toJpa()
-            val saved = jpaRepository.save(jpaEntity)
-            saved.toDomain()
+            return if (existingRecord != null) {
+                existingRecord.update(entity)
+                springDataRepository.save(existingRecord).toDomain()
+            } else {
+                springDataRepository.save(entity.toJpa()).toDomain()
+            }
         } catch (e: DataIntegrityViolationException) {
             throw DuplicateEntityException("Entity already exists: ${entity.id}")
         } catch (e: Exception) {
             throw DatabaseException("Failed to save entity: ${entity.id}", e)
         }
-
-    override fun update(
-        id: ID,
-        modifier: (T) -> Unit,
-    ): T {
-        val entity = findById(id) ?: throw EntityNotFoundException("Entity not found: $id")
-        modifier(entity)
-        return save(entity)
     }
 
     override fun delete(id: ID) {
         try {
-            jpaRepository.deleteById(id.toJpaId())
+            springDataRepository.deleteById(id.toJpaId())
         } catch (e: Exception) {
             throw DatabaseException("Failed to delete entity: $id", e)
         }

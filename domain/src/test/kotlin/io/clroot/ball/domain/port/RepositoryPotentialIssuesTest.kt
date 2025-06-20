@@ -36,11 +36,6 @@ class RepositoryPotentialIssuesTest {
                 override fun save(entity: Product): Product = entity
 
                 override fun delete(id: BinaryId) {}
-
-                override fun update(
-                    id: BinaryId,
-                    modifier: (Product) -> Unit,
-                ): Product = throw NotImplementedError()
             }
 
         // 컴파일 에러: Type mismatch
@@ -69,11 +64,6 @@ class RepositoryPotentialIssuesTest {
                 override fun save(entity: Product): Product = entity
 
                 override fun delete(id: BinaryId) {}
-
-                override fun update(
-                    id: BinaryId,
-                    modifier: (Product) -> Unit,
-                ): Product = throw NotImplementedError()
             }
 
         val id = BinaryId.new()
@@ -100,11 +90,6 @@ class RepositoryPotentialIssuesTest {
                 override fun save(entity: Product): Product = entity
 
                 override fun delete(id: BinaryId) {}
-
-                override fun update(
-                    id: BinaryId,
-                    modifier: (Product) -> Unit,
-                ): Product = throw NotImplementedError()
             }
 
         repositories.add(productRepo) // 문제 없음
@@ -167,11 +152,6 @@ class RepositoryPotentialIssuesTest {
                 override fun save(entity: Product): Product = entity
 
                 override fun delete(id: BinaryId) {}
-
-                override fun update(
-                    id: BinaryId,
-                    modifier: (Product) -> Unit,
-                ): Product = throw NotImplementedError()
             }
 
         // 2. 제네릭 함수에서는 상한 경계 사용

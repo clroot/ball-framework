@@ -79,11 +79,6 @@ class GenericRepositoryTest {
                 override fun save(entity: SimpleEntity): SimpleEntity = entity
 
                 override fun delete(id: BinaryId) {}
-
-                override fun update(
-                    id: BinaryId,
-                    modifier: (SimpleEntity) -> Unit,
-                ): SimpleEntity = throw NotImplementedError()
             }
 
         // Order (AggregateRoot) 테스트
@@ -96,11 +91,6 @@ class GenericRepositoryTest {
                 override fun save(entity: Order): Order = entity
 
                 override fun delete(id: BinaryId) {}
-
-                override fun update(
-                    id: BinaryId,
-                    modifier: (Order) -> Unit,
-                ): Order = throw NotImplementedError()
             }
 
         val simpleEntity = SimpleEntity(BinaryId.new(), "test")
@@ -129,11 +119,6 @@ class CovarianceTest {
                 override fun save(entity: Order): Order = entity
 
                 override fun delete(id: BinaryId) {}
-
-                override fun update(
-                    id: BinaryId,
-                    modifier: (Order) -> Unit,
-                ): Order = throw NotImplementedError()
             }
 
         // Order는 AggregateRoot이고, AggregateRoot는 EntityBase를 상속하므로
@@ -168,11 +153,6 @@ class TypeInferenceTest {
                 override fun save(entity: Order): Order = entity
 
                 override fun delete(id: BinaryId) {}
-
-                override fun update(
-                    id: BinaryId,
-                    modifier: (Order) -> Unit,
-                ): Order = throw NotImplementedError()
             }
 
         val id = BinaryId.new()
