@@ -16,7 +16,7 @@ import org.springframework.data.repository.findByIdOrNull
  * 복잡한 추상화 없이 단순한 보일러플레이트 제거
  */
 abstract class JpaRepositoryAdapter<T : EntityBase<ID>, ID : Any, J : EntityRecord<T>, JID : Any>(
-    protected val springDataRepository: JpaRepository<J, JID>,
+    protected open val springDataRepository: JpaRepository<J, JID>,
 ) : Repository<T, ID> {
     protected abstract fun ID.toJpaId(): JID
 
