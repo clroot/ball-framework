@@ -1,6 +1,7 @@
 package io.clroot.ball.domain.exception
 
 import io.clroot.ball.domain.model.EntityBase
+import kotlin.reflect.KClass
 
 class DomainStateException(
     message: String,
@@ -9,10 +10,10 @@ class DomainStateException(
     cause: Throwable? = null,
 ) : DomainException(message, cause) {
     companion object {
-        fun <T : EntityBase<*>> entityNotFound(
-            entity: T,
-            id: String,
-        ) = DomainStateException("${entity::class.simpleName} not found: $id", entity::class.simpleName, id)
+        fun entityNotFound(
+            entityType: KClass<*>,
+            query: Pair<String, Any?>? = null,
+        ) = DomainStateException("${entityType.simpleName} not found: $query", entityType.simpleName)
 
         fun <T : EntityBase<*>> entityAlreadyExists(
             entity: T,
