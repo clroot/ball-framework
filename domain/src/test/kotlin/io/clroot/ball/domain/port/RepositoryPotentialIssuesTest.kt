@@ -16,7 +16,7 @@ class RepositoryPotentialIssuesTest {
         createdAt: LocalDateTime = LocalDateTime.now(),
         updatedAt: LocalDateTime = LocalDateTime.now(),
         deletedAt: LocalDateTime? = null,
-    ) : AggregateRoot<BinaryId>(id, createdAt, updatedAt, deletedAt)
+    ) : AggregateRoot<BinaryId>(id, createdAt, updatedAt, deletedAt, 0)
 
     interface ProductRepository : Repository<Product, BinaryId>
 

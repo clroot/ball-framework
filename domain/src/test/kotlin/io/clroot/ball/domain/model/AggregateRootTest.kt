@@ -39,7 +39,7 @@ class AggregateRootTest {
     // 테스트용 집합체 루트 구현
     private class TestAggregate(
         id: String,
-    ) : AggregateRoot<String>(id, LocalDateTime.now(), LocalDateTime.now(), null) {
+    ) : AggregateRoot<String>(id, LocalDateTime.now(), LocalDateTime.now(), null, 0) {
         private val items = mutableListOf<String>()
 
         fun addItem(itemName: String) {

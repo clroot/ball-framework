@@ -63,7 +63,12 @@ abstract class JpaRepositoryAdapter<T : EntityBase<ID>, ID : Any, J : EntityReco
 
     override fun delete(id: ID) {
         try {
-            springDataRepository.deleteById(id.toJpaId())
+            val existingRecord =
+                springDataRepository
+                    .findById(id.toJpaId())
+                    .orElseThrow()
+            existingRecord.delete()
+            springDataRepository.save(existingRecord)
         } catch (e: Exception) {
             throw DatabaseException("Failed to delete entity: $id", e)
         }

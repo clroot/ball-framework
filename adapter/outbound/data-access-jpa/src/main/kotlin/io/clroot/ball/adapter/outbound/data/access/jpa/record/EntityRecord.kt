@@ -4,6 +4,7 @@ import io.clroot.ball.adapter.outbound.data.access.core.mapping.DataModel
 import io.clroot.ball.domain.model.EntityBase
 import jakarta.persistence.MappedSuperclass
 import org.hibernate.annotations.CreationTimestamp
+import org.hibernate.annotations.SQLRestriction
 import org.hibernate.annotations.UpdateTimestamp
 import java.time.LocalDateTime
 
@@ -16,6 +17,7 @@ import java.time.LocalDateTime
  * @param ID 식별자 타입 (BinaryId, UserId, OrderId 등)
  */
 @MappedSuperclass
+@SQLRestriction("deleted_at IS NULL")
 abstract class EntityRecord<E : EntityBase<*>>(
     createdAt: LocalDateTime,
     updatedAt: LocalDateTime,
@@ -49,5 +51,11 @@ abstract class EntityRecord<E : EntityBase<*>>(
         // createdAt은 변경하지 않음
         this.updatedAt = entity.updatedAt
         this.deletedAt = entity.deletedAt
+    }
+
+    fun isDeleted(): Boolean = deletedAt != null
+
+    fun delete() {
+        this.deletedAt = LocalDateTime.now()
     }
 }

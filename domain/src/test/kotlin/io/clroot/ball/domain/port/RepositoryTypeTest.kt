@@ -11,7 +11,7 @@ class TestUser(
     createdAt: LocalDateTime = LocalDateTime.now(),
     updatedAt: LocalDateTime = LocalDateTime.now(),
     deletedAt: LocalDateTime? = null,
-) : AggregateRoot<BinaryId>(id, createdAt, updatedAt, deletedAt) {
+) : AggregateRoot<BinaryId>(id, createdAt, updatedAt, deletedAt, 0) {
     fun changeName(newName: String) {
         // 비즈니스 로직
     }
