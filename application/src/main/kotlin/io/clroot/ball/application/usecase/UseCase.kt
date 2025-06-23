@@ -33,9 +33,8 @@ abstract class UseCase<TCommand, TResult>(
 
     protected abstract fun executeInternal(command: TCommand): TResult
 
-    protected fun <T : AggregateRoot<*>> publishEvents(aggregate: T): T {
-        aggregate.domainEvents.forEach { applicationEventPublisher.publishEvent(it) }
-        aggregate.clearEvents()
-        return aggregate
+    protected fun <T : AggregateRoot<*>> T.publishEvents() {
+        this.domainEvents.forEach { applicationEventPublisher.publishEvent(it) }
+        this.clearEvents()
     }
 }
