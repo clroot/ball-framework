@@ -1,23 +1,32 @@
 package io.clroot.ball.domain.exception
 
 import io.clroot.ball.domain.model.EntityBase
-import kotlin.reflect.KClass
 
 class DomainStateException(
     message: String,
     val entityType: String? = null,
     val entityId: String? = null,
-    cause: Throwable? = null
+    cause: Throwable? = null,
 ) : DomainException(message, cause) {
-
     companion object {
-        fun entityNotFound(entityType: KClass<EntityBase<*>>, id: String) =
-            DomainStateException("${entityType.simpleName} not found: $id", entityType.simpleName, id)
+        fun <T : EntityBase<*>> entityNotFound(
+            entity: T,
+            id: String,
+        ) = DomainStateException("${entity::class.simpleName} not found: $id", entity::class.simpleName, id)
 
-        fun entityAlreadyExists(entityType: KClass<EntityBase<*>>, id: String) =
-            DomainStateException("${entityType.simpleName} already exists: $id", entityType.simpleName, id)
+        fun <T : EntityBase<*>> entityAlreadyExists(
+            entity: T,
+            id: String,
+        ) = DomainStateException("${entity::class.simpleName} already exists: $id", entity::class.simpleName, id)
 
-        fun invalidState(entityType: KClass<EntityBase<*>>, currentState: String, expectedState: String) =
-            DomainStateException("Invalid state transition: $currentState -> $expectedState", entityType.simpleName, null)
+        fun <T : EntityBase<*>> invalidState(
+            entity: T,
+            currentState: String,
+            expectedState: String,
+        ) = DomainStateException(
+            "Invalid state transition: $currentState -> $expectedState",
+            entity::class.simpleName,
+            null,
+        )
     }
 }
