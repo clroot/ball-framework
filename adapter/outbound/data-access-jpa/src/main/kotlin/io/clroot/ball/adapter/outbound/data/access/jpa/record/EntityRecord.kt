@@ -55,7 +55,7 @@ abstract class EntityRecord<E : EntityBase<*>>(
 
     fun isDeleted(): Boolean = deletedAt != null
 
-    fun delete() {
+    fun softDelete() {
         this.deletedAt = LocalDateTime.now()
     }
 }
