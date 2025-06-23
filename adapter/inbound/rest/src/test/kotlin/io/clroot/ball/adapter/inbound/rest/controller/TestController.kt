@@ -31,7 +31,7 @@ class TestController {
     fun testSuccess(): ResponseEntity<TestResponse> {
         val response =
             TestResponse(
-                id = BinaryId.new().toString(),
+                id = BinaryId.generate().toString(),
                 message = "Success response",
                 timestamp = LocalDateTime.now(),
             )
@@ -60,7 +60,7 @@ class TestController {
     fun testNullableFound(): ResponseEntity<TestResponse> {
         val response =
             TestResponse(
-                id = BinaryId.new().toString(),
+                id = BinaryId.generate().toString(),
                 message = "Found response",
                 timestamp = LocalDateTime.now(),
             )
@@ -83,8 +83,8 @@ class TestController {
     ): ResponseEntity<PagedTestResponse> {
         val items =
             listOf(
-                TestResponse(BinaryId.new().toString(), "Item 1", LocalDateTime.now()),
-                TestResponse(BinaryId.new().toString(), "Item 2", LocalDateTime.now()),
+                TestResponse(BinaryId.generate().toString(), "Item 1", LocalDateTime.now()),
+                TestResponse(BinaryId.generate().toString(), "Item 2", LocalDateTime.now()),
             )
 
         val pagedResponse =
@@ -112,7 +112,7 @@ class TestController {
         @PathVariable id: String,
     ): ResponseEntity<TestResponse> =
         try {
-            val binaryId = BinaryId.fromString(id)
+            val binaryId = BinaryId.of(id)
             val response =
                 TestResponse(
                     id = binaryId.toString(),
@@ -144,7 +144,7 @@ class TestController {
 
             val response =
                 TestResponse(
-                    id = BinaryId.new().toString(),
+                    id = BinaryId.generate().toString(),
                     message = "Created: ${request.name}",
                     timestamp = LocalDateTime.now(),
                 )

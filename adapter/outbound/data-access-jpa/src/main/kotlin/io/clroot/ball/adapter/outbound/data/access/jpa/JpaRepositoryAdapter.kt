@@ -8,6 +8,7 @@ import io.clroot.ball.domain.port.Repository
 import org.springframework.dao.DataIntegrityViolationException
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.repository.findByIdOrNull
+import org.springframework.transaction.annotation.Transactional
 
 /**
  * JPA Repository 어댑터 기본 클래스
@@ -45,12 +46,13 @@ abstract class JpaRepositoryAdapter<T : EntityBase<ID>, ID : Any, J : EntityReco
             throw DatabaseException("Failed to find all entities", e)
         }
 
+    @Transactional
     override fun save(entity: T): T {
         val existingRecord = springDataRepository.findByIdOrNull(entity.id.toJpaId())
         try {
             return if (existingRecord != null) {
                 existingRecord.update(entity)
-                springDataRepository.save(existingRecord).toDomain()
+                existingRecord.toDomain()
             } else {
                 springDataRepository.save(entity.toJpa()).toDomain()
             }

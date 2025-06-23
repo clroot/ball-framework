@@ -93,8 +93,8 @@ class GenericRepositoryTest {
                 override fun delete(id: BinaryId) {}
             }
 
-        val simpleEntity = SimpleEntity(BinaryId.new(), "test")
-        val order = Order(BinaryId.new(), "customer")
+        val simpleEntity = SimpleEntity(BinaryId.generate(), "test")
+        val order = Order(BinaryId.generate(), "customer")
 
         // EntityBase 타입으로 처리
         genericSave(simpleRepo, simpleEntity)
@@ -155,7 +155,7 @@ class TypeInferenceTest {
                 override fun delete(id: BinaryId) {}
             }
 
-        val id = BinaryId.new()
+        val id = BinaryId.generate()
 
         // 타입 추론이 제대로 작동하는지 테스트
         findAndProcess(orderRepo, id) { order ->

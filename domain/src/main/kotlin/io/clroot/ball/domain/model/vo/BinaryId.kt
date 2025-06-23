@@ -9,25 +9,22 @@ import io.clroot.ball.domain.model.ValueObject
  */
 @JvmInline
 value class BinaryId(
-    private val value: String
+    val value: String,
 ) : ValueObject {
-
     companion object {
         /**
          * 새로운 BinaryId 생성
          */
-        fun new(): BinaryId = BinaryId(ULIDSupport.generateULID())
-
-        fun generate(): BinaryId = new()
+        fun generate(): BinaryId = BinaryId(ULIDSupport.generateULID())
 
         /**
          * 문자열로부터 BinaryId 생성
-         * 
+         *
          * @param value ULID 문자열
          * @return BinaryId 인스턴스
          * @throws DomainValidationException 잘못된 ULID 형식인 경우
          */
-        fun fromString(value: String): BinaryId {
+        fun of(value: String): BinaryId {
             if (!ULIDSupport.isValidULID(value)) {
                 throw DomainValidationException("Invalid ULID format: $value")
             }
@@ -36,12 +33,12 @@ value class BinaryId(
 
         /**
          * 바이너리 데이터로부터 BinaryId 생성
-         * 
+         *
          * @param bytes ULID 바이너리 데이터
          * @return BinaryId 인스턴스
          * @throws DomainValidationException 잘못된 바이너리 데이터인 경우
          */
-        fun fromBytes(bytes: ByteArray): BinaryId {
+        fun of(bytes: ByteArray): BinaryId {
             try {
                 val ulid = ULIDSupport.bytesToULID(bytes)
                 return BinaryId(ulid)
@@ -54,7 +51,7 @@ value class BinaryId(
     /**
      * BinaryId를 바이너리 형태로 변환
      */
-    fun toBytes(): ByteArray = ULIDSupport.ulidToBytes(value)
+    val bytes: ByteArray get() = ULIDSupport.ulidToBytes(value)
 
     override fun toString(): String = value
 }

@@ -42,7 +42,7 @@ class TestUserRepositoryImpl : TestUserRepository {
 class RepositoryTypeUsageTest {
     fun testBasicUsage() {
         val repository: TestUserRepository = TestUserRepositoryImpl()
-        val user = TestUser(BinaryId.new(), "John")
+        val user = TestUser(BinaryId.generate(), "John")
 
         // 저장
         repository.save(user)
@@ -67,7 +67,7 @@ class RepositoryTypeUsageTest {
     // 이 부분에서 타입 추론 문제가 발생할 수 있음
     fun testGenericUsage() {
         val repository: TestUserRepository = TestUserRepositoryImpl()
-        val user = TestUser(BinaryId.new(), "John")
+        val user = TestUser(BinaryId.generate(), "John")
         repository.save(user)
 
         // 타입 추론 테스트

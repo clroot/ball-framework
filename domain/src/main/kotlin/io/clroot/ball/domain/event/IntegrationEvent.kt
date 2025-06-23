@@ -70,6 +70,6 @@ abstract class IntegrationEventBase(
     override val correlationId: String? = null,
     override val metadata: Map<String, Any> = emptyMap(),
 ) : IntegrationEvent {
-    override val id: String = BinaryId.new().toString()
+    override val id: String = BinaryId.generate().toString()
     override val occurredAt: LocalDateTime = LocalDateTime.now()
 }

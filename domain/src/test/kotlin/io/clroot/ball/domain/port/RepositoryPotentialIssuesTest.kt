@@ -66,7 +66,7 @@ class RepositoryPotentialIssuesTest {
                 override fun delete(id: BinaryId) {}
             }
 
-        val id = BinaryId.new()
+        val id = BinaryId.generate()
 
         // 타입 추론이 제대로 작동함
         val product: Product? = processRepository(productRepo, id)

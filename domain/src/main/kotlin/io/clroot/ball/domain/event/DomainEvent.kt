@@ -30,6 +30,6 @@ interface DomainEvent : Event {
  * 도메인 이벤트 기본 구현
  */
 abstract class DomainEventBase : DomainEvent {
-    override val id: String = BinaryId.new().toString()
+    override val id: String = BinaryId.generate().toString()
     override val occurredAt: LocalDateTime = LocalDateTime.now()
 }

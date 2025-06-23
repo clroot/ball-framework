@@ -4,6 +4,7 @@ import arrow.core.Either
 import arrow.core.flatMap
 import arrow.core.raise.either
 import io.clroot.ball.application.ApplicationError
+import io.clroot.ball.domain.exception.DomainException
 import io.clroot.ball.domain.slf4j
 import org.springframework.context.ApplicationEventPublisher
 import org.springframework.transaction.annotation.Transactional
@@ -34,6 +35,8 @@ abstract class UseCaseComposition<TCommand, TResult>(
             try {
                 val result = executeComposition(command).bind()
                 result
+            } catch (e: DomainException) {
+                raise(ApplicationError.DomainError(e))
             } catch (e: Exception) {
                 log.error("UseCase composition failed", e)
                 raise(ApplicationError.SystemError("UseCase composition failed: ${e.message}", e))
