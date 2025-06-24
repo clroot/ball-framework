@@ -67,6 +67,20 @@ internal object ULIDSupport {
         }
         return UUIDBridge.bytesToULID(bytes)
     }
+    
+    /**
+     * UUID를 ULID 문자열로 변환
+     */
+    fun uuidToULID(uuid: UUID): String {
+        return UUIDBridge.uuidToULID(uuid)
+    }
+    
+    /**
+     * ULID 문자열을 UUID로 변환
+     */
+    fun ulidToUUID(ulid: String): UUID {
+        return UUIDBridge.ulidToUUID(ulid)
+    }
 
     /**
      * Crockford Base32 인코딩/디코딩
@@ -135,7 +149,7 @@ internal object ULIDSupport {
             return uuidToULID(uuid)
         }
 
-        private fun ulidToUUID(ulid: String): UUID {
+        fun ulidToUUID(ulid: String): UUID {
             val timestamp = Base32Codec.decode(ulid.substring(0, 10)) // 48비트
             val random1 = Base32Codec.decode(ulid.substring(10, 18)) // 40비트
             val random2 = Base32Codec.decode(ulid.substring(18, 26)) // 40비트
@@ -146,7 +160,7 @@ internal object ULIDSupport {
             return UUID(mostSigBits, leastSigBits)
         }
 
-        private fun uuidToULID(uuid: UUID): String {
+        fun uuidToULID(uuid: UUID): String {
             val mostSigBits = uuid.mostSignificantBits
             val leastSigBits = uuid.leastSignificantBits
 
