@@ -6,9 +6,11 @@ import io.clroot.ball.adapter.outbound.data.access.jpa.record.AggregateRootRecor
 import io.clroot.ball.domain.model.AggregateRoot
 import io.clroot.ball.domain.model.vo.BinaryId
 import io.kotest.assertions.throwables.shouldThrow
+import io.kotest.core.spec.IsolationMode
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
+import io.mockk.clearAllMocks
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.slot
@@ -24,32 +26,39 @@ import java.util.*
 
 class JpaRepositoryAdapterTest :
     DescribeSpec({
+        isolationMode = IsolationMode.InstancePerLeaf
 
         describe("JpaRepositoryAdapter") {
+            beforeEach {
+                clearAllMocks()
+            }
 
             describe("UUID ID 사용 시") {
-                val springDataRepository = mockk<JpaRepository<TestBinaryJpaRecord, UUID>>()
-                val adapter = TestBinaryRepositoryAdapter(springDataRepository)
+                fun createTestData() = Triple(
+                    mockk<JpaRepository<TestBinaryJpaRecord, UUID>>(relaxed = true),
+                    BinaryId.generate(),
+                    LocalDateTime.now()
+                )
 
-                val testId = BinaryId.generate()
-                val testEntity =
-                    TestBinaryEntity(
-                        id = testId,
-                        name = "Test Entity",
-                        createdAt = LocalDateTime.now(),
-                        updatedAt = LocalDateTime.now(),
-                        version = 0,
-                    )
+                fun createTestEntity(testId: BinaryId, now: LocalDateTime) = TestBinaryEntity(
+                    id = testId,
+                    name = "Test Entity",
+                    createdAt = now,
+                    updatedAt = now,
+                    version = 0,
+                )
 
                 context("findById") {
                     it("같은 ID 값을 가진 엔티티를 찾을 수 있어야 한다") {
+                        val (springDataRepository, testId, now) = createTestData()
+                        val adapter = TestBinaryRepositoryAdapter(springDataRepository)
                         val byteArrayId = testId.uuid
                         val jpaRecord =
                             TestBinaryJpaRecord(
                                 id = byteArrayId,
                                 name = "Test Entity",
-                                createdAt = LocalDateTime.now(),
-                                updatedAt = LocalDateTime.now(),
+                                createdAt = now,
+                                updatedAt = now,
                                 version = 0,
                             )
 
@@ -59,7 +68,7 @@ class JpaRepositoryAdapterTest :
                         val result = adapter.findById(testId)
 
                         result shouldNotBe null
-                        result?.id shouldBe testId
+                        result?.id shouldBe BinaryId.of(byteArrayId)
                         result?.name shouldBe "Test Entity"
 
                         // UUID 내용이 같은지 확인
@@ -68,6 +77,8 @@ class JpaRepositoryAdapterTest :
                     }
 
                     it("UUID ID로 조회 시 null을 반환할 수 있어야 한다") {
+                        val (springDataRepository, testId, _) = createTestData()
+                        val adapter = TestBinaryRepositoryAdapter(springDataRepository)
                         every { springDataRepository.findById(any<UUID>()) } returns Optional.empty()
 
                         val result = adapter.findById(testId)
@@ -76,6 +87,8 @@ class JpaRepositoryAdapterTest :
                     }
 
                     it("예외 발생 시 DatabaseException으로 래핑되어야 한다") {
+                        val (springDataRepository, testId, _) = createTestData()
+                        val adapter = TestBinaryRepositoryAdapter(springDataRepository)
                         every { springDataRepository.findById(any<UUID>()) } throws RuntimeException("DB Error")
 
                         shouldThrow<DatabaseException> {
@@ -86,6 +99,9 @@ class JpaRepositoryAdapterTest :
 
                 context("save") {
                     it("새로운 엔티티를 저장할 때 UUID ID가 올바르게 변환되어야 한다") {
+                        val (springDataRepository, testId, now) = createTestData()
+                        val adapter = TestBinaryRepositoryAdapter(springDataRepository)
+                        val testEntity = createTestEntity(testId, now)
                         val byteArrayId = testId.uuid
                         val jpaRecord =
                             TestBinaryJpaRecord(
@@ -101,7 +117,7 @@ class JpaRepositoryAdapterTest :
 
                         val result = adapter.save(testEntity)
 
-                        result.id shouldBe testId
+                        result.id shouldBe BinaryId.of(byteArrayId)
                         result.name shouldBe "Test Entity"
 
                         verify {
@@ -115,6 +131,9 @@ class JpaRepositoryAdapterTest :
                     }
 
                     it("기존 엔티티 업데이트 시 UUID ID로 정확히 찾아야 한다") {
+                        val (springDataRepository, testId, now) = createTestData()
+                        val adapter = TestBinaryRepositoryAdapter(springDataRepository)
+                        val testEntity = createTestEntity(testId, now)
                         val byteArrayId = testId.uuid
                         val existingRecord =
                             TestBinaryJpaRecord(
@@ -140,6 +159,9 @@ class JpaRepositoryAdapterTest :
                     }
 
                     it("중복 엔티티 저장 시 DuplicateEntityException이 발생해야 한다") {
+                        val (springDataRepository, testId, now) = createTestData()
+                        val adapter = TestBinaryRepositoryAdapter(springDataRepository)
+                        val testEntity = createTestEntity(testId, now)
                         every { springDataRepository.findByIdOrNull(any<UUID>()) } returns null
                         every { springDataRepository.save(any<TestBinaryJpaRecord>()) } throws
                             DataIntegrityViolationException("Duplicate key")
@@ -152,25 +174,28 @@ class JpaRepositoryAdapterTest :
             }
 
             describe("일반 ID 타입 사용 시") {
-                val springDataRepository = mockk<JpaRepository<TestStringJpaRecord, String>>()
-                val adapter = TestStringRepositoryAdapter(springDataRepository)
+                fun createStringTestData() = Triple(
+                    mockk<JpaRepository<TestStringJpaRecord, String>>(relaxed = true),
+                    TestStringId("test-${UUID.randomUUID()}"),
+                    LocalDateTime.now()
+                )
 
-                val testId = TestStringId("test-123")
-                val testEntity =
-                    TestStringEntity(
-                        id = testId,
-                        name = "Test Entity",
-                        createdAt = LocalDateTime.now(),
-                        updatedAt = LocalDateTime.now(),
-                        version = 0,
-                    )
+                fun createStringTestEntity(testId: TestStringId, now: LocalDateTime) = TestStringEntity(
+                    id = testId,
+                    name = "Test Entity",
+                    createdAt = now,
+                    updatedAt = now,
+                    version = 0,
+                )
 
                 context("findAll") {
                     it("모든 엔티티를 조회할 수 있어야 한다") {
+                        val (springDataRepository, _, now) = createStringTestData()
+                        val adapter = TestStringRepositoryAdapter(springDataRepository)
                         val jpaRecords =
                             listOf(
-                                TestStringJpaRecord("1", "Entity 1", LocalDateTime.now(), LocalDateTime.now(), null, 0),
-                                TestStringJpaRecord("2", "Entity 2", LocalDateTime.now(), LocalDateTime.now(), null, 0),
+                                TestStringJpaRecord("1", "Entity 1", now, now, null, 0),
+                                TestStringJpaRecord("2", "Entity 2", now, now, null, 0),
                             )
 
                         every { springDataRepository.findAll() } returns jpaRecords
@@ -183,6 +208,8 @@ class JpaRepositoryAdapterTest :
                     }
 
                     it("예외 발생 시 DatabaseException으로 래핑되어야 한다") {
+                        val (springDataRepository, _, _) = createStringTestData()
+                        val adapter = TestStringRepositoryAdapter(springDataRepository)
                         every { springDataRepository.findAll() } throws RuntimeException("DB Error")
 
                         shouldThrow<DatabaseException> {
