@@ -8,10 +8,10 @@ open class DomainValidationException(
 ) : DomainException(message, cause) {
     companion object {
         fun invalidId(idValue: String) =
-            DomainValidationException("Invalid ID format: $idValue", "id", "INVALID_ID")
+            DomainValidationException("잘못된 ID 형식입니다: $idValue", "id", "INVALID_ID")
 
         fun specificationNotSatisfied(specification: String) =
-            DomainValidationException("Specification not satisfied: $specification", code = "SPEC_NOT_SATISFIED")
+            DomainValidationException("조건을 만족하지 않습니다: $specification", code = "SPEC_NOT_SATISFIED")
 
         fun fieldValidation(field: String, message: String) =
             DomainValidationException(message, field, "FIELD_VALIDATION")

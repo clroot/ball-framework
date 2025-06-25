@@ -14,10 +14,12 @@ import jakarta.servlet.http.HttpServletRequest
 import org.slf4j.LoggerFactory
 import org.slf4j.MDC
 import org.springframework.core.env.Environment
+import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.MethodArgumentNotValidException
 import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.bind.annotation.RestControllerAdvice
+import org.springframework.web.servlet.resource.NoResourceFoundException
 import java.util.*
 
 @RestControllerAdvice
@@ -44,6 +46,7 @@ class GlobalExceptionHandler(
                     when (e.code) {
                         else -> ErrorCodes.VALIDATION_FAILED to 400
                     }
+
                 is BusinessRuleException -> ErrorCodes.BUSINESS_RULE_VIOLATION to 400
                 is ExternalSystemException -> ErrorCodes.EXTERNAL_SYSTEM_ERROR to 500
                 else -> ErrorCodes.VALIDATION_FAILED to 400
@@ -52,7 +55,7 @@ class GlobalExceptionHandler(
         val errorResponse =
             ErrorResponse(
                 code = code,
-                message = e.message ?: "Domain rule violation",
+                message = e.message ?: "도메인 규칙 위반",
                 traceId = getTraceId(),
                 debug = createDebugInfo(e, request),
             )
@@ -80,7 +83,7 @@ class GlobalExceptionHandler(
         val errorResponse =
             ErrorResponse(
                 code = code,
-                message = e.message ?: "Database error",
+                message = e.message ?: "데이터베이스 오류",
                 traceId = getTraceId(),
                 debug = createDebugInfo(e, request),
             )
@@ -98,18 +101,38 @@ class GlobalExceptionHandler(
     ): ResponseEntity<ErrorResponse> {
         logger.warn("Validation exception: ${e.message}")
 
-        val fieldErrors = e.bindingResult.fieldErrors.associate { it.field to (it.defaultMessage ?: "Invalid value") }
+        val fieldErrors = e.bindingResult.fieldErrors.associate { it.field to (it.defaultMessage ?: "유효하지 않은 값") }
 
         val errorResponse =
             ErrorResponse(
                 code = ErrorCodes.VALIDATION_FAILED,
-                message = "Request validation failed",
+                message = "요청 유효성 검사에 실패했습니다",
                 traceId = getTraceId(),
                 details = fieldErrors,
                 debug = createDebugInfo(e, request),
             )
 
         return ResponseEntity.badRequest().body(errorResponse)
+    }
+
+    @ExceptionHandler(NoResourceFoundException::class)
+    fun handleResourceNotFoundException(
+        e: NoResourceFoundException,
+        request: HttpServletRequest,
+    ): ResponseEntity<ErrorResponse> {
+        logger.warn("Resource not found exception: ${e.message}", e)
+
+        val errorResponse =
+            ErrorResponse(
+                code = ErrorCodes.NOT_FOUND,
+                message = "요청한 경로를 찾을 수 없습니다",
+                traceId = getTraceId(),
+                debug = createDebugInfo(e, request),
+            )
+
+        return ResponseEntity
+            .status(HttpStatus.NOT_FOUND)
+            .body(errorResponse)
     }
 
     /**
@@ -123,14 +146,31 @@ class GlobalExceptionHandler(
         logger.error("Unexpected exception: ${e.message}", e)
 
         val errorResponse =
-            ErrorResponse(
-                code = ErrorCodes.INTERNAL_ERROR,
-                message = "Internal server error",
-                traceId = getTraceId(),
-                debug = createDebugInfo(e, request),
-            )
+            when (e.javaClass.simpleName) {
+                "AuthorizationDeniedException" ->
+                    return ResponseEntity
+                        .status(HttpStatus.FORBIDDEN)
+                        .body(
+                            ErrorResponse(
+                                code = ErrorCodes.BUSINESS_RULE_VIOLATION,
+                                message = "접근할 수 없습니다",
+                                traceId = getTraceId(),
+                                debug = createDebugInfo(e, request),
+                            ),
+                        )
 
-        return ResponseEntity.status(500).body(errorResponse)
+                else ->
+                    ErrorResponse(
+                        code = ErrorCodes.INTERNAL_ERROR,
+                        message = "내부 서버 오류",
+                        traceId = getTraceId(),
+                        debug = createDebugInfo(e, request),
+                    )
+            }
+
+        return ResponseEntity
+            .status(HttpStatus.INTERNAL_SERVER_ERROR)
+            .body(errorResponse)
     }
 
     /**

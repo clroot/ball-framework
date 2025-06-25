@@ -15,7 +15,7 @@ package io.clroot.ball.adapter.outbound.data.access.core.exception
  *         val savedUser = userJpaRepository.save(user.toJpaEntity())
  *         savedUser.toDomainEntity()
  *     } catch (e: DataIntegrityViolationException) {
- *         throw DuplicateEntityException("Entity already exists")
+ *         throw DuplicateEntityException("이미 존재하는 엔티티입니다")
  *     }
  * }
  * ```

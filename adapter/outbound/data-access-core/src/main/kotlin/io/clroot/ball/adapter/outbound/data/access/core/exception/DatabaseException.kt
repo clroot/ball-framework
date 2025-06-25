@@ -14,7 +14,7 @@ package io.clroot.ball.adapter.outbound.data.access.core.exception
  * try {
  *     entityManager.persist(entity)
  * } catch (e: SQLException) {
- *     throw DatabaseException("Database error occurred", e)
+ *     throw DatabaseException("데이터베이스 오류가 발생했습니다", e)
  * }
  * ```
  */
