@@ -16,7 +16,7 @@ allprojects {
         plugin("maven-publish")
     }
     group = "io.clroot.ball"
-    version = "2.0.0-20250625.2-SNAPSHOT"
+    version = "2.0.0-20250626.1-SNAPSHOT"
 
     val nexusUsername =
         System.getenv("NEXUS_REPO_USERNAME")
@@ -32,18 +32,18 @@ allprojects {
     repositories {
         mavenCentral()
         maven {
-            url = uri("https://nexus.eduvil.co.kr/repository/maven-snapshots/")
+            url = uri("https://nexus.clroot.io/repository/maven-snapshots/")
         }
         maven {
-            url = uri("https://nexus.eduvil.co.kr/repository/maven-releases/")
+            url = uri("https://nexus.clroot.io/repository/maven-releases/")
         }
     }
 
     publishing {
         repositories {
             maven {
-                val releasesRepoUrl = uri("https://nexus.eduvil.co.kr/repository/maven-releases/")
-                val snapshotsRepoUrl = uri("https://nexus.eduvil.co.kr/repository/maven-snapshots/")
+                val releasesRepoUrl = uri("https://nexus.clroot.io/repository/maven-releases/")
+                val snapshotsRepoUrl = uri("https://nexus.clroot.io/repository/maven-snapshots/")
                 credentials {
                     username = nexusUsername
                     password = nexusPassword

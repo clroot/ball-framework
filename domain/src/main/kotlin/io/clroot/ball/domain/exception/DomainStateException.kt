@@ -30,4 +30,6 @@ class DomainStateException(
             null,
         )
     }
+
+    override fun toString(): String = "DomainStateException(message='$message', entityType='$entityType', entityId='$entityId')"
 }
