@@ -23,7 +23,7 @@ dependencies {
     implementation("com.zaxxer:HikariCP")
 
     // Kotlin JDSL
-    implementation("com.linecorp.kotlin-jdsl:jpql-dsl:3.3.0")
-    implementation("com.linecorp.kotlin-jdsl:jpql-render:3.3.0")
-    implementation("com.linecorp.kotlin-jdsl:spring-data-jpa-support:3.3.0")
+    api("com.linecorp.kotlin-jdsl:jpql-dsl:3.3.0")
+    api("com.linecorp.kotlin-jdsl:jpql-render:3.3.0")
+    api("com.linecorp.kotlin-jdsl:spring-data-jpa-support:3.3.0")
 }

@@ -13,6 +13,10 @@ import java.util.*
 value class BinaryId(
     val value: String,
 ) : ValueObject {
+    init {
+        require(ULIDSupport.isValidULID(value)) { "Invalid ULID format: $value" }
+    }
+
     companion object {
         /**
          * 새로운 BinaryId 생성
@@ -54,15 +58,15 @@ value class BinaryId(
 
         /**
          * UUID로부터 BinaryId 생성
-         * 
+         *
          * 주의: 이 메서드는 UUID의 바이트를 ULID 형식으로 인코딩합니다.
          * ULID와 UUID는 서로 다른 형식이므로:
          * - BinaryId.of(uuid).uuid는 원본 uuid와 다를 수 있습니다
          * - 동일한 UUID는 항상 동일한 BinaryId를 생성합니다
          * - BinaryId의 주 목적은 ULID이며, UUID 지원은 제한적입니다
-         * 
+         *
          * UUID의 완벽한 보존이 필요한 경우 별도의 UUID 필드를 사용하세요.
-         * 
+         *
          * @param uuid 변환할 UUID
          * @return BinaryId 인스턴스
          */
@@ -82,7 +86,7 @@ value class BinaryId(
 
     /**
      * BinaryId를 UUID로 변환
-     * 
+     *
      * BinaryId의 바이트 표현을 UUID로 변환합니다.
      */
     val uuid: UUID
