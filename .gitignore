@@ -43,3 +43,5 @@ bin/
 .env
 .claude
 CLAUDE.md
+
+local.properties

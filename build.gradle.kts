@@ -1,4 +1,5 @@
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import java.util.Properties
 
 plugins {
     kotlin("jvm") version "2.1.20"
@@ -11,6 +12,12 @@ plugins {
     id("maven-publish")
 }
 
+val localProperties = Properties()
+val localPropertiesFile = rootProject.file("local.properties")
+if (localPropertiesFile.exists()) {
+    localPropertiesFile.inputStream().use { localProperties.load(it) }
+}
+
 allprojects {
     apply {
         plugin("maven-publish")
@@ -18,16 +25,8 @@ allprojects {
     group = "io.clroot.ball"
     version = "2.0.0-20250630.8-SNAPSHOT"
 
-    val nexusUsername =
-        System.getenv("NEXUS_REPO_USERNAME")
-            ?: throw GradleException(
-                "NEXUS_REPO_USERNAME environment variable must be set",
-            )
-    val nexusPassword =
-        System.getenv("NEXUS_REPO_PASSWORD")
-            ?: throw GradleException(
-                "NEXUS_REPO_PASSWORD environment variable must be set",
-            )
+    val nexusUsername = localProperties.getProperty("nexus.username")
+    val nexusPassword = localProperties.getProperty("nexus.password")
 
     repositories {
         mavenCentral()
