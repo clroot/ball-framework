@@ -91,4 +91,8 @@ abstract class JdslSearchAdapter<T, R, E : Any>(
                 }
             }.toList()
             .toTypedArray()
+
+    protected fun String.wrapSingleQuotes(): String = "'$this'"
+
+    protected fun String.wrapDoubleQuotes(): String = "\"$this\""
 }
