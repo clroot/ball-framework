@@ -17,13 +17,14 @@ dependencies {
     api("org.springframework.boot:spring-boot-starter-data-jpa")
 
     // Hibernate
-    implementation("org.hibernate.orm:hibernate-core")
+    api("org.hibernate.orm:hibernate-core")
+    api("io.hypersistence:hypersistence-utils-hibernate-63:3.10.1")
 
     // Connection pooling
-    implementation("com.zaxxer:HikariCP")
+    api("com.zaxxer:HikariCP")
 
     // Kotlin JDSL
-    api("com.linecorp.kotlin-jdsl:jpql-dsl:3.3.0")
-    api("com.linecorp.kotlin-jdsl:jpql-render:3.3.0")
-    api("com.linecorp.kotlin-jdsl:spring-data-jpa-support:3.3.0")
+    api("com.linecorp.kotlin-jdsl:jpql-dsl:3.5.5")
+    api("com.linecorp.kotlin-jdsl:jpql-render:3.5.5")
+    api("com.linecorp.kotlin-jdsl:spring-data-jpa-support:3.5.5")
 }

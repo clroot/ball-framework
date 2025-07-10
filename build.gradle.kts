@@ -1,5 +1,5 @@
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
-import java.util.Properties
+import java.util.*
 
 plugins {
     kotlin("jvm") version "2.1.20"
@@ -23,7 +23,7 @@ allprojects {
         plugin("maven-publish")
     }
     group = "io.clroot.ball"
-    version = "2.0.0-20250630.8-SNAPSHOT"
+    version = "2.0.0-20250710.1-SNAPSHOT"
 
     val nexusUsername = localProperties.getProperty("nexus.username")
     val nexusPassword = localProperties.getProperty("nexus.password")
