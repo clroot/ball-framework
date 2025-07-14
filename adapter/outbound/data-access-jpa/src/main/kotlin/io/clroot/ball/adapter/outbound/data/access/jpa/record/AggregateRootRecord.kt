@@ -19,9 +19,8 @@ import java.time.LocalDateTime
 abstract class AggregateRootRecord<E : AggregateRoot<*>>(
     createdAt: LocalDateTime,
     updatedAt: LocalDateTime,
-    deletedAt: LocalDateTime?,
     version: Long,
-) : EntityRecord<E>(createdAt, updatedAt, deletedAt) {
+) : EntityRecord<E>(createdAt, updatedAt) {
     /**
      * 낙관적 잠금을 위한 버전 필드
      */
@@ -39,7 +38,6 @@ abstract class AggregateRootRecord<E : AggregateRoot<*>>(
     constructor(entity: AggregateRoot<*>, version: Long = 0L) : this(
         createdAt = entity.createdAt,
         updatedAt = entity.updatedAt,
-        deletedAt = entity.deletedAt,
         version = version,
     )
 

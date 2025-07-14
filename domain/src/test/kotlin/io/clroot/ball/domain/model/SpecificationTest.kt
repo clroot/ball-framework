@@ -18,7 +18,7 @@ class SpecificationTest :
             val age: Int,
             val email: String,
             val isActive: Boolean = true,
-        ) : EntityBase<String>(id, LocalDateTime.now(), LocalDateTime.now(), null)
+        ) : EntityBase<String>(id, LocalDateTime.now(), LocalDateTime.now())
 
         // 테스트용 명세 구현
         class AdultUserSpecification : Specification<User> {

@@ -14,7 +14,7 @@ class RepositoryTest :
         // Create a concrete implementation of EntityBase for testing
         class TestEntity(
             id: String,
-        ) : EntityBase<String>(id, LocalDateTime.now(), LocalDateTime.now(), null)
+        ) : EntityBase<String>(id, LocalDateTime.now(), LocalDateTime.now())
 
         // Create a mock repository
         val repository = mockk<Repository<TestEntity, String>>()

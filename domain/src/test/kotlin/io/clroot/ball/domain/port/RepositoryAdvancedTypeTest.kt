@@ -32,8 +32,7 @@ class Order(
     private var status: OrderStatus = OrderStatus.PENDING,
     createdAt: LocalDateTime = LocalDateTime.now(),
     updatedAt: LocalDateTime = LocalDateTime.now(),
-    deletedAt: LocalDateTime? = null,
-) : AggregateRoot<BinaryId>(id, createdAt, updatedAt, deletedAt, 0) {
+) : AggregateRoot<BinaryId>(id, createdAt, updatedAt, 0) {
     enum class OrderStatus { PENDING, CONFIRMED, SHIPPED, DELIVERED }
 
     fun confirm() {

@@ -6,7 +6,6 @@ abstract class EntityBase<ID : Any>(
     open val id: ID,
     val createdAt: LocalDateTime = LocalDateTime.now(),
     val updatedAt: LocalDateTime = LocalDateTime.now(),
-    val deletedAt: LocalDateTime? = null,
 ) {
     override fun equals(other: Any?): Boolean {
         if (this === other) return true

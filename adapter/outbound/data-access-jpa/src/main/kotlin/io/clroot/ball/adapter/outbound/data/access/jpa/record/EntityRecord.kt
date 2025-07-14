@@ -21,7 +21,6 @@ import java.time.LocalDateTime
 abstract class EntityRecord<E : EntityBase<*>>(
     createdAt: LocalDateTime,
     updatedAt: LocalDateTime,
-    deletedAt: LocalDateTime?,
 ) : DataModel<E> {
     @CreationTimestamp
     var createdAt: LocalDateTime = createdAt
@@ -31,16 +30,12 @@ abstract class EntityRecord<E : EntityBase<*>>(
     var updatedAt: LocalDateTime = updatedAt
         protected set
 
-    var deletedAt: LocalDateTime? = deletedAt
-        protected set
-
     /**
      * 도메인 엔티티로부터 생성하는 생성자
      */
     constructor(entity: EntityBase<*>) : this(
         createdAt = entity.createdAt,
         updatedAt = entity.updatedAt,
-        deletedAt = entity.deletedAt,
     )
 
     /**
@@ -50,12 +45,5 @@ abstract class EntityRecord<E : EntityBase<*>>(
     protected fun updateCommonFields(entity: EntityBase<*>) {
         // createdAt은 변경하지 않음
         this.updatedAt = entity.updatedAt
-        this.deletedAt = entity.deletedAt
-    }
-
-    fun isDeleted(): Boolean = deletedAt != null
-
-    fun softDelete() {
-        this.deletedAt = LocalDateTime.now()
     }
 }

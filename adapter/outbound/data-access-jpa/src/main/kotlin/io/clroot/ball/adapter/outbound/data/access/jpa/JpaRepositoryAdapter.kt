@@ -63,20 +63,7 @@ abstract class JpaRepositoryAdapter<T : EntityBase<ID>, ID : Any, J : EntityReco
         }
     }
 
-    protected fun softDelete(id: ID) {
-        try {
-            val existingRecord =
-                springDataRepository
-                    .findById(id.toJpaId())
-                    .orElseThrow()
-            existingRecord.softDelete()
-            springDataRepository.save(existingRecord)
-        } catch (e: Exception) {
-            throw DatabaseException("Failed to delete entity: $id", e)
-        }
-    }
-
-    protected fun hardDelete(id: ID) {
+    override fun delete(id: ID) {
         try {
             springDataRepository.deleteById(id.toJpaId())
         } catch (e: Exception) {

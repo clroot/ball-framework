@@ -10,11 +10,7 @@ import io.kotest.core.spec.IsolationMode
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
-import io.mockk.clearAllMocks
-import io.mockk.every
-import io.mockk.mockk
-import io.mockk.slot
-import io.mockk.verify
+import io.mockk.*
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
 import jakarta.persistence.Id
@@ -34,13 +30,17 @@ class JpaRepositoryAdapterTest :
             }
 
             describe("UUID ID 사용 시") {
-                fun createTestData() = Triple(
-                    mockk<JpaRepository<TestBinaryJpaRecord, UUID>>(relaxed = true),
-                    BinaryId.generate(),
-                    LocalDateTime.now()
-                )
+                fun createTestData() =
+                    Triple(
+                        mockk<JpaRepository<TestBinaryJpaRecord, UUID>>(relaxed = true),
+                        BinaryId.generate(),
+                        LocalDateTime.now(),
+                    )
 
-                fun createTestEntity(testId: BinaryId, now: LocalDateTime) = TestBinaryEntity(
+                fun createTestEntity(
+                    testId: BinaryId,
+                    now: LocalDateTime,
+                ) = TestBinaryEntity(
                     id = testId,
                     name = "Test Entity",
                     createdAt = now,
@@ -174,13 +174,17 @@ class JpaRepositoryAdapterTest :
             }
 
             describe("일반 ID 타입 사용 시") {
-                fun createStringTestData() = Triple(
-                    mockk<JpaRepository<TestStringJpaRecord, String>>(relaxed = true),
-                    TestStringId("test-${UUID.randomUUID()}"),
-                    LocalDateTime.now()
-                )
+                fun createStringTestData() =
+                    Triple(
+                        mockk<JpaRepository<TestStringJpaRecord, String>>(relaxed = true),
+                        TestStringId("test-${UUID.randomUUID()}"),
+                        LocalDateTime.now(),
+                    )
 
-                fun createStringTestEntity(testId: TestStringId, now: LocalDateTime) = TestStringEntity(
+                fun createStringTestEntity(
+                    testId: TestStringId,
+                    now: LocalDateTime,
+                ) = TestStringEntity(
                     id = testId,
                     name = "Test Entity",
                     createdAt = now,
@@ -194,8 +198,8 @@ class JpaRepositoryAdapterTest :
                         val adapter = TestStringRepositoryAdapter(springDataRepository)
                         val jpaRecords =
                             listOf(
-                                TestStringJpaRecord("1", "Entity 1", now, now, null, 0),
-                                TestStringJpaRecord("2", "Entity 2", now, now, null, 0),
+                                TestStringJpaRecord("1", "Entity 1", now, now, 0),
+                                TestStringJpaRecord("2", "Entity 2", now, now, 0),
                             )
 
                         every { springDataRepository.findAll() } returns jpaRecords
@@ -227,10 +231,9 @@ class TestBinaryEntity(
     val name: String,
     createdAt: LocalDateTime,
     updatedAt: LocalDateTime,
-    deletedAt: LocalDateTime? = null,
     version: Long,
-) : AggregateRoot<BinaryId>(id, createdAt, updatedAt, deletedAt, version) {
-    fun copy(name: String = this.name) = TestBinaryEntity(id, name, createdAt, updatedAt, deletedAt, version)
+) : AggregateRoot<BinaryId>(id, createdAt, updatedAt, version) {
+    fun copy(name: String = this.name) = TestBinaryEntity(id, name, createdAt, updatedAt, version)
 }
 
 @Entity
@@ -242,9 +245,8 @@ class TestBinaryJpaRecord(
     var name: String,
     createdAt: LocalDateTime,
     updatedAt: LocalDateTime,
-    deletedAt: LocalDateTime? = null,
     version: Long,
-) : AggregateRootRecord<TestBinaryEntity>(createdAt, updatedAt, deletedAt, version) {
+) : AggregateRootRecord<TestBinaryEntity>(createdAt, updatedAt, version) {
     override fun update(entity: TestBinaryEntity) {
         this.name = entity.name
         updateCommonFields(entity)
@@ -262,9 +264,8 @@ class TestStringEntity(
     val name: String,
     createdAt: LocalDateTime,
     updatedAt: LocalDateTime,
-    deletedAt: LocalDateTime? = null,
     version: Long,
-) : AggregateRoot<TestStringId>(id, createdAt, updatedAt, deletedAt, version)
+) : AggregateRoot<TestStringId>(id, createdAt, updatedAt, version)
 
 @Entity
 class TestStringJpaRecord(
@@ -275,9 +276,8 @@ class TestStringJpaRecord(
     var name: String,
     createdAt: LocalDateTime,
     updatedAt: LocalDateTime,
-    deletedAt: LocalDateTime? = null,
     version: Long,
-) : AggregateRootRecord<TestStringEntity>(createdAt, updatedAt, deletedAt, version) {
+) : AggregateRootRecord<TestStringEntity>(createdAt, updatedAt, version) {
     override fun update(entity: TestStringEntity) {
         this.name = entity.name
         updateCommonFields(entity)
@@ -298,7 +298,6 @@ class TestBinaryRepositoryAdapter(
             name = this.name,
             createdAt = this.createdAt,
             updatedAt = this.updatedAt,
-            deletedAt = this.deletedAt,
             version = this.version,
         )
 
@@ -308,13 +307,8 @@ class TestBinaryRepositoryAdapter(
             name = this.name,
             createdAt = this.createdAt,
             updatedAt = this.updatedAt,
-            deletedAt = this.deletedAt,
             version = this.version,
         )
-
-    override fun delete(id: BinaryId) {
-        hardDelete(id)
-    }
 }
 
 class TestStringRepositoryAdapter(
@@ -330,7 +324,6 @@ class TestStringRepositoryAdapter(
             name = this.name,
             createdAt = this.createdAt,
             updatedAt = this.updatedAt,
-            deletedAt = this.deletedAt,
             version = this.version,
         )
 
@@ -340,11 +333,6 @@ class TestStringRepositoryAdapter(
             name = this.name,
             createdAt = this.createdAt,
             updatedAt = this.updatedAt,
-            deletedAt = this.deletedAt,
             version = this.version,
         )
-
-    override fun delete(id: TestStringId) {
-        hardDelete(id)
-    }
 }
