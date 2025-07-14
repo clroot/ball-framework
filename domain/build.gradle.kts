@@ -1,4 +1,5 @@
 dependencies {
+    implementation(project(":shared:jackson"))
     testImplementation("com.aallam.ulid:ulid-kotlin:1.3.0")
 }
 
