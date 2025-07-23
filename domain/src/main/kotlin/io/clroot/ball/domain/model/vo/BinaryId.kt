@@ -10,13 +10,9 @@ import java.util.*
  * 도메인 엔티티의 식별자로 사용되며, 타임스탬프 순서를 보장하고 전역적으로 고유함
  */
 @JvmInline
-value class BinaryId(
+value class BinaryId private constructor(
     val value: String,
 ) : ValueObject {
-    init {
-        require(ULIDSupport.isValidULID(value)) { "Invalid ULID format: $value" }
-    }
-
     companion object {
         /**
          * 새로운 BinaryId 생성
