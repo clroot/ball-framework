@@ -23,7 +23,7 @@ allprojects {
         plugin("maven-publish")
     }
     group = "io.clroot.ball"
-    version = "2.0.0-20250723.1-SNAPSHOT"
+    version = "2.0.0-20250723.3-SNAPSHOT"
 
     val nexusUsername = localProperties.getProperty("nexus.username")
     val nexusPassword = localProperties.getProperty("nexus.password")
@@ -99,7 +99,7 @@ subprojects {
         testApi("io.kotest:kotest-assertions-core:5.9.1")
         testApi("io.kotest:kotest-assertions-core:5.9.1")
 
-        testApi("io.mockk:mockk:1.13.10")
+        testApi("io.mockk:mockk:1.14.5")
         testApi(kotlin("test"))
     }
 

@@ -3,6 +3,8 @@ package io.clroot.ball.adapter.inbound.rest.extension
 import arrow.core.Either
 import io.clroot.ball.adapter.outbound.data.access.core.exception.EntityNotFoundException
 import io.clroot.ball.application.ApplicationError
+import org.springframework.http.HttpStatus
+import org.springframework.http.HttpStatusCode
 import org.springframework.http.ResponseEntity
 
 /**
@@ -12,8 +14,12 @@ import org.springframework.http.ResponseEntity
  * HTTP 응답으로 변환할 때 사용합니다.
  */
 
-fun <T> Either<ApplicationError, T>.toResponseEntity(): ResponseEntity<T> =
-    fold({ error -> throw error.toException() }, { data -> ResponseEntity.ok(data) })
+fun <T> Either<ApplicationError, T>.toResponseEntity(status: HttpStatusCode = HttpStatus.OK): ResponseEntity<T> =
+    fold({ error -> throw error.toException() }, { data ->
+        ResponseEntity
+            .status(status)
+            .body(data)
+    })
 
 fun <T> Either<ApplicationError, T?>.toResponseEntityWithNull(): ResponseEntity<T> =
     fold({ error -> throw error.toException() }, { data ->
