@@ -9,3 +9,7 @@ import java.time.LocalDateTime
 inline fun <reified T> T.slf4j(): Logger = LoggerFactory.getLogger(T::class.java)
 
 fun LocalDateTime.toLocalDateTime() = this.atZone(java.time.ZoneId.systemDefault()).toLocalDateTime()
+
+fun String.wrapSingleQuotes(): String = "'$this'"
+
+fun String.wrapDoubleQuotes(): String = "\"$this\""
