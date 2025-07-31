@@ -12,6 +12,7 @@ import org.springframework.boot.autoconfigure.jackson.JacksonAutoConfiguration
 import org.springframework.boot.autoconfigure.web.servlet.WebMvcAutoConfiguration
 import org.springframework.context.annotation.Bean
 import org.springframework.core.env.Environment
+import org.springframework.data.web.config.EnableSpringDataWebSupport
 import org.springframework.web.servlet.DispatcherServlet
 
 /**
@@ -27,6 +28,7 @@ import org.springframework.web.servlet.DispatcherServlet
     havingValue = "true",
     matchIfMissing = true,
 )
+@EnableSpringDataWebSupport(pageSerializationMode = EnableSpringDataWebSupport.PageSerializationMode.VIA_DTO)
 class RestAdapterAutoConfiguration {
     @Bean
     @ConditionalOnMissingBean
@@ -37,6 +39,5 @@ class RestAdapterAutoConfiguration {
     fun requestLoggingFilter(): RequestLoggingFilter = RequestLoggingFilter()
 
     @Bean
-    fun ballJacksonCustomizer(): Jackson2ObjectMapperBuilderCustomizer =
-        BallJackson2ObjectMapperBuilderCustomizer()
+    fun ballJacksonCustomizer(): Jackson2ObjectMapperBuilderCustomizer = BallJackson2ObjectMapperBuilderCustomizer()
 }
