@@ -38,7 +38,7 @@ class GlobalExceptionHandler(
         e: DomainException,
         request: HttpServletRequest,
     ): ResponseEntity<ErrorResponse> {
-        logger.warn("Domain exception: ${e.message}", e)
+        logger.warn("Domain exception: ${e.message}")
 
         val (code, status) =
             when (e) {
