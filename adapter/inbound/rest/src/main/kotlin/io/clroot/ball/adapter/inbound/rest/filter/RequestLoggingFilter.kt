@@ -47,11 +47,10 @@ class RequestLoggingFilter : OncePerRequestFilter() {
         val cachedResponse = ContentCachingResponseWrapper(response)
         
         try {
-            logRequest(cachedRequest)
             filterChain.doFilter(cachedRequest, cachedResponse)
         } finally {
             val executionTime = System.currentTimeMillis() - startTime
-            logResponse(cachedResponse, executionTime)
+            logRequestAndResponse(cachedRequest, cachedResponse, executionTime)
             cachedResponse.copyBodyToResponse()
             MDC.remove(TRACE_ID_MDC_KEY)
         }
@@ -66,35 +65,61 @@ class RequestLoggingFilter : OncePerRequestFilter() {
         }
     }
     
-    private fun logRequest(request: ContentCachingRequestWrapper) {
+    private fun logRequestAndResponse(
+        request: ContentCachingRequestWrapper,
+        response: ContentCachingResponseWrapper,
+        executionTime: Long
+    ) {
         val uri = request.requestURI
         val queryString = request.queryString
         val method = request.method
-        val contentType = request.contentType ?: ""
-        val userAgent = request.getHeader("User-Agent") ?: ""
         val fullUrl = if (queryString.isNullOrBlank()) uri else "$uri?$queryString"
-        
-        log.info("Request: {} {} (Content-Type: {}, User-Agent: {})", method, fullUrl, contentType, userAgent)
-        
-        if (shouldLogRequestBody(contentType)) {
-            val content = getRequestContent(request)
-            if (content.isNotBlank()) {
-                log.debug("Request body: {}", content)
-            }
-        }
-    }
-    
-    private fun logResponse(response: ContentCachingResponseWrapper, executionTime: Long) {
         val status = response.status
-        val contentType = response.contentType ?: ""
         
-        log.info("Response: {} ({}ms, Content-Type: {})", status, executionTime, contentType)
+        // 기본 정보 로깅 (한 줄로)
+        log.info(
+            "HTTP {} {} -> {} ({}ms)",
+            method,
+            fullUrl,
+            status,
+            executionTime
+        )
         
-        if (shouldLogResponseBody(contentType)) {
-            val content = getResponseContent(response)
-            if (content.isNotBlank()) {
-                log.debug("Response body: {}", content)
+        // 상세 정보는 debug 레벨로
+        if (log.isDebugEnabled) {
+            val requestContentType = request.contentType ?: ""
+            val responseContentType = response.contentType ?: ""
+            val userAgent = request.getHeader("User-Agent") ?: ""
+            
+            val logDetails = buildString {
+                appendLine("HTTP Transaction Details:")
+                appendLine("  Request:")
+                appendLine("    Method: $method")
+                appendLine("    URL: $fullUrl")
+                appendLine("    Content-Type: $requestContentType")
+                appendLine("    User-Agent: $userAgent")
+                
+                if (shouldLogRequestBody(requestContentType)) {
+                    val requestContent = getRequestContent(request)
+                    if (requestContent.isNotBlank()) {
+                        appendLine("    Body: $requestContent")
+                    }
+                }
+                
+                appendLine("  Response:")
+                appendLine("    Status: $status")
+                appendLine("    Content-Type: $responseContentType")
+                appendLine("    Execution Time: ${executionTime}ms")
+                
+                if (shouldLogResponseBody(responseContentType)) {
+                    val responseContent = getResponseContent(response)
+                    if (responseContent.isNotBlank()) {
+                        appendLine("    Body: $responseContent")
+                    }
+                }
             }
+            
+            log.debug(logDetails)
         }
     }
     
@@ -119,7 +144,7 @@ class RequestLoggingFilter : OncePerRequestFilter() {
         return try {
             val contentString = String(content, Charsets.UTF_8)
             if (contentString.length > MAX_PAYLOAD_LENGTH) {
-                contentString.substring(0, MAX_PAYLOAD_LENGTH) + "... (truncated)"
+                contentString.take(MAX_PAYLOAD_LENGTH) + "... (truncated)"
             } else {
                 contentString
             }
@@ -135,7 +160,7 @@ class RequestLoggingFilter : OncePerRequestFilter() {
         return try {
             val contentString = String(content, Charsets.UTF_8)
             if (contentString.length > MAX_PAYLOAD_LENGTH) {
-                contentString.substring(0, MAX_PAYLOAD_LENGTH) + "... (truncated)"
+                contentString.take(MAX_PAYLOAD_LENGTH) + "... (truncated)"
             } else {
                 contentString
             }

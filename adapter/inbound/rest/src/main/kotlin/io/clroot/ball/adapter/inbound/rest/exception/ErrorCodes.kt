@@ -4,9 +4,9 @@ object ErrorCodes {
     // 도메인 에러
     const val VALIDATION_FAILED = "VALIDATION_FAILED"
     const val BUSINESS_RULE_VIOLATION = "BUSINESS_RULE_VIOLATION"
-    const val INVALID_ID = "INVALID_ID"
     const val PRECONDITION_FAILED = "PRECONDITION_FAILED"
     const val RESOURCE_GONE = "RESOURCE_GONE"
+    const val AUTHENTICATION_FAILED = "AUTHENTICATION_FAILED"
 
     // 시스템 에러
     const val INTERNAL_ERROR = "INTERNAL_ERROR"

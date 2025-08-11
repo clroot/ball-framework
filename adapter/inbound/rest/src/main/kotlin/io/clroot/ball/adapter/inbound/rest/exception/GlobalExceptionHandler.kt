@@ -76,6 +76,8 @@ class GlobalExceptionHandler(
     private fun determineErrorCodeAndStatus(e: DomainException): Pair<String, HttpStatus> =
         when (e.errorType) {
             ErrorType.BAD_INPUT -> ErrorCodes.VALIDATION_FAILED to HttpStatus.BAD_REQUEST
+            ErrorType.UNAUTHORIZED -> ErrorCodes.AUTHENTICATION_FAILED to HttpStatus.UNAUTHORIZED
+            ErrorType.FORBIDDEN -> ErrorCodes.AUTHENTICATION_FAILED to HttpStatus.FORBIDDEN
             ErrorType.NOT_FOUND -> ErrorCodes.NOT_FOUND to HttpStatus.NOT_FOUND
             ErrorType.CONFLICT -> ErrorCodes.DUPLICATE_ENTITY to HttpStatus.CONFLICT
             ErrorType.UNPROCESSABLE -> ErrorCodes.BUSINESS_RULE_VIOLATION to HttpStatus.UNPROCESSABLE_ENTITY
