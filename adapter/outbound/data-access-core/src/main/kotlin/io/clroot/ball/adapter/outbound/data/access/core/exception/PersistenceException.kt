@@ -1,6 +1,7 @@
 package io.clroot.ball.adapter.outbound.data.access.core.exception
 
 import io.clroot.ball.domain.exception.DomainException
+import io.clroot.ball.domain.exception.ErrorType
 
 /**
  * 영속성 계층에서 발생하는 기본 예외
@@ -9,4 +10,7 @@ import io.clroot.ball.domain.exception.DomainException
  *
  * @since 2.0
  */
-abstract class PersistenceException(message: String, cause: Throwable? = null) : DomainException(message, cause)
+abstract class PersistenceException(
+    message: String,
+    cause: Throwable? = null,
+) : DomainException(message, errorType = ErrorType.EXTERNAL_ERROR, cause)

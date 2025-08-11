@@ -5,8 +5,8 @@ import arrow.core.right
 import io.clroot.ball.adapter.inbound.rest.extension.toResponseEntity
 import io.clroot.ball.adapter.inbound.rest.extension.toResponseEntityWithNull
 import io.clroot.ball.application.ApplicationError
+import io.clroot.ball.domain.exception.BusinessRuleException
 import io.clroot.ball.domain.exception.DomainException
-import io.clroot.ball.domain.exception.DomainValidationException
 import io.clroot.ball.domain.model.paging.PageRequest
 import io.clroot.ball.domain.model.paging.Sort
 import io.clroot.ball.domain.model.vo.BinaryId
@@ -43,7 +43,7 @@ class TestController {
      */
     @GetMapping("/domain-error")
     fun testDomainError(): ResponseEntity<TestResponse> {
-        val error = ApplicationError.DomainError(DomainValidationException("Test validation error"))
+        val error = ApplicationError.DomainError(BusinessRuleException("Test validation error"))
         return error.left().toResponseEntity()
     }
 
@@ -122,7 +122,7 @@ class TestController {
             response.right().toResponseEntity()
         } catch (e: Exception) {
             ApplicationError
-                .DomainError(DomainValidationException.invalidId(id))
+                .DomainError(BusinessRuleException(""))
                 .left()
                 .toResponseEntity()
         }
@@ -137,7 +137,7 @@ class TestController {
         try {
             // 간단한 검증
             if (request.name.isBlank()) {
-                throw DomainValidationException.fieldValidation("Name", "Name cannot be blank")
+                throw IllegalArgumentException("Name cannot be blank")
             }
 
             Email.from(request.email) // Email 검증
@@ -151,7 +151,7 @@ class TestController {
             response.right().toResponseEntity()
         } catch (e: Exception) {
             ApplicationError
-                .DomainError(object : DomainException("", e) {})
+                .DomainError(object : DomainException("", cause = e) {})
                 .left()
                 .toResponseEntity()
         }

@@ -4,7 +4,6 @@ import io.clroot.ball.adapter.outbound.data.access.core.exception.DuplicateEntit
 import io.clroot.ball.adapter.outbound.data.access.core.exception.EntityNotFoundException
 import io.clroot.ball.adapter.outbound.data.access.core.exception.PersistenceException
 import io.clroot.ball.domain.exception.BusinessRuleException
-import io.clroot.ball.domain.exception.DomainValidationException
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
@@ -31,22 +30,6 @@ class GlobalExceptionHandlerTest :
         }
 
         describe("handleDomainException") {
-
-            context("DomainValidationException 처리") {
-                it("DomainValidationException을 400 Bad Request로 변환해야 한다") {
-                    // given
-                    val exception = DomainValidationException("Invalid user data")
-
-                    // when
-                    val response = handler.handleDomainException(exception, request)
-
-                    // then
-                    response.statusCode shouldBe HttpStatus.BAD_REQUEST
-                    response.body?.code shouldBe ErrorCodes.VALIDATION_FAILED
-                    response.body?.message shouldBe "Invalid user data"
-                    response.body?.traceId shouldNotBe null
-                }
-            }
 
             context("BusinessRuleException 처리") {
                 it("BusinessRuleException을 400 Bad Request로 변환해야 한다") {
@@ -162,7 +145,7 @@ class GlobalExceptionHandlerTest :
                 it("디버그 정보가 포함되어야 한다") {
                     // given
                     every { environment.activeProfiles } returns arrayOf("dev")
-                    val exception = DomainValidationException("Test exception")
+                    val exception = BusinessRuleException("Test exception")
 
                     // when
                     val response = handler.handleDomainException(exception, request)
@@ -179,7 +162,7 @@ class GlobalExceptionHandlerTest :
                 it("디버그 정보가 포함되지 않아야 한다") {
                     // given
                     every { environment.activeProfiles } returns arrayOf("prod")
-                    val exception = DomainValidationException("Test exception")
+                    val exception = BusinessRuleException("Test exception")
 
                     // when
                     val response = handler.handleDomainException(exception, request)
@@ -194,7 +177,7 @@ class GlobalExceptionHandlerTest :
 
             it("MDC에서 추적 ID를 가져와야 한다") {
                 // given
-                val exception = DomainValidationException("Test exception")
+                val exception = BusinessRuleException("Test exception")
 
                 // when
                 val response = handler.handleDomainException(exception, request)

@@ -52,8 +52,8 @@ class RepositoryTest :
                 val entity = TestEntity("1")
                 every { repository.save(entity) } throws
                     DomainStateException(
-                        "Database error",
-                        TestEntity::class.simpleName,
+                        message = "Database error",
+                        entityType = TestEntity::class.simpleName,
                     )
 
                 shouldThrow<DomainStateException> {

@@ -1,6 +1,5 @@
 package io.clroot.ball.domain.model.vo
 
-import io.clroot.ball.domain.exception.DomainValidationException
 import io.clroot.ball.domain.model.ValueObject
 import java.nio.ByteBuffer
 import java.util.*
@@ -30,7 +29,7 @@ value class BinaryId private constructor(
         @JvmStatic
         fun of(value: String): BinaryId {
             if (!ULIDSupport.isValidULID(value)) {
-                throw DomainValidationException("Invalid ULID format: $value")
+                throw IllegalArgumentException("Invalid ULID format: $value")
             }
             return BinaryId(value)
         }
@@ -48,7 +47,7 @@ value class BinaryId private constructor(
                 val ulid = ULIDSupport.bytesToULID(bytes)
                 return BinaryId(ulid)
             } catch (e: Exception) {
-                throw DomainValidationException("Invalid ULID bytes: ${e.message}")
+                throw IllegalArgumentException("Invalid ULID bytes: ${e.message}")
             }
         }
 
