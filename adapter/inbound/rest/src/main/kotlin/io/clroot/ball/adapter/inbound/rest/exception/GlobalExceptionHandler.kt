@@ -6,10 +6,8 @@ import io.clroot.ball.adapter.inbound.rest.filter.RequestLoggingFilter.Companion
 import io.clroot.ball.adapter.outbound.data.access.core.exception.DuplicateEntityException
 import io.clroot.ball.adapter.outbound.data.access.core.exception.EntityNotFoundException
 import io.clroot.ball.adapter.outbound.data.access.core.exception.PersistenceException
-import io.clroot.ball.domain.exception.BusinessRuleException
 import io.clroot.ball.domain.exception.DomainException
-import io.clroot.ball.domain.exception.DomainValidationException
-import io.clroot.ball.domain.exception.ExternalSystemException
+import io.clroot.ball.domain.exception.ErrorType
 import jakarta.servlet.http.HttpServletRequest
 import org.slf4j.LoggerFactory
 import org.slf4j.MDC
@@ -59,17 +57,7 @@ class GlobalExceptionHandler(
     ): ResponseEntity<ErrorResponse> {
         logger.warn("Domain exception: ${e.message}")
 
-        val (code, status) =
-            when (e) {
-                is DomainValidationException ->
-                    when (e.code) {
-                        else -> ErrorCodes.VALIDATION_FAILED to 400
-                    }
-
-                is BusinessRuleException -> ErrorCodes.BUSINESS_RULE_VIOLATION to 400
-                is ExternalSystemException -> ErrorCodes.EXTERNAL_SYSTEM_ERROR to 500
-                else -> ErrorCodes.VALIDATION_FAILED to 400
-            }
+        val (code, status) = determineErrorCodeAndStatus(e)
 
         val errorResponse =
             ErrorResponse(
@@ -81,6 +69,21 @@ class GlobalExceptionHandler(
 
         return ResponseEntity.status(status).body(errorResponse)
     }
+
+    /**
+     * ErrorType을 HTTP 상태 코드로 매핑
+     */
+    private fun determineErrorCodeAndStatus(e: DomainException): Pair<String, HttpStatus> =
+        when (e.errorType) {
+            ErrorType.BAD_INPUT -> ErrorCodes.VALIDATION_FAILED to HttpStatus.BAD_REQUEST
+            ErrorType.NOT_FOUND -> ErrorCodes.NOT_FOUND to HttpStatus.NOT_FOUND
+            ErrorType.CONFLICT -> ErrorCodes.DUPLICATE_ENTITY to HttpStatus.CONFLICT
+            ErrorType.UNPROCESSABLE -> ErrorCodes.BUSINESS_RULE_VIOLATION to HttpStatus.UNPROCESSABLE_ENTITY
+            ErrorType.PRECONDITION_FAILED -> ErrorCodes.PRECONDITION_FAILED to HttpStatus.PRECONDITION_FAILED
+            ErrorType.GONE -> ErrorCodes.RESOURCE_GONE to HttpStatus.GONE
+            ErrorType.EXTERNAL_ERROR -> ErrorCodes.EXTERNAL_SYSTEM_ERROR to HttpStatus.INTERNAL_SERVER_ERROR
+            ErrorType.EXTERNAL_TIMEOUT -> ErrorCodes.EXTERNAL_TIMEOUT to HttpStatus.INTERNAL_SERVER_ERROR
+        }
 
     /**
      * 영속성 예외 처리
