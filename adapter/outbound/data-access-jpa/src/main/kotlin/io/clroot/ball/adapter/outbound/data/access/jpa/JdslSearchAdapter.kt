@@ -3,7 +3,7 @@ package io.clroot.ball.adapter.outbound.data.access.jpa
 import com.linecorp.kotlinjdsl.dsl.jpql.Jpql
 import com.linecorp.kotlinjdsl.dsl.jpql.jpql
 import com.linecorp.kotlinjdsl.dsl.jpql.select.SelectQueryWhereStep
-import com.linecorp.kotlinjdsl.querymodel.jpql.path.Path
+import com.linecorp.kotlinjdsl.querymodel.jpql.expression.Expressionable
 import com.linecorp.kotlinjdsl.querymodel.jpql.predicate.Predicatable
 import com.linecorp.kotlinjdsl.querymodel.jpql.select.SelectQuery
 import com.linecorp.kotlinjdsl.querymodel.jpql.sort.Sortable
@@ -19,7 +19,6 @@ import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.Pageable
 import org.springframework.data.domain.Sort
 import org.springframework.data.domain.Sort.Order
-import java.io.Serializable
 
 abstract class JdslSearchAdapter<T, R, E : Any>(
     protected open val entityManager: EntityManager,
@@ -49,7 +48,7 @@ abstract class JdslSearchAdapter<T, R, E : Any>(
                 .createQuery(contentQuery, jpqlRenderContext)
                 .apply {
                     firstResult = pageable.offset.toInt()
-                    setMaxResults(pageable.pageSize)
+                    maxResults = pageable.pageSize
                 }.resultList
                 .map { it.toResult() }
         val count =
@@ -67,7 +66,7 @@ abstract class JdslSearchAdapter<T, R, E : Any>(
 
     protected abstract fun Jpql.where(criteria: T): Array<out Predicatable?>
 
-    protected abstract fun Jpql.orderBy(order: Order): Path<out Serializable>
+    protected abstract fun Jpql.orderBy(order: Order): Expressionable<*>
 
     private fun query(
         criteria: T,
