@@ -8,6 +8,7 @@ import io.clroot.ball.domain.port.Repository
 import org.springframework.dao.DataIntegrityViolationException
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.repository.findByIdOrNull
+import org.springframework.orm.ObjectOptimisticLockingFailureException
 import org.springframework.transaction.annotation.Transactional
 
 /**
@@ -58,6 +59,8 @@ abstract class JpaRepositoryAdapter<T : EntityBase<ID>, ID : Any, J : EntityReco
             }
         } catch (e: DataIntegrityViolationException) {
             throw DuplicateEntityException("Entity already exists: ${entity.id}")
+        } catch (e: ObjectOptimisticLockingFailureException) {
+            throw DatabaseException("Failed to save entity: ${entity.id}", e)
         } catch (e: Exception) {
             throw DatabaseException("Failed to save entity: ${entity.id}", e)
         }

@@ -30,6 +30,25 @@ class GlobalExceptionHandler(
         private val logger = LoggerFactory.getLogger(GlobalExceptionHandler::class.java)
     }
 
+    @ExceptionHandler(IllegalArgumentException::class)
+    fun handleIllegalArgumentException(
+        e: IllegalArgumentException,
+        request: HttpServletRequest,
+    ): ResponseEntity<ErrorResponse> {
+        logger.warn("Illegal argument exception: ${e.message}")
+        val errorResponse =
+            ErrorResponse(
+                code = ErrorCodes.VALIDATION_FAILED,
+                message = e.message ?: "입력값이 올바르지 않습니다",
+                traceId = getTraceId(),
+                debug = createDebugInfo(e, request),
+            )
+
+        return ResponseEntity
+            .badRequest()
+            .body(errorResponse)
+    }
+
     /**
      * 도메인 예외 처리
      */

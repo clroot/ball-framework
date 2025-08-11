@@ -1,7 +1,13 @@
+plugins {
+    id("org.jetbrains.kotlin.plugin.spring")
+}
+
 dependencies {
     api(project(":domain"))
     api("org.springframework.boot:spring-boot-starter")
     api("org.springframework:spring-tx")
+    api("org.springframework.retry:spring-retry")
+    api("org.springframework:spring-aspects")
     api(project(":shared:arrow"))
     api(project(":shared:lock"))
 
