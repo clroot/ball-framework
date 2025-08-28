@@ -1,7 +1,12 @@
 package io.clroot.ball.adapter.outbound.data.access.core
 
+import io.clroot.ball.adapter.outbound.data.access.core.exception.DatabaseException
 import io.clroot.ball.domain.model.paging.*
+import org.springframework.core.io.ClassPathResource
+import org.springframework.core.io.Resource
 import org.springframework.data.domain.PageImpl
+import java.io.IOException
+import java.nio.charset.StandardCharsets
 import org.springframework.data.domain.Page as SpringPage
 import org.springframework.data.domain.Pageable as SpringPageable
 import org.springframework.data.domain.Sort as SpringSort
@@ -83,3 +88,12 @@ fun SpringPageable.toBall(): PageRequest = SpringDataConverter.fromSpringPageabl
 fun <T> SpringPage<T>.toBall(): Page<T> = SpringDataConverter.fromSpringPage(this)
 
 fun <T> Page<T>.toSpring(): SpringPage<T> = SpringDataConverter.toSpringPage(this)
+
+fun loadSqlFromClasspath(path: String): String {
+    try {
+        val resource: Resource = ClassPathResource(path)
+        return String(resource.inputStream.readAllBytes(), StandardCharsets.UTF_8)
+    } catch (e: IOException) {
+        throw DatabaseException("SQL 파일을 찾을 수 없습니다: $path")
+    }
+}
