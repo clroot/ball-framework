@@ -14,13 +14,14 @@ import io.clroot.ball.adapter.outbound.data.access.core.toSpring
 import io.clroot.ball.domain.model.paging.Page
 import io.clroot.ball.domain.model.paging.PageRequest
 import io.clroot.ball.domain.port.Search
+import io.clroot.ball.domain.port.SearchCriteria
 import jakarta.persistence.EntityManager
 import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.Pageable
 import org.springframework.data.domain.Sort
 import org.springframework.data.domain.Sort.Order
 
-abstract class JdslSearchAdapter<T, R, E : Any>(
+abstract class JdslSearchAdapter<T : SearchCriteria, R, E : Any>(
     protected open val entityManager: EntityManager,
     protected open val jpqlRenderContext: JpqlRenderContext,
 ) : Search<T, R> {
