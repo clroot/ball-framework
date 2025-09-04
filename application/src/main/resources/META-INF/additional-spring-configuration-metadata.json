@@ -1,0 +1,33 @@
+{
+  "properties": [
+    {
+      "name": "ball.application.warmup-enabled",
+      "type": "java.lang.Boolean",
+      "description": "Enable or disable the warmup process on application startup. When enabled, all registered WarmupTask beans will be executed in parallel during application startup.",
+      "sourceType": "io.clroot.ball.application.ApplicationLayerProperties",
+      "defaultValue": false
+    },
+    {
+      "name": "ball.application.warmup-timeout-seconds",
+      "type": "java.lang.Long",
+      "description": "Timeout in seconds for the entire warmup process. If warmup tasks do not complete within this time, they will be interrupted.",
+      "sourceType": "io.clroot.ball.application.ApplicationLayerProperties",
+      "defaultValue": 30
+    }
+  ],
+  "hints": [
+    {
+      "name": "ball.application.warmup-enabled",
+      "values": [
+        {
+          "value": true,
+          "description": "Enable warmup tasks execution on startup."
+        },
+        {
+          "value": false,
+          "description": "Disable warmup tasks execution on startup."
+        }
+      ]
+    }
+  ]
+}
