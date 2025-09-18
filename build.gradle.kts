@@ -23,7 +23,7 @@ allprojects {
         plugin("maven-publish")
     }
     group = "io.clroot.ball"
-    version = "2.0.0-20250916.1-SNAPSHOT"
+    version = "2.0.0-20250918.2-SNAPSHOT"
 
     val nexusUsername = localProperties.getProperty("nexus.username")
     val nexusPassword = localProperties.getProperty("nexus.password")
