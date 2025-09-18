@@ -2,13 +2,13 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import java.util.*
 
 plugins {
-    kotlin("jvm") version "2.1.20"
-    id("org.jlleitschuh.gradle.ktlint") version "13.0.0-rc.1"
-    id("org.springframework.boot") version "3.4.4"
+    kotlin("jvm") version "2.2.20"
+    id("org.jlleitschuh.gradle.ktlint") version "13.1.0"
+    id("org.springframework.boot") version "3.5.5"
     id("io.spring.dependency-management") version "1.1.7"
-    id("org.jetbrains.kotlin.plugin.allopen") version "2.1.20"
-    id("org.jetbrains.kotlin.plugin.jpa") version "2.1.20"
-    id("org.jetbrains.kotlin.plugin.spring") version "2.1.20"
+    id("org.jetbrains.kotlin.plugin.allopen") version "2.2.20"
+    id("org.jetbrains.kotlin.plugin.jpa") version "2.2.20"
+    id("org.jetbrains.kotlin.plugin.spring") version "2.2.20"
     id("maven-publish")
 }
 
@@ -23,7 +23,7 @@ allprojects {
         plugin("maven-publish")
     }
     group = "io.clroot.ball"
-    version = "2.0.0-20250904.2-SNAPSHOT"
+    version = "2.0.0-20250916.1-SNAPSHOT"
 
     val nexusUsername = localProperties.getProperty("nexus.username")
     val nexusPassword = localProperties.getProperty("nexus.password")
