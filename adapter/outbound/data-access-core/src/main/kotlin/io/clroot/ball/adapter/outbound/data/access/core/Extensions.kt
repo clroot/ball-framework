@@ -18,14 +18,14 @@ object SpringDataConverter {
         PageRequest(
             page = springPageable.pageNumber,
             size = springPageable.pageSize,
-            sort = fromSpringSort(springPageable.sort),
+            sort = springPageable.sort.toBall(),
         )
 
     fun toSpringPageable(pageRequest: PageRequest): SpringPageable =
         org.springframework.data.domain.PageRequest.of(
             pageRequest.page,
             pageRequest.size,
-            toSpringSort(pageRequest.sort),
+            pageRequest.sort.toSpring(),
         )
 
     fun <T> fromSpringPage(springPage: SpringPage<T>): Page<T> {
@@ -33,7 +33,7 @@ object SpringDataConverter {
             PageRequest(
                 page = springPage.number,
                 size = springPage.size,
-                sort = fromSpringSort(springPage.sort),
+                sort = springPage.sort.toBall(),
             )
 
         return Page(
@@ -49,36 +49,6 @@ object SpringDataConverter {
             toSpringPageable(page.pageRequest),
             page.totalElements,
         )
-
-    private fun toSpringSort(sort: Sort): SpringSort {
-        if (sort.orders.isEmpty()) return SpringSort.unsorted()
-
-        val springOrders =
-            sort.orders.map { order ->
-                val direction =
-                    when (order.direction) {
-                        Direction.ASC -> SpringSort.Direction.ASC
-                        Direction.DESC -> SpringSort.Direction.DESC
-                    }
-                SpringSort.Order(direction, order.property)
-            }
-
-        return SpringSort.by(springOrders)
-    }
-
-    private fun fromSpringSort(springSort: SpringSort): Sort {
-        val orders =
-            springSort.map { springOrder ->
-                val direction =
-                    when (springOrder.direction) {
-                        SpringSort.Direction.DESC -> Direction.DESC
-                        else -> Direction.ASC
-                    }
-                Order(springOrder.property, direction)
-            }
-
-        return Sort(orders.toList())
-    }
 }
 
 fun PageRequest.toSpring(): SpringPageable = SpringDataConverter.toSpringPageable(this)
@@ -88,6 +58,36 @@ fun SpringPageable.toBall(): PageRequest = SpringDataConverter.fromSpringPageabl
 fun <T> SpringPage<T>.toBall(): Page<T> = SpringDataConverter.fromSpringPage(this)
 
 fun <T> Page<T>.toSpring(): SpringPage<T> = SpringDataConverter.toSpringPage(this)
+
+fun Sort.toSpring(): SpringSort {
+    if (this.orders.isEmpty()) return SpringSort.unsorted()
+
+    val springOrders =
+        this.orders.map { order ->
+            val direction =
+                when (order.direction) {
+                    Direction.ASC -> SpringSort.Direction.ASC
+                    Direction.DESC -> SpringSort.Direction.DESC
+                }
+            SpringSort.Order(direction, order.property)
+        }
+
+    return SpringSort.by(springOrders)
+}
+
+fun SpringSort.toBall(): Sort {
+    val orders =
+        this.map { springOrder ->
+            val direction =
+                when (springOrder.direction) {
+                    SpringSort.Direction.DESC -> Direction.DESC
+                    else -> Direction.ASC
+                }
+            Order(springOrder.property, direction)
+        }
+
+    return Sort(orders.toList())
+}
 
 fun loadSqlFromClasspath(path: String): String {
     try {

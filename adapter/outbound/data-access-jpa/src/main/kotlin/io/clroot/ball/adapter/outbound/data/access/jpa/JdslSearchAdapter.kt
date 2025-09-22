@@ -91,4 +91,9 @@ abstract class JdslSearchAdapter<T : SearchCriteria, R, E : Any>(
                 }
             }.toList()
             .toTypedArray()
+
+    fun buildWherePredicates(
+        jpql: Jpql,
+        criteria: T,
+    ): Array<out Predicatable?> = jpql.where(criteria)
 }
