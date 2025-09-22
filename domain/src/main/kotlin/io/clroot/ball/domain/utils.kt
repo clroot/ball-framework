@@ -13,3 +13,7 @@ fun LocalDateTime.toLocalDateTime() = this.atZone(java.time.ZoneId.systemDefault
 fun String.wrapSingleQuotes(): String = "'$this'"
 
 fun String.wrapDoubleQuotes(): String = "\"$this\""
+
+fun Boolean.toYN(): String = if (this) "Y" else "N"
+
+fun String.ynToBoolean(): Boolean = this == "Y"
