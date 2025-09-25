@@ -3,6 +3,7 @@ package io.clroot.ball.application.usecase
 import arrow.core.Either
 import arrow.core.raise.either
 import io.clroot.ball.application.ApplicationError
+import io.clroot.ball.application.publishEvents
 import io.clroot.ball.domain.exception.ExternalSystemException
 import io.clroot.ball.domain.model.AggregateRoot
 import io.clroot.ball.domain.slf4j
@@ -34,7 +35,6 @@ abstract class UseCase<TCommand, TResult>(
     protected abstract fun executeInternal(command: TCommand): TResult
 
     protected fun <T : AggregateRoot<*>> T.publishEvents() {
-        this.domainEvents.forEach { applicationEventPublisher.publishEvent(it) }
-        this.clearEvents()
+        this.publishEvents(applicationEventPublisher)
     }
 }
