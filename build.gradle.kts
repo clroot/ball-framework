@@ -79,10 +79,10 @@ subprojects {
     }
 
     java {
-        sourceCompatibility = JavaVersion.VERSION_25
-        targetCompatibility = JavaVersion.VERSION_25
+        sourceCompatibility = JavaVersion.VERSION_21
+        targetCompatibility = JavaVersion.VERSION_21
         toolchain {
-            languageVersion.set(JavaLanguageVersion.of(25))
+            languageVersion.set(JavaLanguageVersion.of(21))
         }
     }
 
@@ -117,7 +117,7 @@ subprojects {
             compilerOptions {
                 freeCompilerArgs =
                     listOf("-Xjsr305=strict", "-Xcontext-receivers", "-opt-in=kotlin.ExperimentalValueClassApi")
-                jvmTarget.set(JvmTarget.JVM_24)
+                jvmTarget.set(JvmTarget.JVM_21)
             }
         }
     }
