@@ -4,7 +4,7 @@ import java.util.*
 plugins {
     kotlin("jvm") version "2.2.20"
     id("org.jlleitschuh.gradle.ktlint") version "13.1.0"
-    id("org.springframework.boot") version "3.5.5"
+    id("org.springframework.boot") version "3.5.6"
     id("io.spring.dependency-management") version "1.1.7"
     id("org.jetbrains.kotlin.plugin.allopen") version "2.2.20"
     id("org.jetbrains.kotlin.plugin.jpa") version "2.2.20"
@@ -23,7 +23,7 @@ allprojects {
         plugin("maven-publish")
     }
     group = "io.clroot.ball"
-    version = "2.0.0-20250929.1-SNAPSHOT"
+    version = "2.0.0-20251001.1-SNAPSHOT"
 
     val nexusUsername = localProperties.getProperty("nexus.username")
     val nexusPassword = localProperties.getProperty("nexus.password")
@@ -79,10 +79,10 @@ subprojects {
     }
 
     java {
-        sourceCompatibility = JavaVersion.VERSION_21
-        targetCompatibility = JavaVersion.VERSION_21
+        sourceCompatibility = JavaVersion.VERSION_25
+        targetCompatibility = JavaVersion.VERSION_25
         toolchain {
-            languageVersion.set(JavaLanguageVersion.of(21))
+            languageVersion.set(JavaLanguageVersion.of(25))
         }
     }
 
@@ -117,7 +117,7 @@ subprojects {
             compilerOptions {
                 freeCompilerArgs =
                     listOf("-Xjsr305=strict", "-Xcontext-receivers", "-opt-in=kotlin.ExperimentalValueClassApi")
-                jvmTarget.set(JvmTarget.JVM_21)
+                jvmTarget.set(JvmTarget.JVM_24)
             }
         }
     }
