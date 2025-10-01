@@ -167,7 +167,11 @@ class GlobalExceptionHandler(
         e: Exception,
         request: HttpServletRequest,
     ): ResponseEntity<ErrorResponse> {
-        logger.error("Unexpected exception: ${e.message}", e)
+        if (!isDebugMode()) {
+            logger.error("Unexpected exception: ${e.message}", e)
+        } else {
+            logger.error("Unexpected exception: ${e.message}")
+        }
 
         val errorResponse =
             when (e.javaClass.simpleName) {
