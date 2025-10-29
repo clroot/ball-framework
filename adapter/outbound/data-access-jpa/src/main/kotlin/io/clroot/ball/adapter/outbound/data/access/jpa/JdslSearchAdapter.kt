@@ -69,6 +69,8 @@ abstract class JdslSearchAdapter<T : SearchCriteria, R, E : Any>(
 
     protected abstract fun Jpql.orderBy(order: Order): Expressionable<*>
 
+    protected open fun Jpql.defaultOrder(): Array<out Sortable?> = emptyArray()
+
     private fun query(
         criteria: T,
         pageable: Pageable,
@@ -76,7 +78,7 @@ abstract class JdslSearchAdapter<T : SearchCriteria, R, E : Any>(
         jpql {
             selectFrom()
                 .whereAnd(*where(criteria))
-                .orderBy(*orderBy(pageable.sort))
+                .orderBy(*orderBy(pageable.sort), *defaultOrder())
         }
 
     private fun Jpql.orderBy(sort: Sort): Array<out Sortable?> =
