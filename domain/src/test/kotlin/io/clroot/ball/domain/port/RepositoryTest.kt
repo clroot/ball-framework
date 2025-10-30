@@ -1,6 +1,7 @@
 package io.clroot.ball.domain.port
 
 import io.clroot.ball.domain.exception.DomainStateException
+import io.clroot.ball.domain.exception.EntityReference
 import io.clroot.ball.domain.model.EntityBase
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.FunSpec
@@ -53,7 +54,7 @@ class RepositoryTest :
                 every { repository.save(entity) } throws
                     DomainStateException(
                         message = "Database error",
-                        entityType = TestEntity::class.simpleName,
+                        entity = EntityReference(TestEntity::class, entity.id),
                     )
 
                 shouldThrow<DomainStateException> {

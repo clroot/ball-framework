@@ -1,5 +1,8 @@
 package io.clroot.ball.adapter.outbound.data.access.core.exception
 
+import io.clroot.ball.domain.exception.DomainErrorCodes
+import io.clroot.ball.domain.exception.ErrorType
+
 /**
  * 중복된 엔티티가 존재하는 경우
  * 
@@ -20,4 +23,13 @@ package io.clroot.ball.adapter.outbound.data.access.core.exception
  * }
  * ```
  */
-class DuplicateEntityException(message: String) : PersistenceException(message)
+class DuplicateEntityException(
+    message: String,
+    metadata: Map<String, Any?> = emptyMap(),
+) : PersistenceException(
+        message = message,
+        errorType = ErrorType.CONFLICT,
+        code = DomainErrorCodes.PERSISTENCE_DUPLICATE,
+        messageKey = "persistence.duplicate",
+        metadata = metadata,
+    )

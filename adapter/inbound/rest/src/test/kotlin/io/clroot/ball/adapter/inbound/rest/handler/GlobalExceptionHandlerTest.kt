@@ -1,5 +1,6 @@
-package io.clroot.ball.adapter.inbound.rest.exception
+package io.clroot.ball.adapter.inbound.rest.handler
 
+import io.clroot.ball.adapter.inbound.rest.support.ErrorCodes
 import io.clroot.ball.adapter.outbound.data.access.core.exception.DuplicateEntityException
 import io.clroot.ball.adapter.outbound.data.access.core.exception.EntityNotFoundException
 import io.clroot.ball.adapter.outbound.data.access.core.exception.PersistenceException
@@ -40,9 +41,12 @@ class GlobalExceptionHandlerTest :
                     val response = handler.handleDomainException(exception, request)
 
                     // then
-                    response.statusCode shouldBe HttpStatus.BAD_REQUEST
+                    response.statusCode shouldBe HttpStatus.UNPROCESSABLE_ENTITY
                     response.body?.code shouldBe ErrorCodes.BUSINESS_RULE_VIOLATION
+                    response.body?.messageKey shouldBe "domain.business_rule.violation"
                     response.body?.message shouldBe "Cannot delete user with active orders"
+                    response.body?.arguments shouldBe null
+                    response.body?.metadata shouldBe null
                 }
             }
         }
@@ -60,6 +64,7 @@ class GlobalExceptionHandlerTest :
                     // then
                     response.statusCode shouldBe HttpStatus.NOT_FOUND
                     response.body?.code shouldBe ErrorCodes.NOT_FOUND
+                    response.body?.messageKey shouldBe "persistence.not_found"
                     response.body?.message shouldBe "User with ID 123 not found"
                 }
             }
@@ -75,6 +80,7 @@ class GlobalExceptionHandlerTest :
                     // then
                     response.statusCode shouldBe HttpStatus.CONFLICT
                     response.body?.code shouldBe ErrorCodes.DUPLICATE_ENTITY
+                    response.body?.messageKey shouldBe "persistence.duplicate"
                     response.body?.message shouldBe "User with email already exists"
                 }
             }
@@ -90,6 +96,7 @@ class GlobalExceptionHandlerTest :
                     // then
                     response.statusCode shouldBe HttpStatus.INTERNAL_SERVER_ERROR
                     response.body?.code shouldBe ErrorCodes.DATABASE_ERROR
+                    response.body?.messageKey shouldBe "persistence.error"
                     response.body?.message shouldBe "Database connection failed"
                 }
             }
@@ -154,7 +161,7 @@ class GlobalExceptionHandlerTest :
                     response.body?.debug shouldNotBe null
                     response.body?.debug?.path shouldBe "/api/v1/users"
                     response.body?.debug?.method shouldBe "POST"
-                    response.body?.debug?.exceptionType shouldBe "DomainValidationException"
+                    response.body?.debug?.exceptionType shouldBe "BusinessRuleException"
                 }
             }
 

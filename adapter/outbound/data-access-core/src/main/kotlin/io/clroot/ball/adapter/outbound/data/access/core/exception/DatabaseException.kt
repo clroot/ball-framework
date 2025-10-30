@@ -1,5 +1,8 @@
 package io.clroot.ball.adapter.outbound.data.access.core.exception
 
+import io.clroot.ball.domain.exception.DomainErrorCodes
+import io.clroot.ball.domain.exception.ErrorType
+
 /**
  * 데이터베이스 수준에서 발생한 오류
  *
@@ -18,4 +21,15 @@ package io.clroot.ball.adapter.outbound.data.access.core.exception
  * }
  * ```
  */
-class DatabaseException(message: String, cause: Throwable? = null) : PersistenceException(message, cause)
+class DatabaseException(
+    message: String,
+    cause: Throwable? = null,
+    metadata: Map<String, Any?> = emptyMap(),
+) : PersistenceException(
+        message = message,
+        errorType = ErrorType.EXTERNAL_ERROR,
+        code = DomainErrorCodes.PERSISTENCE_DATABASE_ERROR,
+        messageKey = "persistence.database_error",
+        metadata = metadata,
+        cause = cause,
+    )

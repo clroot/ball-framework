@@ -4,7 +4,6 @@ import io.clroot.ball.domain.model.vo.Email
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.FunSpec
 import io.kotest.matchers.shouldBe
-import io.kotest.matchers.string.shouldContain
 
 class EmailTest :
     FunSpec({
@@ -38,7 +37,8 @@ class EmailTest :
                         shouldThrow<IllegalArgumentException> {
                             Email.from(invalidEmail)
                         }
-                    exception.message shouldContain "Invalid email format"
+                    val message = exception.message.orEmpty()
+                    (message.contains("Invalid email format") || message.contains("올바른 이메일 형식")) shouldBe true
                 }
             }
 

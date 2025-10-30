@@ -1,5 +1,6 @@
 package io.clroot.ball.adapter.outbound.data.access.core.exception
 
+import io.clroot.ball.domain.exception.DomainErrorCodes
 import io.clroot.ball.domain.exception.DomainException
 import io.clroot.ball.domain.exception.ErrorType
 
@@ -12,5 +13,18 @@ import io.clroot.ball.domain.exception.ErrorType
  */
 abstract class PersistenceException(
     message: String,
+    errorType: ErrorType = ErrorType.EXTERNAL_ERROR,
+    code: String = DomainErrorCodes.PERSISTENCE_ERROR,
+    messageKey: String? = "persistence.error",
+    messageArgs: Map<String, Any?> = emptyMap(),
+    metadata: Map<String, Any?> = emptyMap(),
     cause: Throwable? = null,
-) : DomainException(message, errorType = ErrorType.EXTERNAL_ERROR, cause)
+) : DomainException(
+        message = message,
+        errorType = errorType,
+        errorCode = code,
+        messageKey = messageKey,
+        messageArgs = messageArgs,
+        metadata = metadata,
+        cause = cause,
+    )

@@ -1,7 +1,7 @@
 package io.clroot.ball.adapter.inbound.rest.config
 
-import io.clroot.ball.adapter.inbound.rest.exception.GlobalExceptionHandler
 import io.clroot.ball.adapter.inbound.rest.filter.RequestLoggingFilter
+import io.clroot.ball.adapter.inbound.rest.handler.GlobalExceptionHandler
 import io.kotest.core.spec.style.BehaviorSpec
 import io.kotest.matchers.shouldNotBe
 import org.springframework.boot.autoconfigure.AutoConfigurations

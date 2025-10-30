@@ -6,5 +6,14 @@ package io.clroot.ball.domain.exception
 abstract class DomainException(
     message: String,
     val errorType: ErrorType = ErrorType.UNPROCESSABLE,
-    cause: Throwable? = null
-) : RuntimeException(message, cause)
+    val errorCode: String = DomainErrorCodes.DOMAIN_ERROR,
+    val messageKey: String? = null,
+    val messageArgs: Map<String, Any?> = emptyMap(),
+    val metadata: Map<String, Any?> = emptyMap(),
+    cause: Throwable? = null,
+) : RuntimeException(message, cause) {
+
+    init {
+        require(errorCode.isNotBlank()) { "errorCode must not be blank" }
+    }
+}

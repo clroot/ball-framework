@@ -1,11 +1,12 @@
-package io.clroot.ball.adapter.inbound.rest.exception
+package io.clroot.ball.adapter.inbound.rest.handler
 
-import io.clroot.ball.adapter.inbound.rest.dto.error.DebugInfo
-import io.clroot.ball.adapter.inbound.rest.dto.error.ErrorResponse
+import io.clroot.ball.adapter.inbound.rest.dto.response.ErrorResponse
 import io.clroot.ball.adapter.inbound.rest.filter.RequestLoggingFilter.Companion.TRACE_ID_MDC_KEY
-import io.clroot.ball.adapter.outbound.data.access.core.exception.DuplicateEntityException
-import io.clroot.ball.adapter.outbound.data.access.core.exception.EntityNotFoundException
+import io.clroot.ball.adapter.inbound.rest.support.DebugInfo
+import io.clroot.ball.adapter.inbound.rest.support.ErrorCodes
+import io.clroot.ball.adapter.inbound.rest.support.ExceptionLocationExtractor
 import io.clroot.ball.adapter.outbound.data.access.core.exception.PersistenceException
+import io.clroot.ball.domain.exception.DomainErrorCodes
 import io.clroot.ball.domain.exception.DomainException
 import io.clroot.ball.domain.exception.ErrorType
 import jakarta.servlet.http.HttpServletRequest
@@ -57,35 +58,19 @@ class GlobalExceptionHandler(
     ): ResponseEntity<ErrorResponse> {
         logger.warn("Domain exception: ${e.message}")
 
-        val (code, status) = determineErrorCodeAndStatus(e)
-
         val errorResponse =
             ErrorResponse(
-                code = code,
+                code = resolveErrorCode(e.errorCode, e.errorType),
                 message = e.message ?: "도메인 규칙 위반",
                 traceId = getTraceId(),
+                messageKey = e.messageKey,
+                arguments = e.messageArgs.takeIf { it.isNotEmpty() },
+                metadata = e.metadata.takeIf { it.isNotEmpty() },
                 debug = createDebugInfo(e, request),
             )
 
-        return ResponseEntity.status(status).body(errorResponse)
+        return ResponseEntity.status(determineHttpStatus(e.errorType)).body(errorResponse)
     }
-
-    /**
-     * ErrorType을 HTTP 상태 코드로 매핑
-     */
-    private fun determineErrorCodeAndStatus(e: DomainException): Pair<String, HttpStatus> =
-        when (e.errorType) {
-            ErrorType.BAD_INPUT -> ErrorCodes.VALIDATION_FAILED to HttpStatus.BAD_REQUEST
-            ErrorType.UNAUTHORIZED -> ErrorCodes.AUTHENTICATION_FAILED to HttpStatus.UNAUTHORIZED
-            ErrorType.FORBIDDEN -> ErrorCodes.AUTHENTICATION_FAILED to HttpStatus.FORBIDDEN
-            ErrorType.NOT_FOUND -> ErrorCodes.NOT_FOUND to HttpStatus.NOT_FOUND
-            ErrorType.CONFLICT -> ErrorCodes.DUPLICATE_ENTITY to HttpStatus.CONFLICT
-            ErrorType.UNPROCESSABLE -> ErrorCodes.BUSINESS_RULE_VIOLATION to HttpStatus.UNPROCESSABLE_ENTITY
-            ErrorType.PRECONDITION_FAILED -> ErrorCodes.PRECONDITION_FAILED to HttpStatus.PRECONDITION_FAILED
-            ErrorType.GONE -> ErrorCodes.RESOURCE_GONE to HttpStatus.GONE
-            ErrorType.EXTERNAL_ERROR -> ErrorCodes.EXTERNAL_SYSTEM_ERROR to HttpStatus.INTERNAL_SERVER_ERROR
-            ErrorType.EXTERNAL_TIMEOUT -> ErrorCodes.EXTERNAL_TIMEOUT to HttpStatus.INTERNAL_SERVER_ERROR
-        }
 
     /**
      * 영속성 예외 처리
@@ -97,22 +82,18 @@ class GlobalExceptionHandler(
     ): ResponseEntity<ErrorResponse> {
         logger.error("Persistence exception: ${e.message}", e)
 
-        val (code, status) =
-            when (e) {
-                is EntityNotFoundException -> ErrorCodes.NOT_FOUND to 404
-                is DuplicateEntityException -> ErrorCodes.DUPLICATE_ENTITY to 409
-                else -> ErrorCodes.DATABASE_ERROR to 500
-            }
-
         val errorResponse =
             ErrorResponse(
-                code = code,
+                code = resolveErrorCode(e.errorCode, e.errorType),
                 message = e.message ?: "데이터베이스 오류",
                 traceId = getTraceId(),
+                messageKey = e.messageKey,
+                arguments = e.messageArgs.takeIf { it.isNotEmpty() },
+                metadata = e.metadata.takeIf { it.isNotEmpty() },
                 debug = createDebugInfo(e, request),
             )
 
-        return ResponseEntity.status(status).body(errorResponse)
+        return ResponseEntity.status(determineHttpStatus(e.errorType)).body(errorResponse)
     }
 
     /**
@@ -228,4 +209,37 @@ class GlobalExceptionHandler(
      * 추적 ID 생성/조회
      */
     private fun getTraceId(): String = MDC.get(TRACE_ID_MDC_KEY) ?: UUID.randomUUID().toString()
+
+    private fun resolveErrorCode(
+        errorCode: String,
+        errorType: ErrorType,
+    ): String = errorCode.ifBlank { defaultErrorCode(errorType) }
+
+    private fun defaultErrorCode(errorType: ErrorType): String =
+        when (errorType) {
+            ErrorType.BAD_INPUT -> DomainErrorCodes.BAD_INPUT
+            ErrorType.UNAUTHORIZED -> DomainErrorCodes.UNAUTHORIZED
+            ErrorType.FORBIDDEN -> DomainErrorCodes.FORBIDDEN
+            ErrorType.NOT_FOUND -> DomainErrorCodes.NOT_FOUND
+            ErrorType.CONFLICT -> DomainErrorCodes.CONFLICT
+            ErrorType.UNPROCESSABLE -> DomainErrorCodes.UNPROCESSABLE
+            ErrorType.PRECONDITION_FAILED -> DomainErrorCodes.PRECONDITION_FAILED
+            ErrorType.GONE -> DomainErrorCodes.RESOURCE_GONE
+            ErrorType.EXTERNAL_ERROR -> DomainErrorCodes.EXTERNAL_SYSTEM_ERROR
+            ErrorType.EXTERNAL_TIMEOUT -> DomainErrorCodes.EXTERNAL_SYSTEM_TIMEOUT
+        }
+
+    private fun determineHttpStatus(errorType: ErrorType): HttpStatus =
+        when (errorType) {
+            ErrorType.BAD_INPUT -> HttpStatus.BAD_REQUEST
+            ErrorType.UNAUTHORIZED -> HttpStatus.UNAUTHORIZED
+            ErrorType.FORBIDDEN -> HttpStatus.FORBIDDEN
+            ErrorType.NOT_FOUND -> HttpStatus.NOT_FOUND
+            ErrorType.CONFLICT -> HttpStatus.CONFLICT
+            ErrorType.UNPROCESSABLE -> HttpStatus.UNPROCESSABLE_ENTITY
+            ErrorType.PRECONDITION_FAILED -> HttpStatus.PRECONDITION_FAILED
+            ErrorType.GONE -> HttpStatus.GONE
+            ErrorType.EXTERNAL_ERROR -> HttpStatus.INTERNAL_SERVER_ERROR
+            ErrorType.EXTERNAL_TIMEOUT -> HttpStatus.INTERNAL_SERVER_ERROR
+        }
 }

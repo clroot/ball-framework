@@ -1,4 +1,4 @@
-package io.clroot.ball.adapter.inbound.rest.extension
+package io.clroot.ball.adapter.inbound.rest.support
 
 import arrow.core.Either
 import io.clroot.ball.adapter.outbound.data.access.core.exception.EntityNotFoundException

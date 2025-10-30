@@ -1,4 +1,4 @@
-package io.clroot.ball.adapter.inbound.rest.exception
+package io.clroot.ball.adapter.inbound.rest.support
 
 object ErrorCodes {
     // 도메인 에러
