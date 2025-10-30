@@ -3,6 +3,8 @@ package io.clroot.ball.adapter.inbound.rest.dto.error
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import com.fasterxml.jackson.module.kotlin.KotlinModule
+import io.clroot.ball.adapter.inbound.rest.dto.response.ErrorResponse
+import io.clroot.ball.adapter.inbound.rest.support.DebugInfo
 import io.kotest.core.spec.style.DescribeSpec
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
@@ -36,6 +38,9 @@ class ErrorResponseTest :
                     errorResponse.message shouldBe message
                     errorResponse.timestamp shouldNotBe null
                     errorResponse.traceId shouldBe null
+                    errorResponse.messageKey shouldBe null
+                    errorResponse.arguments shouldBe null
+                    errorResponse.metadata shouldBe null
                     errorResponse.details shouldBe null
                     errorResponse.debug shouldBe null
                 }
@@ -47,6 +52,9 @@ class ErrorResponseTest :
                     val timestamp = LocalDateTime.now()
                     val traceId = "trace-123"
                     val details = mapOf("field" to "error")
+                    val messageKey = "domain.error.sample"
+                    val arguments = mapOf("arg" to 1)
+                    val metadata = mapOf("meta" to "data")
                     val debug = DebugInfo(path = "/test", method = "POST")
 
                     // when
@@ -56,6 +64,9 @@ class ErrorResponseTest :
                             message = message,
                             timestamp = timestamp,
                             traceId = traceId,
+                            messageKey = messageKey,
+                            arguments = arguments,
+                            metadata = metadata,
                             details = details,
                             debug = debug,
                         )
@@ -65,6 +76,9 @@ class ErrorResponseTest :
                     errorResponse.message shouldBe message
                     errorResponse.timestamp shouldBe timestamp
                     errorResponse.traceId shouldBe traceId
+                    errorResponse.messageKey shouldBe messageKey
+                    errorResponse.arguments shouldBe arguments
+                    errorResponse.metadata shouldBe metadata
                     errorResponse.details shouldBe details
                     errorResponse.debug shouldBe debug
                 }
@@ -79,6 +93,9 @@ class ErrorResponseTest :
                             code = "TEST_ERROR",
                             message = "Test error message",
                             traceId = "trace-123",
+                            messageKey = "domain.error.test",
+                            arguments = mapOf("key" to "value"),
+                            metadata = mapOf("meta" to "info"),
                             details = mapOf("field1" to "error1", "field2" to "error2"),
                             debug =
                                 DebugInfo(
@@ -96,6 +113,9 @@ class ErrorResponseTest :
                     json shouldContain "\"message\":\"Test error message\""
                     json shouldContain "\"traceId\":\"trace-123\""
                     json shouldContain "\"details\""
+                    json shouldContain "\"messageKey\":\"domain.error.test\""
+                    json shouldContain "\"arguments\""
+                    json shouldContain "\"metadata\""
                     json shouldContain "\"debug\""
                     json shouldContain "\"timestamp\""
                 }

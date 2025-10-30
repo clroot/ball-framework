@@ -1,5 +1,8 @@
 package io.clroot.ball.adapter.outbound.data.access.core.exception
 
+import io.clroot.ball.domain.exception.DomainErrorCodes
+import io.clroot.ball.domain.exception.ErrorType
+
 /**
  * 요청한 엔티티를 찾을 수 없는 경우
  *
@@ -20,4 +23,13 @@ package io.clroot.ball.adapter.outbound.data.access.core.exception
  * }
  * ```
  */
-class EntityNotFoundException(message: String) : PersistenceException(message)
+class EntityNotFoundException(
+    message: String,
+    metadata: Map<String, Any?> = emptyMap(),
+) : PersistenceException(
+        message = message,
+        errorType = ErrorType.NOT_FOUND,
+        code = DomainErrorCodes.PERSISTENCE_NOT_FOUND,
+        messageKey = "persistence.not_found",
+        metadata = metadata,
+    )
