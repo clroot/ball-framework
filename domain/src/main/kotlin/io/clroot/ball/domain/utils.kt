@@ -2,6 +2,7 @@
 
 package io.clroot.ball.domain
 
+import io.clroot.ball.domain.exception.DomainStateException
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.time.LocalDateTime
@@ -17,3 +18,5 @@ fun String.wrapDoubleQuotes(): String = "\"$this\""
 fun Boolean.toYN(): String = if (this) "Y" else "N"
 
 fun String.ynToBoolean(): Boolean = this == "Y"
+
+inline fun <reified T : Any> T?.orNotFound(id: Any? = null): T = this ?: throw DomainStateException.notFound<T>(id) as Throwable
