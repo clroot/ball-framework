@@ -18,7 +18,7 @@ dependencies {
     testImplementation("org.springframework.boot:spring-boot-starter-test")
 
     // Testcontainers
-    testImplementation("org.testcontainers:testcontainers:1.20.6")
-    testImplementation("org.testcontainers:junit-jupiter:1.20.6")
-    testImplementation("com.redis:testcontainers-redis:2.2.2")
+    testImplementation("org.testcontainers:testcontainers:2.0.1")
+    testImplementation("org.testcontainers:testcontainers-junit-jupiter:2.0.1")
+    testImplementation("com.redis:testcontainers-redis:2.2.4")
 }

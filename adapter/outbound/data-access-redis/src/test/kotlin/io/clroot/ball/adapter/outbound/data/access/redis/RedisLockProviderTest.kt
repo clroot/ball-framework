@@ -33,8 +33,8 @@ class RedisLockProviderTest {
         @JvmStatic
         @DynamicPropertySource
         fun registerRedisProperties(registry: DynamicPropertyRegistry) {
-            registry.add("spring.redis.host") { redisContainer.host }
-            registry.add("spring.redis.port") { redisContainer.getMappedPort(6379) }
+            registry.add("spring.data.redis.host") { redisContainer.host }
+            registry.add("spring.data.redis.port") { redisContainer.getMappedPort(6379) }
         }
     }
 

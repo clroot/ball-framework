@@ -4,7 +4,7 @@ import java.util.*
 plugins {
     kotlin("jvm") version "2.2.20"
     id("org.jlleitschuh.gradle.ktlint") version "13.1.0"
-    id("org.springframework.boot") version "3.5.6"
+    id("org.springframework.boot") version "3.5.7"
     id("io.spring.dependency-management") version "1.1.7"
     id("org.jetbrains.kotlin.plugin.allopen") version "2.2.20"
     id("org.jetbrains.kotlin.plugin.jpa") version "2.2.20"
@@ -23,7 +23,7 @@ allprojects {
         plugin("maven-publish")
     }
     group = "io.clroot.ball"
-    version = "2.0.0-20251030.3-SNAPSHOT"
+    version = "2.0.0-20251103.1-SNAPSHOT"
 
     val nexusUsername = localProperties.getProperty("nexus.username")
     val nexusPassword = localProperties.getProperty("nexus.password")
