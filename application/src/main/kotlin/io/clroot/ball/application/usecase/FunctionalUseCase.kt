@@ -16,8 +16,8 @@ import kotlin.coroutines.cancellation.CancellationException
  * @param TError 구현체가 다루는 오류 타입 (Left 서명)
  * @param applicationEventPublisher 도메인 이벤트 발행용 스프링 이벤트 퍼블리셔
  *
- * @sample
- * ```
+ * ### Example:
+ * ```kotlin
  * class ConfirmOrderUseCase(
  *     publisher: ApplicationEventPublisher,
  *     private val orderReader: OrderReader,
