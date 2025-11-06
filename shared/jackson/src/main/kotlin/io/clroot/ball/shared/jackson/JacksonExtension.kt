@@ -36,3 +36,6 @@ fun ObjectMapper.registerBallModule() {
 }
 
 fun <T : Any> T.toJsonString(): String = mapper.writeValueAsString(this)
+
+@Suppress("UNCHECKED_CAST")
+fun <T : Any> T.toMap(): Map<String, Any?> = mapper.convertValue(this, Map::class.java) as Map<String, Any?>
