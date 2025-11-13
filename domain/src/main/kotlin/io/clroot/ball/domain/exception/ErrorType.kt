@@ -35,4 +35,7 @@ enum class ErrorType {
 
     /** 외부 시스템 타임아웃 (HTTP 504, gRPC DEADLINE_EXCEEDED) */
     EXTERNAL_TIMEOUT,
+
+    /** 내부 서버 오류 (HTTP 500, gRPC INTERNAL) */
+    INTERNAL_ERROR,
 }
