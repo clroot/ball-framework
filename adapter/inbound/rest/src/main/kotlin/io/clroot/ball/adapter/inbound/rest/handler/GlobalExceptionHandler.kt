@@ -227,6 +227,7 @@ class GlobalExceptionHandler(
             ErrorType.GONE -> DomainErrorCodes.RESOURCE_GONE
             ErrorType.EXTERNAL_ERROR -> DomainErrorCodes.EXTERNAL_SYSTEM_ERROR
             ErrorType.EXTERNAL_TIMEOUT -> DomainErrorCodes.EXTERNAL_SYSTEM_TIMEOUT
+            ErrorType.INTERNAL_ERROR -> DomainErrorCodes.UNKNOW_ERROR
         }
 
     private fun determineHttpStatus(errorType: ErrorType): HttpStatus =
@@ -241,5 +242,6 @@ class GlobalExceptionHandler(
             ErrorType.GONE -> HttpStatus.GONE
             ErrorType.EXTERNAL_ERROR -> HttpStatus.INTERNAL_SERVER_ERROR
             ErrorType.EXTERNAL_TIMEOUT -> HttpStatus.INTERNAL_SERVER_ERROR
+            ErrorType.INTERNAL_ERROR -> HttpStatus.INTERNAL_SERVER_ERROR
         }
 }
