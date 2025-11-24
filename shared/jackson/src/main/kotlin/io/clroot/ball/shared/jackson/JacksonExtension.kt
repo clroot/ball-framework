@@ -1,5 +1,6 @@
 package io.clroot.ball.shared.jackson
 
+import com.fasterxml.jackson.annotation.JsonInclude
 import tools.jackson.databind.DeserializationFeature
 import tools.jackson.module.kotlin.KotlinFeature
 import tools.jackson.module.kotlin.KotlinModule
@@ -17,6 +18,12 @@ val mapper =
                 .configure(KotlinFeature.StrictNullChecks, false)
                 .build(),
         ).configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+            .changeDefaultPropertyInclusion {
+                JsonInclude.Value.construct(
+                    JsonInclude.Include.NON_NULL,
+                    JsonInclude.Include.ALWAYS,
+                )
+            }
     }
 
 fun <T : Any> T.toJsonString(): String = mapper.writeValueAsString(this)

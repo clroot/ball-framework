@@ -18,7 +18,7 @@ dependencies {
 
     // Hibernate
     api("org.hibernate.orm:hibernate-core")
-    api("io.hypersistence:hypersistence-utils-hibernate-63:3.10.1")
+    api("io.hypersistence:hypersistence-utils-hibernate-70:3.10.1")
 
     // Connection pooling
     api("com.zaxxer:HikariCP")

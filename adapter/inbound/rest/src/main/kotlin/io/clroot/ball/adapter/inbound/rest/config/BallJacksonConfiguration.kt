@@ -1,5 +1,6 @@
 package io.clroot.ball.adapter.inbound.rest.config
 
+import com.fasterxml.jackson.annotation.JsonInclude
 import org.springframework.boot.jackson.autoconfigure.JsonMapperBuilderCustomizer
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
@@ -29,5 +30,11 @@ class BallJacksonConfiguration {
                         .configure(KotlinFeature.StrictNullChecks, false)
                         .build(),
                 ).configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+                .changeDefaultPropertyInclusion {
+                    JsonInclude.Value.construct(
+                        JsonInclude.Include.NON_NULL,
+                        JsonInclude.Include.ALWAYS,
+                    )
+                }
         }
 }
