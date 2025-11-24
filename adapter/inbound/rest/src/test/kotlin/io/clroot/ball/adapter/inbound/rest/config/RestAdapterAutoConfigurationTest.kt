@@ -5,8 +5,8 @@ import io.clroot.ball.adapter.inbound.rest.handler.GlobalExceptionHandler
 import io.kotest.core.spec.style.BehaviorSpec
 import io.kotest.matchers.shouldNotBe
 import org.springframework.boot.autoconfigure.AutoConfigurations
-import org.springframework.boot.autoconfigure.web.servlet.WebMvcAutoConfiguration
 import org.springframework.boot.test.context.runner.WebApplicationContextRunner
+import org.springframework.boot.webmvc.autoconfigure.WebMvcAutoConfiguration
 
 /**
  * 기본 Auto-Configuration 테스트

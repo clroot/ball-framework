@@ -1,17 +1,12 @@
 package io.clroot.ball.adapter.inbound.rest.config
 
-import io.clroot.ball.adapter.inbound.rest.filter.RequestLoggingFilter
-import io.clroot.ball.adapter.inbound.rest.handler.GlobalExceptionHandler
 import org.springframework.boot.autoconfigure.AutoConfiguration
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass
-import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication
-import org.springframework.boot.autoconfigure.jackson.Jackson2ObjectMapperBuilderCustomizer
-import org.springframework.boot.autoconfigure.jackson.JacksonAutoConfiguration
-import org.springframework.boot.autoconfigure.web.servlet.WebMvcAutoConfiguration
-import org.springframework.context.annotation.Bean
-import org.springframework.core.env.Environment
+import org.springframework.boot.jackson.autoconfigure.JacksonAutoConfiguration
+import org.springframework.boot.webmvc.autoconfigure.WebMvcAutoConfiguration
+import org.springframework.context.annotation.ComponentScan
 import org.springframework.data.web.config.EnableSpringDataWebSupport
 import org.springframework.web.servlet.DispatcherServlet
 
@@ -29,18 +24,5 @@ import org.springframework.web.servlet.DispatcherServlet
     matchIfMissing = true,
 )
 @EnableSpringDataWebSupport(pageSerializationMode = EnableSpringDataWebSupport.PageSerializationMode.VIA_DTO)
-class RestAdapterAutoConfiguration {
-    @Bean
-    @ConditionalOnMissingBean
-    fun globalExceptionHandler(environment: Environment): GlobalExceptionHandler = GlobalExceptionHandler(environment)
-
-    @Bean
-    @ConditionalOnMissingBean
-    fun requestLoggingFilter(): RequestLoggingFilter = RequestLoggingFilter()
-
-    @Bean
-    fun ballJacksonCustomizer(): Jackson2ObjectMapperBuilderCustomizer = BallJackson2ObjectMapperBuilderCustomizer()
-
-    @Bean
-    fun webConfiguration(): WebConfiguration = WebConfiguration()
-}
+@ComponentScan(basePackages = ["io.clroot.ball.adapter.inbound.rest"])
+class RestAdapterAutoConfiguration

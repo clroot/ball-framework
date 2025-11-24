@@ -4,29 +4,31 @@ import io.clroot.ball.adapter.inbound.rest.config.RestAdapterAutoConfiguration
 import io.kotest.core.spec.style.BehaviorSpec
 import io.kotest.matchers.shouldBe
 import org.springframework.boot.autoconfigure.AutoConfigurations
-import org.springframework.boot.autoconfigure.web.servlet.WebMvcAutoConfiguration
 import org.springframework.boot.test.context.runner.WebApplicationContextRunner
+import org.springframework.boot.webmvc.autoconfigure.WebMvcAutoConfiguration
 
 /**
  * 기본 통합 테스트
  */
-class RestAdapterIntegrationTest : BehaviorSpec({
+class RestAdapterIntegrationTest :
+    BehaviorSpec({
 
-    val contextRunner = WebApplicationContextRunner()
-        .withConfiguration(
-            AutoConfigurations.of(
-                WebMvcAutoConfiguration::class.java,
-                RestAdapterAutoConfiguration::class.java
-            )
-        )
+        val contextRunner =
+            WebApplicationContextRunner()
+                .withConfiguration(
+                    AutoConfigurations.of(
+                        WebMvcAutoConfiguration::class.java,
+                        RestAdapterAutoConfiguration::class.java,
+                    ),
+                )
 
-    given("기본 통합 환경에서") {
-        `when`("auto-configuration이 실행되면") {
-            then("정상적으로 구성된다") {
-                contextRunner.run { context ->
-                    context.startupFailure shouldBe null
+        given("기본 통합 환경에서") {
+            `when`("auto-configuration이 실행되면") {
+                then("정상적으로 구성된다") {
+                    contextRunner.run { context ->
+                        context.startupFailure shouldBe null
+                    }
                 }
             }
         }
-    }
-})
+    })

@@ -28,7 +28,7 @@ object SpringDataConverter {
             pageRequest.sort.toSpring(),
         )
 
-    fun <T> fromSpringPage(springPage: SpringPage<T>): Page<T> {
+    fun <T : Any> fromSpringPage(springPage: SpringPage<T>): Page<T> {
         val pageRequest =
             PageRequest(
                 page = springPage.number,
@@ -43,8 +43,8 @@ object SpringDataConverter {
         )
     }
 
-    fun <T> toSpringPage(page: Page<T>): SpringPage<T> =
-        PageImpl<T>(
+    fun <T : Any> toSpringPage(page: Page<T>): SpringPage<T> =
+        PageImpl(
             page.content,
             toSpringPageable(page.pageRequest),
             page.totalElements,
@@ -55,9 +55,9 @@ fun PageRequest.toSpring(): SpringPageable = SpringDataConverter.toSpringPageabl
 
 fun SpringPageable.toBall(): PageRequest = SpringDataConverter.fromSpringPageable(this)
 
-fun <T> SpringPage<T>.toBall(): Page<T> = SpringDataConverter.fromSpringPage(this)
+fun <T : Any> SpringPage<T>.toBall(): Page<T> = SpringDataConverter.fromSpringPage(this)
 
-fun <T> Page<T>.toSpring(): SpringPage<T> = SpringDataConverter.toSpringPage(this)
+fun <T : Any> Page<T>.toSpring(): SpringPage<T> = SpringDataConverter.toSpringPage(this)
 
 fun Sort.toSpring(): SpringSort {
     if (this.orders.isEmpty()) return SpringSort.unsorted()
