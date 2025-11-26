@@ -129,7 +129,7 @@ class GlobalExceptionHandler(
         e: Exception,
         request: HttpServletRequest,
     ): ResponseEntity<ErrorResponse> {
-        if (isDebugMode()) {
+        if (isDebugMode() && e.javaClass.simpleName != "AuthorizationDeniedException") {
             logger.error("Unexpected exception: ${e.message}", e)
         } else {
             logger.error("Unexpected exception: ${e.message}")
