@@ -13,7 +13,7 @@ import org.springframework.transaction.annotation.Transactional
 abstract class UseCase<TCommand, TResult>(
     protected val applicationEventPublisher: ApplicationEventPublisher,
 ) {
-    val log = slf4j()
+    protected open val log = slf4j()
 
     @Transactional
     open fun execute(command: TCommand): Either<ApplicationError, TResult> =

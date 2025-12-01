@@ -16,7 +16,7 @@ dependencies {
     api("jakarta.validation:jakarta.validation-api")
 
     // AOP
-    implementation("org.springframework.boot:spring-boot-starter-aop")
+    implementation("org.springframework.boot:spring-boot-starter-aspectj")
 
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("org.mockito.kotlin:mockito-kotlin:5.4.0")

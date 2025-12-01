@@ -1,8 +1,8 @@
 package io.clroot.ball.application.warmup
 
-import org.springframework.boot.actuate.health.Health
-import org.springframework.boot.actuate.health.HealthIndicator
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass
+import org.springframework.boot.health.contributor.Health
+import org.springframework.boot.health.contributor.HealthIndicator
 import org.springframework.stereotype.Component
 
 /**

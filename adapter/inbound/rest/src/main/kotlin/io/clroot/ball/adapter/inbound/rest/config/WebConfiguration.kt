@@ -1,5 +1,6 @@
 package io.clroot.ball.adapter.inbound.rest.config
 
+import org.springframework.context.annotation.Configuration
 import org.springframework.core.annotation.Order
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Sort
@@ -7,6 +8,7 @@ import org.springframework.data.web.PageableHandlerMethodArgumentResolver
 import org.springframework.web.method.support.HandlerMethodArgumentResolver
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer
 
+@Configuration
 @Order(10)
 class WebConfiguration : WebMvcConfigurer {
     override fun addArgumentResolvers(argumentResolvers: MutableList<HandlerMethodArgumentResolver>) {

@@ -5,6 +5,7 @@ import arrow.core.raise.Raise
 import arrow.core.raise.either
 import io.clroot.ball.application.ApplicationError
 import io.clroot.ball.domain.exception.ExternalSystemException
+import io.clroot.ball.domain.slf4j
 import org.springframework.context.ApplicationEventPublisher
 import kotlin.coroutines.cancellation.CancellationException
 
@@ -40,6 +41,8 @@ import kotlin.coroutines.cancellation.CancellationException
 abstract class FunctionalUseCase<TCommand, TResult, TError>(
     applicationEventPublisher: ApplicationEventPublisher,
 ) : UseCase<TCommand, TResult>(applicationEventPublisher) {
+    override val log = slf4j()
+
     final override fun execute(command: TCommand): Either<ApplicationError, TResult> =
         either {
             try {

@@ -2,6 +2,7 @@ package io.clroot.ball.adapter.outbound.data.access.jpa.record
 
 import io.clroot.ball.adapter.outbound.data.access.core.mapping.DataModel
 import io.clroot.ball.domain.model.EntityBase
+import jakarta.persistence.Column
 import jakarta.persistence.MappedSuperclass
 import org.hibernate.annotations.CreationTimestamp
 import org.hibernate.annotations.SQLRestriction
@@ -21,6 +22,7 @@ import java.time.LocalDateTime
 abstract class EntityRecord<E : EntityBase<*>>(
     createdAt: LocalDateTime,
     updatedAt: LocalDateTime,
+    deletedAt: LocalDateTime? = null,
 ) : DataModel<E> {
     @CreationTimestamp
     var createdAt: LocalDateTime = createdAt
@@ -29,6 +31,9 @@ abstract class EntityRecord<E : EntityBase<*>>(
     @UpdateTimestamp
     var updatedAt: LocalDateTime = updatedAt
         protected set
+
+    @Column(name = "deleted_at")
+    var deletedAt: LocalDateTime? = deletedAt
 
     /**
      * 도메인 엔티티로부터 생성하는 생성자

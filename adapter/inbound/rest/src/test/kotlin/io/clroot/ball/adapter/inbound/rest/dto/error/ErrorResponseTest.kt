@@ -1,8 +1,5 @@
 package io.clroot.ball.adapter.inbound.rest.dto.error
 
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
-import com.fasterxml.jackson.module.kotlin.KotlinModule
 import io.clroot.ball.adapter.inbound.rest.dto.response.ErrorResponse
 import io.clroot.ball.adapter.inbound.rest.support.DebugInfo
 import io.kotest.core.spec.style.DescribeSpec
@@ -10,15 +7,26 @@ import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 import io.kotest.matchers.string.shouldContain
 import io.kotest.matchers.string.shouldNotContain
+import tools.jackson.databind.DeserializationFeature
+import tools.jackson.module.kotlin.KotlinFeature
+import tools.jackson.module.kotlin.jsonMapper
 import java.time.LocalDateTime
 
 class ErrorResponseTest :
     DescribeSpec({
 
-        val objectMapper =
-            ObjectMapper().apply {
-                registerModule(KotlinModule.Builder().build())
-                registerModule(JavaTimeModule())
+        val mapper =
+            jsonMapper {
+                addModule(
+                    tools.jackson.module.kotlin.KotlinModule
+                        .Builder()
+                        .configure(KotlinFeature.NullToEmptyCollection, false)
+                        .configure(KotlinFeature.NullToEmptyMap, false)
+                        .configure(KotlinFeature.NullIsSameAsDefault, false)
+                        .configure(KotlinFeature.SingletonSupport, true)
+                        .configure(KotlinFeature.StrictNullChecks, false)
+                        .build(),
+                ).configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
             }
 
         describe("ErrorResponse") {
@@ -106,7 +114,7 @@ class ErrorResponseTest :
                         )
 
                     // when
-                    val json = objectMapper.writeValueAsString(errorResponse)
+                    val json = mapper.writeValueAsString(errorResponse)
 
                     // then
                     json shouldContain "\"code\":\"TEST_ERROR\""
@@ -129,7 +137,7 @@ class ErrorResponseTest :
                         )
 
                     // when
-                    val json = objectMapper.writeValueAsString(errorResponse)
+                    val json = mapper.writeValueAsString(errorResponse)
 
                     // then
                     json shouldContain "\"code\":\"SIMPLE_ERROR\""
@@ -150,7 +158,7 @@ class ErrorResponseTest :
                         )
 
                     // when
-                    val json = objectMapper.writeValueAsString(errorResponse)
+                    val json = mapper.writeValueAsString(errorResponse)
 
                     // then
                     json shouldNotContain "\"details\""
@@ -175,7 +183,7 @@ class ErrorResponseTest :
                         """.trimIndent()
 
                     // when
-                    val errorResponse = objectMapper.readValue(json, ErrorResponse::class.java)
+                    val errorResponse = mapper.readValue(json, ErrorResponse::class.java)
 
                     // then
                     errorResponse.code shouldBe "DESERIALIZATION_TEST"
@@ -196,7 +204,7 @@ class ErrorResponseTest :
                         """.trimIndent()
 
                     // when
-                    val errorResponse = objectMapper.readValue(json, ErrorResponse::class.java)
+                    val errorResponse = mapper.readValue(json, ErrorResponse::class.java)
 
                     // then
                     errorResponse.code shouldBe "MINIMAL_ERROR"
@@ -274,8 +282,8 @@ class ErrorResponseTest :
                         )
 
                     // when
-                    val json = objectMapper.writeValueAsString(errorResponse)
-                    val deserialized = objectMapper.readValue(json, ErrorResponse::class.java)
+                    val json = mapper.writeValueAsString(errorResponse)
+                    val deserialized = mapper.readValue(json, ErrorResponse::class.java)
 
                     // then
                     deserialized.code shouldBe "COMPLEX_VALIDATION_FAILED"

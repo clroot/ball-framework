@@ -21,7 +21,7 @@ import org.springframework.data.domain.Pageable
 import org.springframework.data.domain.Sort
 import org.springframework.data.domain.Sort.Order
 
-abstract class JdslSearchAdapter<T : SearchCriteria, R, E : Any>(
+abstract class JdslSearchAdapter<T : SearchCriteria, R : Any, E : Any>(
     protected open val entityManager: EntityManager,
     protected open val jpqlRenderContext: JpqlRenderContext,
 ) : Search<T, R> {
@@ -56,7 +56,7 @@ abstract class JdslSearchAdapter<T : SearchCriteria, R, E : Any>(
             entityManager
                 .createQuery(countQuery, jpqlRenderContext)
                 .singleResult as Long
-        return PageImpl(content, pageable, count).toBall()
+        return PageImpl<R>(content, pageable, count).toBall()
     }
 
     protected abstract fun E.toResult(): R

@@ -8,11 +8,11 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Import
-import org.springframework.retry.annotation.EnableRetry
+import org.springframework.resilience.annotation.EnableResilientMethods
 import org.springframework.scheduling.annotation.EnableAsync
 
 @AutoConfiguration
-@EnableRetry
+@EnableResilientMethods
 @EnableAsync
 @EnableConfigurationProperties(ApplicationLayerProperties::class)
 @Import(
@@ -20,20 +20,18 @@ import org.springframework.scheduling.annotation.EnableAsync
     WarmupHealthIndicator::class,
 )
 class ApplicationLayerAutoConfiguration {
-
     @Bean
     @ConditionalOnProperty(
         prefix = "ball.application",
         name = ["warmup-enabled"],
         havingValue = "true",
-        matchIfMissing = false
+        matchIfMissing = false,
     )
     fun warmupRunner(
         warmupService: WarmupService,
         properties: ApplicationLayerProperties,
-    ): ApplicationRunner {
-        return ApplicationRunner {
+    ): ApplicationRunner =
+        ApplicationRunner {
             warmupService.performWarmup(properties.warmupTimeoutSeconds)
         }
-    }
 }

@@ -14,14 +14,14 @@ import org.springframework.http.ResponseEntity
  * HTTP 응답으로 변환할 때 사용합니다.
  */
 
-fun <T> Either<ApplicationError, T>.toResponseEntity(status: HttpStatusCode = HttpStatus.OK): ResponseEntity<T> =
+fun <T : Any> Either<ApplicationError, T>.toResponseEntity(status: HttpStatusCode = HttpStatus.OK): ResponseEntity<T> =
     fold({ error -> throw error.toException() }, { data ->
         ResponseEntity
             .status(status)
             .body(data)
     })
 
-fun <T> Either<ApplicationError, T?>.toResponseEntityWithNull(): ResponseEntity<T> =
+fun <T : Any> Either<ApplicationError, T?>.toResponseEntityWithNull(): ResponseEntity<T> =
     fold({ error -> throw error.toException() }, { data ->
         data?.let { ResponseEntity.ok(it) } ?: throw EntityNotFoundException("Resource not found")
     })

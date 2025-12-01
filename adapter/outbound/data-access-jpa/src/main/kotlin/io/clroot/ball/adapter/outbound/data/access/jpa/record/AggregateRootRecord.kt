@@ -20,7 +20,8 @@ abstract class AggregateRootRecord<E : AggregateRoot<*>>(
     createdAt: LocalDateTime,
     updatedAt: LocalDateTime,
     version: Long,
-) : EntityRecord<E>(createdAt, updatedAt) {
+    deletedAt: LocalDateTime? = null,
+) : EntityRecord<E>(createdAt, updatedAt, deletedAt) {
     /**
      * 낙관적 잠금을 위한 버전 필드
      */
